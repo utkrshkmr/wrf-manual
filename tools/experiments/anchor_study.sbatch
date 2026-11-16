@@ -95,8 +95,15 @@ awk '{print $1, $2}' $W/exp2/sites.txt | while read la lo; do echo "$lo $la"; do
 paste -d' ' $W/exp2/sites.txt $W/exp2/sites_xy.txt | awk -v x0=$X0 -v y0=$Y0 -v dx=$DX -v nc=$NC -v nr=$NR '{c=int(($3-x0)/dx+1.5); r=int(($4-y0)/dx+1.5); if (c>30 && c<nc-30 && r>30 && r<nr-30) print $1, $2, c, r, x0+(c-1)*dx, y0+(r-1)*dx}' > $W/exp2/sites_in.txt
 awk '{print $5, $6}' $W/exp2/sites_in.txt | to_ll > $W/exp2/sites_local_ll.txt
 log "exp2: $(wc -l < $W/exp2/sites_in.txt) sites inside the layer"
-mklocal() { # site index c r lat lon
-  for K in col row; do d=$W/exp2/layers/local/$1_$K; mkdir -p $d; ln -sf $W/exp2/layers/alb_b3_$K/[0-9]* $d/ 2>/dev/null; cp $W/exp2/layers/alb_b3_$K/index.base $d/; anchor_index $d $2.0 $3.0 $4 $5; done; }
+mklocal() { # site index c r lat lon; links only the tiles within one tile of the site (a 22 x 22 cell domain needs at most four)
+  local ti=$(( ($2 - 1) / 1000 )) tj=$(( ($3 - 1) / 1000 ))
+  for K in col row; do d=$W/exp2/layers/local/$1_$K; mkdir -p $d
+    for a in $((ti-1)) $ti $((ti+1)); do for b in $((tj-1)) $tj $((tj+1)); do
+      [[ $a -ge 0 && $b -ge 0 ]] || continue
+      f=$(printf "%05d-%05d.%05d-%05d" $((a*1000+1)) $(((a+1)*1000)) $((b*1000+1)) $(((b+1)*1000)))
+      [[ -f $W/exp2/layers/alb_b3_$K/$f ]] && ln -sf $W/exp2/layers/alb_b3_$K/$f $d/$f
+    done; done
+    cp $W/exp2/layers/alb_b3_$K/index.base $d/; anchor_index $d $2.0 $3.0 $4 $5; done; }
 i=0; paste -d' ' $W/exp2/sites_in.txt $W/exp2/sites_local_ll.txt | while read la lo c r x y llat llon; do i=$((i+1)); mklocal $i $c $r $llat $llon; done
 wps_env
 RUNS=$W/exp2/runs.csv; echo "run,variant,proj,site_lat,site_lon,anchor_lat,anchor_lon,gx0,gy0,gd,npz" > $RUNS
