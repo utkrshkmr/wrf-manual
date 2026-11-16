@@ -37,6 +37,7 @@ NAV = [
     ("Running it safely", [
         ("gates", "The gating system"),
         ("example", "Worked example: every fire"),
+        ("skill", "Skill file for coding agents"),
     ]),
     ("Our work on CCR", [
         ("setup", "WPS on CCR: setup so far"),
@@ -127,6 +128,14 @@ def figures(text):
     return re.sub(r"^\{\{fig:([\w!-]+)\|(.*?)\}\}\s*$", rep, text, flags=re.M)
 
 
+def includes(text):
+    """{{include:path/from/repo/root}} -> the file's text in a fenced block (four backticks, so it may hold fences)."""
+    def rep(m):
+        f = ROOT / m.group(1)
+        return "\n````markdown\n" + f.read_text().rstrip() + "\n````\n"
+    return re.sub(r"^\{\{include:([\w./-]+)\}\}\s*$", rep, text, flags=re.M)
+
+
 def slugify(s):
     s = re.sub(r"<[^>]+>", "", s)
     return re.sub(r"[^a-z0-9]+", "-", html.unescape(s).lower()).strip("-")
@@ -155,7 +164,7 @@ def build():
         (OUT / f"{h}.html").unlink(missing_ok=True)
     for slug in FLAT:
         meta, text = parse(SRC / f"{slug}.md")
-        text = figures(text)
+        text = figures(includes(text))
         body = markdown.markdown(text, extensions=["tables", "fenced_code", "md_in_html", "attr_list"])
         body = re.sub(r'<a href="(%s)\.html[^"]*">(.*?)</a>' % "|".join(sorted(HIDDEN)), r"\2", body)
         body = re.sub(r"<table>", '<div class="tbl"><table>', body)

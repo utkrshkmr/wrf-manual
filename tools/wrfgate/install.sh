@@ -11,7 +11,7 @@ P=$WRF_ROOT/pipeline; R=$P/releases/$VER
 [[ -e $R ]] && { echo "release $VER already exists at $R; pass another version name" >&2; exit 1; }
 mkdir -p "$P/releases" "$WRF_ROOT"/{fires,ledger/shell,people,setaside}
 mkdir "$R"
-cp -r "$SRC"/bin "$SRC"/lib "$SRC"/setup.sh "$SRC"/install.sh "$SRC"/arrange_ccr.sbatch "$R"/
+cp -r "$SRC"/bin "$SRC"/lib "$SRC"/setup.sh "$SRC"/install.sh "$SRC"/arrange_ccr.sbatch "$SRC"/SKILL.md "$R"/
 find "$R" -name __pycache__ -prune -exec rm -rf {} +
 echo "$VER" > "$R/VERSION"
 { echo "release: $VER"; echo "installed: $(date -Is) by $USER on $(hostname)"; echo "from: $SRC"; echo "files:"; (cd "$R" && find . -type f ! -name MANIFEST.txt -print0 | sort -z | xargs -0 sha256sum | sed 's/^/  /'); } > "$R/MANIFEST.txt"
