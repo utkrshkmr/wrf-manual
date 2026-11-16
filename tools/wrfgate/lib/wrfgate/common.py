@@ -54,7 +54,15 @@ def ledger_append(event):
     """Append one JSON line to ledger/commands.jsonl, chained to the previous line's hash."""
     path = os.path.join(ROOT, "ledger", "commands.jsonl")
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    event = {"t": now(), "user": getpass.getuser(), "host": socket.gethostname(),
+    user = getpass.getuser()
+    person = ""
+    try:
+        for line in open(os.path.join(ROOT, "people", user, "profile.conf")):
+            if line.startswith(("NAME=", "EMAIL=")):
+                person += line.strip().split("=", 1)[1] + " "
+    except OSError:
+        person = "unregistered"
+    event = {"t": now(), "user": user, "person": person.strip(), "host": socket.gethostname(),
              "release": RELEASE, "job": os.environ.get("SLURM_JOB_ID", ""), **event}
     with open(path, "a+") as f:
         fcntl.flock(f, fcntl.LOCK_EX)

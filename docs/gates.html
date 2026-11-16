@@ -364,12 +364,19 @@ EATON_2025      20261117_131500_gateD_camp  gate D     Utkarsh Kumar  26901377  
 </code></pre>
 <p>It reads every run folder that has a <code>JOBID</code>, asks Slurm about all of them at once (<code>squeue</code>, then <code>sacct</code> for finished ones), and reads the end of each run's <code>rsl.error.0000</code> for the simulated time and the seconds per step. The ETA is the remaining simulated time divided by the coarse time step, times the recent seconds per step. It changes nothing, so anyone can run it as often as they like.</p>
 <h2 id="the-ledger">The ledger</h2>
-<p>Every command writes one JSON line when it starts and one when it ends (exit code, seconds), and gates and jobs add their own events: <code>inputs_added</code>, <code>gate_C</code>, <code>submitted</code>, <code>run_start</code>, <code>run_end</code>. Each line holds the user, the profile name, host, Slurm job ID, release, time, and the SHA-256 of the line before it, so editing or removing any line breaks the chain and <code>wrf-ledger-verify</code> reports where.</p>
-<pre><code class="language-text">{&quot;t&quot;: &quot;2026-11-17T12:02:00-05:00&quot;, &quot;user&quot;: &quot;ukumar&quot;, &quot;person&quot;: &quot;Utkarsh Kumar&quot;, &quot;event&quot;: &quot;submitted&quot;,
- &quot;fire&quot;: &quot;CANYON_2025&quot;, &quot;job&quot;: &quot;26901234&quot;, &quot;spec_hash&quot;: &quot;e387ec79aa12&quot;, &quot;inputs&quot;: &quot;20261117_7f3e19a2&quot;,
- &quot;nodes&quot;: &quot;1&quot;, &quot;ranks&quot;: &quot;25&quot;, &quot;time&quot;: &quot;48:00:00&quot;, &quot;release&quot;: &quot;2026.11.16-a1b2c3d&quot;, &quot;prev&quot;: &quot;…&quot;, &quot;hash&quot;: &quot;…&quot;}
+<p><strong>Every command that changes anything is logged against the person who ran it, with every option exactly as typed.</strong> That is <code>wrf-me</code>, <code>wrf-card --new/--weather/--make</code>, <code>wrf-new-fire</code>, <code>wrf-add-inputs</code>, <code>wrf-gate</code>, <code>wrf-next</code>, <code>wrf-submit</code>, <code>wrf-setaside</code> and <code>wrf-static --wire/--check</code>. Each writes one line to <code>ledger/commands.jsonl</code> before it does anything (the full command line, folder, user, name and email from their profile, host, Slurm job if any, code version) and one when it ends (exit code, seconds), so refused and failed attempts are recorded too. If the ledger cannot be written, the command refuses to run. All but <code>wrf-me</code> also refuse without a profile, so nothing is done anonymously.</p>
+<p>The steps add their own lines: <code>card_make</code> (with the card's hash; the card itself is copied into the work folder), <code>inputs_added</code>, <code>gate_C</code>, <code>gate_D</code>, <code>submitted</code>, <code>run_start</code>, <code>run_end</code>, <code>gate_E</code>, <code>wps_start</code>, <code>wps_end</code>, <code>setaside</code>, <code>static_wired</code>. Jobs write theirs as the user who submitted them.</p>
+<p>Each line holds the SHA-256 of the line before it, so editing or removing a line breaks the chain, and <code>wrf-ledger-verify</code> says where:</p>
+<pre><code class="language-text">{&quot;t&quot;: &quot;2026-11-17T12:02:00-05:00&quot;, &quot;user&quot;: &quot;utkarshk&quot;, &quot;person&quot;: &quot;Utkarsh Kumar utkarshk@buffalo.edu&quot;, &quot;phase&quot;: &quot;start&quot;,
+ &quot;cmd&quot;: &quot;wrf-submit CANYON_2025 /projects/.../spec --nodes 1 --ranks 25 --time 48:00:00 --name run&quot;, &quot;cwd&quot;: &quot;...&quot;,
+ &quot;host&quot;: &quot;login1&quot;, &quot;job&quot;: &quot;&quot;, &quot;release&quot;: &quot;2026.11.16-14d21b0&quot;, &quot;prev&quot;: &quot;…&quot;, &quot;hash&quot;: &quot;…&quot;}
 </code></pre>
-<p>The honest limit: anyone can still call <code>sbatch</code> by hand. Such a run has no manifest, so <code>wrf-status</code> does not list it and <code>wrf-submit</code> will not build on it; the shell hook still records the command.</p>
+<p>What is not covered:</p>
+<ul>
+<li><strong>Read-only commands</strong> (<code>wrf-status</code>, <code>wrf-watch</code>, <code>wrf-card FIRE</code>, <code>wrf-static</code> with no option) are not logged; they change nothing.</li>
+<li><strong>Work done outside the commands</strong>, such as a hand-typed <code>sbatch</code> or editing files directly, is not in the ledger. It has no manifest, so no command builds on it and <code>wrf-status</code> does not list it. <code>setup.sh</code>'s shell hook still records the command text in <code>ledger/shell/&lt;user&gt;.log</code>, but only in shells that sourced <code>setup.sh</code>.</li>
+<li>The ledger is a shared, group-writable file: tampering shows (the chain breaks) but someone with write access could still replace it entirely. A nightly copy kept elsewhere would close that.</li>
+</ul>
 <h2 id="files">Files</h2>
 <div class="tbl"><table>
 <thead>

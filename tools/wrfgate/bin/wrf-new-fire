@@ -1,10 +1,11 @@
 #!/bin/bash
 # Create a fire record: wrf-new-fire FIRE (--from-namelist FILE | --start T --end T --ignition T --lat X --lon Y) [--note TEXT] [--fuel-layer DIR] [--min-edge-km N] [--replace]
 source "$(dirname "$(readlink -f "$0")")/../lib/wrfgate.sh"
+wg_start
 [[ $# -ge 1 && $1 != -* ]] || wg_die "usage: wrf-new-fire FIRE (--from-namelist FILE | --start 'YYYY-MM-DD HH:MM' --end ... --ignition ... --lat X --lon Y) [--replace]"
 FIRE=$1; shift
 [[ $FIRE =~ ^[A-Z0-9_]+$ ]] || wg_die "fire names are UPPER_CASE letters, digits and _ (e.g. CANYON_2025)"
-wg_need_person; wg_start "$FIRE" "$@"
+wg_need_person; 
 D=$WRF_ROOT/fires/$FIRE; mkdir -p "$D"/{inputs,specs,runs}
 REPLACE=0; ARGS=()
 for a in "$@"; do [[ $a == --replace ]] && REPLACE=1 || ARGS+=("$a"); done

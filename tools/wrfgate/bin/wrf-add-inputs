@@ -3,11 +3,12 @@
 # Copies met_em files (and namelist.wps, geo_em, logs if present) into fires/FIRE/inputs/<date>_<hash>/,
 # writes MANIFEST.txt, runs gates A and B, locks the folder, and points 'current' at it if no gate failed.
 source "$(dirname "$(readlink -f "$0")")/../lib/wrfgate.sh"
+wg_start
 [[ $# -ge 2 ]] || wg_die "usage: wrf-add-inputs FIRE SOURCE_DIR [--note TEXT] [--no-current]"
 FIRE=$1; SRC=$(readlink -f "$2"); shift 2
 NOTE=""; SETCUR=1
 while [[ $# -gt 0 ]]; do case $1 in --note) NOTE=$2; shift 2;; --no-current) SETCUR=0; shift;; *) wg_die "unknown option $1";; esac; done
-REC=$(wg_record "$FIRE") || exit 1; wg_need_person; wg_start "$FIRE" "$SRC"
+REC=$(wg_record "$FIRE") || exit 1; wg_need_person; 
 ls "$SRC"/met_em.d0* >/dev/null 2>&1 || wg_die "no met_em files in $SRC"
 wg_modules || exit 1
 I=$WRF_ROOT/fires/$FIRE/inputs; TMP=$I/.incoming_$$; mkdir -p "$TMP"

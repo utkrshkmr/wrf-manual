@@ -171,15 +171,23 @@ It reads every run folder that has a `JOBID`, asks Slurm about all of them at on
 
 ## The ledger
 
-Every command writes one JSON line when it starts and one when it ends (exit code, seconds), and gates and jobs add their own events: `inputs_added`, `gate_C`, `submitted`, `run_start`, `run_end`. Each line holds the user, the profile name, host, Slurm job ID, release, time, and the SHA-256 of the line before it, so editing or removing any line breaks the chain and `wrf-ledger-verify` reports where.
+**Every command that changes anything is logged against the person who ran it, with every option exactly as typed.** That is `wrf-me`, `wrf-card --new/--weather/--make`, `wrf-new-fire`, `wrf-add-inputs`, `wrf-gate`, `wrf-next`, `wrf-submit`, `wrf-setaside` and `wrf-static --wire/--check`. Each writes one line to `ledger/commands.jsonl` before it does anything (the full command line, folder, user, name and email from their profile, host, Slurm job if any, code version) and one when it ends (exit code, seconds), so refused and failed attempts are recorded too. If the ledger cannot be written, the command refuses to run. All but `wrf-me` also refuse without a profile, so nothing is done anonymously.
+
+The steps add their own lines: `card_make` (with the card's hash; the card itself is copied into the work folder), `inputs_added`, `gate_C`, `gate_D`, `submitted`, `run_start`, `run_end`, `gate_E`, `wps_start`, `wps_end`, `setaside`, `static_wired`. Jobs write theirs as the user who submitted them.
+
+Each line holds the SHA-256 of the line before it, so editing or removing a line breaks the chain, and `wrf-ledger-verify` says where:
 
 ```text
-{"t": "2026-11-17T12:02:00-05:00", "user": "ukumar", "person": "Utkarsh Kumar", "event": "submitted",
- "fire": "CANYON_2025", "job": "26901234", "spec_hash": "e387ec79aa12", "inputs": "20261117_7f3e19a2",
- "nodes": "1", "ranks": "25", "time": "48:00:00", "release": "2026.11.16-a1b2c3d", "prev": "…", "hash": "…"}
+{"t": "2026-11-17T12:02:00-05:00", "user": "utkarshk", "person": "Utkarsh Kumar utkarshk@buffalo.edu", "phase": "start",
+ "cmd": "wrf-submit CANYON_2025 /projects/.../spec --nodes 1 --ranks 25 --time 48:00:00 --name run", "cwd": "...",
+ "host": "login1", "job": "", "release": "2026.11.16-14d21b0", "prev": "…", "hash": "…"}
 ```
 
-The honest limit: anyone can still call `sbatch` by hand. Such a run has no manifest, so `wrf-status` does not list it and `wrf-submit` will not build on it; the shell hook still records the command.
+What is not covered:
+
+- **Read-only commands** (`wrf-status`, `wrf-watch`, `wrf-card FIRE`, `wrf-static` with no option) are not logged; they change nothing.
+- **Work done outside the commands**, such as a hand-typed `sbatch` or editing files directly, is not in the ledger. It has no manifest, so no command builds on it and `wrf-status` does not list it. `setup.sh`'s shell hook still records the command text in `ledger/shell/<user>.log`, but only in shells that sourced `setup.sh`.
+- The ledger is a shared, group-writable file: tampering shows (the chain breaks) but someone with write access could still replace it entirely. A nightly copy kept elsewhere would close that.
 
 ## Files
 

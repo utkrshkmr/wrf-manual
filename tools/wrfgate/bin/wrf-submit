@@ -3,6 +3,7 @@
 # Refuses unless a gate D smoke run of the same namelists on the same input version passed.
 # Reuses the wrfinput/wrfbdy files that gate C checked, runs wrf.exe, then gate E.
 source "$(dirname "$(readlink -f "$0")")/../lib/wrfgate.sh"
+wg_start
 [[ $# -ge 2 ]] || { sed -n '2,4p' "$0"; exit 1; }
 FIRE=$1; SPEC=$(readlink -f "$2"); shift 2
 NODES=""; RANKS=""; TIME=""; CON=""; VER=current; TAG=$(basename "$SPEC")
@@ -15,7 +16,7 @@ H=$(python3 -c "t='$TIME';d=0
 if '-' in t: d,t=t.split('-'); d=int(d)
 h,m,s=map(int,t.split(':'));print(d*24+h+(m>0 or s>0))")
 (( H <= 72 )) || wg_die "walltime $TIME is over CCR's 72 h limit; use restarts (see the manual's run page)"
-REC=$(wg_record "$FIRE") || exit 1; wg_need_person; wg_start "$FIRE" "$SPEC" --nodes "$NODES" --ranks "$RANKS" --time "$TIME"
+REC=$(wg_record "$FIRE") || exit 1; wg_need_person; 
 F=$WRF_ROOT/fires/$FIRE; V=$(wg_version_dir "$FIRE" "$VER") || exit 1; VB=$(basename "$V")
 [[ -f $SPEC/namelist.input ]] || wg_die "$SPEC has no namelist.input"
 SH=$(cat "$SPEC"/namelist.input "$SPEC"/namelist.fire 2>/dev/null | sha256sum | cut -c1-12)
@@ -28,6 +29,7 @@ done
 [[ -n $D ]] || wg_die "no passed gate D for these namelists (hash $SH) on inputs $VB. Run: wrf-gate C $FIRE $SPEC, then wrf-gate D $FIRE <gate C folder>"
 C=$(grep '^from_gate_c:' "$D/MANIFEST.txt" | sed 's/^[^:]*: *//')
 CAP=$(python3 -c "import json;print(json.load(open('$C/gate_C.json'))['facts'].get('rank_cap',0))")
+[[ -n $CAP ]] || wg_die "gate C's result in $C is missing; run the gate steps again (wrf-next $FIRE)"
 (( RANKS <= CAP )) || wg_die "--ranks $RANKS is over this grid's cap of $CAP"
 LOCK=$F/runs/.lock_$SH
 if [[ -f $LOCK ]]; then J=$(cat "$LOCK"); squeue -h -j "$J" 2>/dev/null | grep -q . && wg_die "job $J is already queued or running these namelists (remove $LOCK if that is wrong)"; fi

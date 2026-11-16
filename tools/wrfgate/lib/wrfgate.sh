@@ -1,4 +1,5 @@
 # Shared shell functions for the wrfgate scripts. Sourced, never run.
+WG_ARGV=$(printf '%q ' "$@")
 WRF_ROOT=${WRF_ROOT:-/projects/academic/negarkhodoe/wrf}
 WG_HOME=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 export WRF_ROOT PYTHONDONTWRITEBYTECODE=1
@@ -11,7 +12,10 @@ WG_QOS=${WG_QOS:-general-compute}
 wg_modules() { module purge >/dev/null 2>&1; module load $WG_MODULES >/dev/null 2>&1 || { echo "error: could not load $WG_MODULES" >&2; return 1; }; }
 wg_die() { echo "error: $*" >&2; exit 1; }
 wg_log() { python3 -m wrfgate.ledger log "$@" >/dev/null 2>&1 || echo "warning: could not write the ledger" >&2; }
-wg_start() { WG_CMD="$(basename "$0") $*"; WG_T0=$(date +%s); wg_person >/dev/null 2>&1; wg_log phase=start cmd="$WG_CMD" cwd="$PWD" person="${WG_NAME:-unregistered}"; trap 'wg_log phase=end cmd="$WG_CMD" exit=$? secs=$(( $(date +%s) - WG_T0 ))' EXIT; }
+wg_start() { # log the full command line as typed (every option), refuse to run if the ledger cannot be written
+  WG_CMD="$(basename "$0") ${WG_ARGV% }"; WG_T0=$(date +%s); wg_person >/dev/null 2>&1
+  python3 -m wrfgate.ledger log phase=start cmd="$WG_CMD" cwd="$PWD" >/dev/null 2>&1 || wg_die "cannot write the ledger ($WRF_ROOT/ledger/commands.jsonl); nothing was done"
+  trap 'wg_log phase=end cmd="$WG_CMD" exit=$? secs=$(( $(date +%s) - WG_T0 ))' EXIT; }
 wg_record() { local f=$WRF_ROOT/fires/$1/fire.yaml; [[ -f $f ]] || wg_die "no fire record $f (create it with wrf-new-fire)"; echo "$f"; }
 wg_rec() { grep -E "^$2:" "$WRF_ROOT/fires/$1/fire.yaml" | head -1 | sed 's/^[^:]*: *//'; }
 wg_version_dir() { # FIRE [VERSION] -> absolute input version folder

@@ -3,12 +3,13 @@
 # It goes to $WRF_ROOT/setaside/<YYYY-MM>/<stamp>_<name>/ with a NOTE.txt; restore it by moving it back.
 # Refuses input versions that are 'current' or used by a run, and runs whose job is still queued or running.
 source "$(dirname "$(readlink -f "$0")")/../lib/wrfgate.sh"
+wg_start
 [[ $# -eq 2 ]] || wg_die 'usage: wrf-setaside PATH "reason"'
 X=$(readlink -f "$1"); WHY=$2
 [[ -e $X ]] || wg_die "$1 does not exist"
 [[ $X == "$WRF_ROOT"/* ]] || wg_die "only things under $WRF_ROOT can be set aside"
 [[ $X == "$WRF_ROOT"/pipeline* || $X == "$WRF_ROOT"/ledger* || $X == "$WRF_ROOT"/setaside* ]] && wg_die "the pipeline, the ledger and setaside/ are never moved"
-wg_need_person; wg_start "$X" "$WHY"
+wg_need_person; 
 if [[ $X == */inputs/* ]]; then
   I=$(dirname "$X"); [[ $(readlink -f "$I/current") == "$X" ]] && wg_die "$(basename "$X") is current; point current elsewhere first"
   grep -l "^inputs: $(basename "$X")$" "$(dirname "$I")"/runs/*/MANIFEST.txt 2>/dev/null | head -1 | grep -q . && wg_die "runs still use $(basename "$X"); set those runs aside first"
