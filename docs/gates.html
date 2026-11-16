@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The gating system · WRF-Fire Manual</title>
-<meta name="description" content="Eight small commands carry a fire from its record to a checked run. Each one does one step, runs the checks for it, and writes what it did to a shared ledger. Nothing reaches the queue until the cheap checks have passed, and nothing is ever deleted.">
+<meta name="description" content="Nine small commands carry a fire from its record to a checked run. Each one does one step, runs the checks for it, and writes what it did to a shared ledger. Nothing reaches the queue until the cheap checks have passed, and nothing is ever deleted.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -19,24 +19,32 @@
 <a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
 <h4>Start</h4><ol>
 <li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
+<li><a href="quickstart.html"><span class="n">0</span><span>Quick start</span></a></li>
 </ol>
-<h4>The manual: WPS to WRF-Fire</h4><ol>
-<li><a href="env.html"><span class="n">0</span><span>Phase 0 · Environment and data</span></a></li>
-<li><a href="domain.html"><span class="n">1</span><span>Phase 1 · Domain design</span></a></li>
-<li><a href="geogrid.html"><span class="n">2</span><span>Phase 2 · Static data (geogrid)</span></a></li>
-<li><a href="ungrib.html"><span class="n">3</span><span>Phase 3 · Weather (ungrib)</span></a></li>
-<li><a href="metgrid.html"><span class="n">4</span><span>Phase 4 · Merge (metgrid)</span></a></li>
-<li><a href="real.html"><span class="n">5</span><span>Phase 5 · real.exe and namelist.input</span></a></li>
-<li><a href="fire.html"><span class="n">6</span><span>Phase 6 · The fire model</span></a></li>
-<li><a href="moisture.html"><span class="n">7</span><span>Fuel moisture in depth</span></a></li>
-<li><a href="extend.html"><span class="n">8</span><span>Other research inputs</span></a></li>
-<li><a href="run.html"><span class="n">9</span><span>Running it on Slurm</span></a></li>
-<li><a href="reference.html"><span class="n">10</span><span>Reference and failures</span></a></li>
+<h4>Running fires</h4><ol>
+<li><a href="gates.html" class="on"><span class="n">1</span><span>The gating system</span></a></li>
+<li><a href="example.html"><span class="n">2</span><span>Worked example: every fire</span></a></li>
+<li><a href="skill.html"><span class="n">3</span><span>Skill file for chat assistants</span></a></li>
 </ol>
-<h4>Running it safely</h4><ol>
-<li><a href="gates.html" class="on"><span class="n">11</span><span>The gating system</span></a></li>
-<li><a href="example.html"><span class="n">12</span><span>Worked example: every fire</span></a></li>
-<li><a href="skill.html"><span class="n">13</span><span>Skill file for chat assistants</span></a></li>
+<h4>Advanced: research inputs</h4><ol>
+<li><a href="extend.html"><span class="n">4</span><span>Where each change goes</span></a></li>
+<li><a href="moisture.html"><span class="n">5</span><span>Fuel moisture</span></a></li>
+<li><a href="fuelmap.html"><span class="n">6</span><span>The fuel map</span></a></li>
+<li><a href="fuelprops.html"><span class="n">7</span><span>How a fuel type burns</span></a></li>
+<li><a href="ignitions.html"><span class="n">8</span><span>Ignitions and perimeters</span></a></li>
+<li><a href="terrain.html"><span class="n">9</span><span>Terrain and slope</span></a></li>
+<li><a href="coupling.html"><span class="n">10</span><span>Fire and atmosphere</span></a></li>
+</ol>
+<h4>WRF mechanics</h4><ol>
+<li><a href="env.html"><span class="n">11</span><span>Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">12</span><span>Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">13</span><span>Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">14</span><span>Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">15</span><span>Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">16</span><span>real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">17</span><span>The fire model</span></a></li>
+<li><a href="run.html"><span class="n">18</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">19</span><span>Reference and failures</span></a></li>
 </ol>
 <button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
 </nav>
@@ -44,8 +52,8 @@
 <article class="page">
 <p class="kicker">Running it safely</p>
 <h1>The gating system</h1>
-<p class="lead">Eight small commands carry a fire from its record to a checked run. Each one does one step, runs the checks for it, and writes what it did to a shared ledger. Nothing reaches the queue until the cheap checks have passed, and nothing is ever deleted.</p>
-<nav class="toc"><b>On this page</b><ul><li><a href="#why-gates">Why gates</a></li><li><a href="#setting-it-up">Setting it up</a></li><li><a href="#your-profile">Your profile</a></li><li><a href="#the-folders">The folders</a></li><li><a href="#the-commands">The commands</a></li><li><a href="#what-each-gate-checks">What each gate checks</a></li><li><a href="#the-ledger">The ledger</a></li><li><a href="#files">Files</a></li></ul></nav>
+<p class="lead">Nine small commands carry a fire from its record to a checked run. Each one does one step, runs the checks for it, and writes what it did to a shared ledger. Nothing reaches the queue until the cheap checks have passed, and nothing is ever deleted.</p>
+<nav class="toc"><b>On this page</b><ul><li><a href="#why-gates">Why gates</a></li><li><a href="#setting-it-up">Setting it up</a></li><li><a href="#your-profile">Your profile</a></li><li><a href="#the-folders">The folders</a></li><li><a href="#the-commands">The commands</a></li><li><a href="#what-each-gate-checks">What each gate checks</a></li><li><a href="#watching-jobs">Watching jobs</a></li><li><a href="#the-ledger">The ledger</a></li><li><a href="#files">Files</a></li></ul></nav>
 <h2 id="why-gates">Why gates</h2>
 <p>A WRF-Fire run can wait a day in the queue and then fail in its first minute: a namelist typo, a fuel map from the wrong place, an ignition outside the fire domain. Each of those can be caught in seconds or minutes, before the expensive job is submitted. The gating system puts a check after every step of the <a href="index.html">chain</a>, and makes each command refuse to start until the check before it has passed.</p>
 <figure><div class="fig"><svg viewBox="0 0 900 400" role="img" aria-label="Six commands carry a fire from its record to a checked run; each passes through a gate">
@@ -212,6 +220,11 @@ UPDATED=2026-11-16T10:02:11-05:00
 <td>—</td>
 </tr>
 <tr>
+<td><code>wrf-watch [FIRE] [--mine] [--active] [--every SECONDS]</code></td>
+<td>Every submitted job: Slurm state, elapsed and limit, simulated time reached, % done, seconds per step, ETA, and warnings (log idle over 30 min, won't finish in its time limit, pending reason, failed or timed out, gate results)</td>
+<td>—</td>
+</tr>
+<tr>
 <td><code>wrf-status [FIRE]</code></td>
 <td>All fires, or one fire's record, versions, gates and runs with who started them and the job state</td>
 <td>—</td>
@@ -313,6 +326,18 @@ UPDATED=2026-11-16T10:02:11-05:00
 <p>wrf.exe must print <code>SUCCESS COMPLETE WRF</code> after two simulated minutes, and no rank's <code>rsl.error</code> may mention CFL, NaN, a segmentation fault or a fatal error. It also measures seconds per coarse step. The fire usually has not ignited in two minutes, so this rate is a floor; <code>--minutes</code> can run it past ignition.</p>
 <h3 id="gate-e-how-the-run-ended">Gate E: how the run ended</h3>
 <p>The ending is classed as <strong>finished</strong>, <strong>domain edge</strong> (the fire reached the fire domain's boundary, which WRF reports as a stop), <strong>crash</strong> or <strong>killed / still running</strong>. Then: history files for every domain, finite values, the first ignited cell within 10 minutes and 1 km of the record, the burnt area at the last output, whether the burnt area reaches within 8 cells of the edge, and whether the output reaches the record's end.</p>
+<h2 id="watching-jobs">Watching jobs</h2>
+<pre><code class="language-bash">wrf-watch --active
+wrf-watch CANYON_2025
+wrf-watch --mine --every 120
+</code></pre>
+<pre><code class="language-text">wrfgate jobs  2026-11-17 14:02:11
+FIRE            RUN                         KIND       BY             JOB       STATE     ELAPSED     LIMIT   SIM TIME  DONE  S/STEP   ETA  NOTES
+CANYON_2025     20261117_120200_campaign    production Utkarsh Kumar  26901234  RUNNING   1:58:40  48:00:00 08-07 21:10   11%    5.42  21h03
+LONG_2024       20261117_093000_dt4         production Utkarsh Kumar  26900871  RUNNING  10:12:05  12:00:00 07-16 02:40   21%    6.10  38h40 won't finish: needs ~48h52 of 12h00
+EATON_2025      20261117_131500_gateD_camp  gate D     Utkarsh Kumar  26901377  PENDING      0:00     45:00          -     -       -     -  Priority
+</code></pre>
+<p>It reads every run folder that has a <code>JOBID</code>, asks Slurm about all of them at once (<code>squeue</code>, then <code>sacct</code> for finished ones), and reads the end of each run's <code>rsl.error.0000</code> for the simulated time and the seconds per step. The ETA is the remaining simulated time divided by the coarse time step, times the recent seconds per step. It changes nothing, so anyone can run it as often as they like.</p>
 <h2 id="the-ledger">The ledger</h2>
 <p>Every command writes one JSON line when it starts and one when it ends (exit code, seconds), and gates and jobs add their own events: <code>inputs_added</code>, <code>gate_C</code>, <code>submitted</code>, <code>run_start</code>, <code>run_end</code>. Each line holds the user, the profile name, host, Slurm job ID, release, time, and the SHA-256 of the line before it, so editing or removing any line breaks the chain and <code>wrf-ledger-verify</code> reports where.</p>
 <pre><code class="language-text">{&quot;t&quot;: &quot;2026-11-17T12:02:00-05:00&quot;, &quot;user&quot;: &quot;ukumar&quot;, &quot;person&quot;: &quot;Utkarsh Kumar&quot;, &quot;event&quot;: &quot;submitted&quot;,
@@ -370,13 +395,17 @@ UPDATED=2026-11-16T10:02:11-05:00
 <td>the five gates; each also runs on its own with <code>python3 -m wrfgate.gate_X --help</code></td>
 </tr>
 <tr>
+<td><code>lib/wrfgate/watch.py</code></td>
+<td><code>wrf-watch</code>: Slurm state, progress and ETA of every submitted job</td>
+</tr>
+<tr>
 <td><code>lib/wrfgate/record.py</code>, <code>ledger.py</code></td>
 <td>the record and the ledger from the command line</td>
 </tr>
 </tbody>
 </table></div>
 <p>All of it is in the site's repository under <a href="https://github.com/utkrshkmr/wrf-manual/tree/main/tools/wrfgate"><code>tools/wrfgate/</code></a>.</p>
-<nav class="pager"><a class="prev" href="reference.html"><small>Previous</small>Reference and failures</a><a class="next" href="example.html"><small>Next</small>Worked example: every fire</a></nav>
+<nav class="pager"><a class="prev" href="quickstart.html"><small>Previous</small>Quick start</a><a class="next" href="example.html"><small>Next</small>Worked example: every fire</a></nav>
 <footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/gates.md</code>.</footer>
 </article>
 </main>

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ignitions and perimeters · WRF-Fire Manual</title>
+<meta name="description" content="How the fire starts is often the largest single uncertainty in a hindcast. Start it from points, lines, several staggered ignitions, or from an observed perimeter at a known time.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</head>
+<body>
+<div class="topbar"><a href="index.html">WRF-Fire Manual</a><button type="button" onclick="document.querySelector('.side').classList.add('open')">Menu</button></div>
+<div class="layout">
+<nav class="side" aria-label="Site">
+<button type="button" class="close" onclick="this.parentNode.classList.remove('open')">Close</button>
+<a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
+<h4>Start</h4><ol>
+<li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
+<li><a href="quickstart.html"><span class="n">0</span><span>Quick start</span></a></li>
+</ol>
+<h4>Running fires</h4><ol>
+<li><a href="gates.html"><span class="n">1</span><span>The gating system</span></a></li>
+<li><a href="example.html"><span class="n">2</span><span>Worked example: every fire</span></a></li>
+<li><a href="skill.html"><span class="n">3</span><span>Skill file for chat assistants</span></a></li>
+</ol>
+<h4>Advanced: research inputs</h4><ol>
+<li><a href="extend.html"><span class="n">4</span><span>Where each change goes</span></a></li>
+<li><a href="moisture.html"><span class="n">5</span><span>Fuel moisture</span></a></li>
+<li><a href="fuelmap.html"><span class="n">6</span><span>The fuel map</span></a></li>
+<li><a href="fuelprops.html"><span class="n">7</span><span>How a fuel type burns</span></a></li>
+<li><a href="ignitions.html" class="on"><span class="n">8</span><span>Ignitions and perimeters</span></a></li>
+<li><a href="terrain.html"><span class="n">9</span><span>Terrain and slope</span></a></li>
+<li><a href="coupling.html"><span class="n">10</span><span>Fire and atmosphere</span></a></li>
+</ol>
+<h4>WRF mechanics</h4><ol>
+<li><a href="env.html"><span class="n">11</span><span>Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">12</span><span>Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">13</span><span>Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">14</span><span>Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">15</span><span>Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">16</span><span>real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">17</span><span>The fire model</span></a></li>
+<li><a href="run.html"><span class="n">18</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">19</span><span>Reference and failures</span></a></li>
+</ol>
+<button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
+</nav>
+<main>
+<article class="page">
+<p class="kicker">Advanced · research inputs</p>
+<h1>Ignitions and perimeters</h1>
+<p class="lead">How the fire starts is often the largest single uncertainty in a hindcast. Start it from points, lines, several staggered ignitions, or from an observed perimeter at a known time.</p>
+
+<h2 id="ignitions">Ignitions</h2>
+<p>Up to five ignition lines, each with its own position, time window, radius and drawing speed (<a href="fire.html#ignition">Phase 6</a>). Useful variants: several spot ignitions to mimic spotting, a long line for a firing operation, or a delayed second ignition.</p>
+<p>The variables are on the <a href="fire.html#ignition">fire model page</a>. Two staggered point ignitions, for example:</p>
+<pre><code class="language-text"> fire_num_ignitions        = 2, 2,
+ fire_ignition_start_lat1  = 0, 34.4710,   fire_ignition_end_lat1 = 0, 34.4710,
+ fire_ignition_start_lon1  = 0, -118.7000, fire_ignition_end_lon1 = 0, -118.7000,
+ fire_ignition_start_time1 = 0, 3600,      fire_ignition_end_time1 = 0, 3660,
+ fire_ignition_radius1     = 0, 50,
+ fire_ignition_start_lat2  = 0, 34.4800,   fire_ignition_end_lat2 = 0, 34.4800,
+ fire_ignition_start_lon2  = 0, -118.6900, fire_ignition_end_lon2 = 0, -118.6900,
+ fire_ignition_start_time2 = 0, 5400,      fire_ignition_end_time2 = 0, 5460,
+ fire_ignition_radius2     = 0, 50,
+</code></pre>
+<p>Times are seconds from the run's start: work them out from the clock times (ignition − start), never by hand-guessing. The fire's record holds the first ignition; gate C checks <strong>C11</strong> (time) and <strong>C12</strong> (place) against it, and gate E checks that the first burning cell matches (<strong>E05</strong>, <strong>E06</strong>). A deliberately different ignition is a different experiment: make a new record for it with <code>wrf-new-fire FIRE_VARIANT …</code> rather than editing the original.</p>
+<h2 id="start-from-an-observed-perimeter">Start from an observed perimeter</h2>
+<p>Instead of a point or line ignition, the fire can start from a mapped perimeter, for example a satellite or aircraft perimeter at a known time. WRF reads it as a level-set field, <code>LFN_HIST</code>, on the fire mesh.</p>
+<figure><div class="fig"><svg viewBox="0 0 900 280" role="img" aria-label="An observed perimeter becomes a signed distance field, negative inside">
+<text x="20" y="28" class="t-title">A perimeter enters WRF-Fire as a signed distance: negative inside, zero on the edge</text>
+<g>
+<rect x="20" y="48" width="400" height="210" rx="10" class="fill-bg2" stroke="var(--rule)"/>
+<path d="M120 200C90 160 110 110 170 95S290 80 320 120S330 200 270 215S150 230 120 200z" fill="var(--accent)" opacity="0.10"/>
+<path d="M140 190C120 160 135 125 175 115S275 105 295 132S300 190 258 200S160 210 140 190z" fill="var(--accent)" opacity="0.14"/>
+<path d="M165 175C155 158 165 140 190 135S250 130 262 148S262 178 238 184S175 190 165 175z" fill="var(--accent)" opacity="0.22"/>
+<path d="M120 200C90 160 110 110 170 95S290 80 320 120S330 200 270 215S150 230 120 200z" fill="none" stroke="var(--accent)" stroke-width="2.4"/>
+<path d="M95 212C55 160 85 85 165 70S320 60 350 112S360 222 280 240S125 250 95 212z" fill="none" stroke="var(--ink-3)" stroke-width="1" stroke-dasharray="4 4"/>
+<text x="210" y="162" text-anchor="middle" class="t-mono">LFN &lt; 0</text>
+<text x="210" y="178" text-anchor="middle" class="t-small">burnt</text>
+<text x="330" y="80" class="t-mono">LFN &gt; 0</text>
+<text x="300" y="232" class="t-small t-acc">LFN = 0: perimeter</text>
+<text x="36" y="68" class="t-small">dashed: +500 m contour</text>
+</g>
+<g>
+<rect x="460" y="48" width="420" height="210" rx="10" class="box"/>
+<text x="478" y="74" class="t-name">What WRF does with it</text>
+<text x="478" y="100" class="t-body">1. real.exe or your script puts the field in</text>
+<text x="498" y="118" class="t-mono">LFN_HIST (wrfinput_d02, fire mesh)</text>
+<text x="478" y="142" class="t-body">2. With fire_is_real_perim = .true., at</text>
+<text x="498" y="160" class="t-mono">fire_ignition_start_time1</text>
+<text x="498" y="178" class="t-body">the front is replaced by LFN_HIST</text>
+<text x="478" y="202" class="t-body">3. Cells on the edge get that ignition time;</text>
+<text x="498" y="220" class="t-body">the fire spreads outward from there</text>
+<text x="478" y="246" class="t-small">Point and line ignitions are then skipped.</text>
+</g>
+</svg></div><figcaption><strong>Perimeter initialization.</strong> The perimeter becomes a signed distance field. At the first ignition's start time, WRF replaces its fire front with that field and spreads outward from it.</figcaption></figure>
+
+<p>Steps:</p>
+<ol>
+<li>Run WPS and <code>real.exe</code> as usual. Set <code>fire_num_ignitions = 1</code> and <code>fire_ignition_start_time1</code> to the perimeter's time, in seconds from the run start.</li>
+<li>Write <code>LFN_HIST</code> with the script below, from a <code>lon,lat</code> vertex list.</li>
+<li>Set <code>fire_is_real_perim = .true.</code> on the fire domain.</li>
+</ol>
+<pre><code class="language-python">&quot;&quot;&quot;Write an observed perimeter into wrfinput_d02 as LFN_HIST.
+usage: python3 set_perimeter.py wrfinput_d02 perimeter.csv   (one 'lon,lat' per line)&quot;&quot;&quot;
+import sys
+import numpy as np
+from netCDF4 import Dataset
+from matplotlib.path import Path
+from scipy.interpolate import RegularGridInterpolator
+from scipy.ndimage import distance_transform_edt
+
+wrfinput, csv = sys.argv[1], sys.argv[2]
+poly = np.loadtxt(csv, delimiter=&quot;,&quot;)
+d = Dataset(wrfinput, &quot;r+&quot;)
+xlat, xlon = d[&quot;XLAT&quot;][0], d[&quot;XLONG&quot;][0]
+ny, nx = xlat.shape
+fny, fnx = d[&quot;LFN_HIST&quot;].shape[-2:]
+sr = round(fnx / (nx + 1))
+FY, FX = np.meshgrid(np.clip((np.arange(fny) + 0.5) / sr - 0.5, 0, ny - 1),
+                     np.clip((np.arange(fnx) + 0.5) / sr - 0.5, 0, nx - 1), indexing=&quot;ij&quot;)
+pts = np.stack([FY.ravel(), FX.ravel()], axis=1)
+ix = (np.arange(ny), np.arange(nx))
+flat = RegularGridInterpolator(ix, xlat)(pts)
+flon = RegularGridInterpolator(ix, xlon)(pts)
+inside = Path(poly).contains_points(np.stack([flon, flat], axis=1)).reshape(fny, fnx)
+if not inside.any():
+    sys.exit(&quot;no fire cell is inside the perimeter: check lon,lat order and the domain&quot;)
+dx = float(d.getncattr(&quot;DX&quot;)) / sr if &quot;DX&quot; in d.ncattrs() else 25.0
+lfn = (distance_transform_edt(~inside) - distance_transform_edt(inside)) * dx
+d[&quot;LFN_HIST&quot;][0] = lfn.astype(&quot;f4&quot;)
+d.close()
+print(f&quot;perimeter covers {inside.sum()} fire cells ({inside.sum() * dx * dx / 1e4:.1f} ha)&quot;)
+</code></pre>
+<p>Tested on a synthetic <code>wrfinput_d02</code> with Canyon's dimensions: a 0.05° × 0.03° box gave 1,505 ha, as expected. Like <code>FMC_G</code>, <code>LFN_HIST</code> is an input field <code>real.exe</code> reads from <code>met_em</code>, so a geogrid layer of that name is an untested alternative.</p>
+<nav class="pager"><a class="prev" href="fuelprops.html"><small>Previous</small>How a fuel type burns</a><a class="next" href="terrain.html"><small>Next</small>Terrain and slope</a></nav>
+<footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/ignitions.md</code>.</footer>
+</article>
+</main>
+</div>
+<script>
+function toggleTheme(){var d=document.documentElement;var cur=d.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var nx=cur==='dark'?'light':'dark';d.setAttribute('data-theme',nx);try{localStorage.setItem('theme',nx);}catch(e){}}
+</script>
+</body>
+</html>

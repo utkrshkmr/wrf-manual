@@ -20,24 +20,32 @@ OUT = ROOT / "docs"
 NAV = [
     ("Start", [
         ("index", "Overview"),
+        ("quickstart", "Quick start"),
     ]),
-    ("The manual: WPS to WRF-Fire", [
-        ("env", "Phase 0 · Environment and data"),
-        ("domain", "Phase 1 · Domain design"),
-        ("geogrid", "Phase 2 · Static data (geogrid)"),
-        ("ungrib", "Phase 3 · Weather (ungrib)"),
-        ("metgrid", "Phase 4 · Merge (metgrid)"),
-        ("real", "Phase 5 · real.exe and namelist.input"),
-        ("fire", "Phase 6 · The fire model"),
-        ("moisture", "Fuel moisture in depth"),
-        ("extend", "Other research inputs"),
-        ("run", "Running it on Slurm"),
-        ("reference", "Reference and failures"),
-    ]),
-    ("Running it safely", [
+    ("Running fires", [
         ("gates", "The gating system"),
         ("example", "Worked example: every fire"),
         ("skill", "Skill file for chat assistants"),
+    ]),
+    ("Advanced: research inputs", [
+        ("extend", "Where each change goes"),
+        ("moisture", "Fuel moisture"),
+        ("fuelmap", "The fuel map"),
+        ("fuelprops", "How a fuel type burns"),
+        ("ignitions", "Ignitions and perimeters"),
+        ("terrain", "Terrain and slope"),
+        ("coupling", "Fire and atmosphere"),
+    ]),
+    ("WRF mechanics", [
+        ("env", "Environment and data"),
+        ("domain", "Domain design"),
+        ("geogrid", "Static data (geogrid)"),
+        ("ungrib", "Weather (ungrib)"),
+        ("metgrid", "Merge (metgrid)"),
+        ("real", "real.exe and namelist.input"),
+        ("fire", "The fire model"),
+        ("run", "Running it on Slurm"),
+        ("reference", "Reference and failures"),
     ]),
     ("Our work on CCR", [
         ("setup", "WPS on CCR: setup so far"),

@@ -1,6 +1,6 @@
 ---
 title: The fire model
-kicker: Phase 6 · wrf.exe with WRF-Fire
+kicker: WRF mechanics · Phase 6 · wrf.exe with WRF-Fire
 lead: wrf.exe runs the atmosphere and the fire together. Fire options live in the &fire section of namelist.input; fuel properties and the moisture model live in a second file, namelist.fire. Every variable below was checked against WRF 4.6.0's Registry/registry.fire.
 ---
 
@@ -41,7 +41,7 @@ Up to five ignitions, numbered 1 to 5 in the variable names. Each one is a line 
 | `fire_ignition_start_time1`, `fire_ignition_end_time1` | s from run start | The time window |
 | `fire_ignition_radius1` | m | Everything within this distance of the line ignites; at least one fire cell |
 | `fire_ignition_ros1` | m/s | How fast the line is drawn |
-| `fire_is_real_perim` | logical | Start from an observed perimeter instead: see [Other research inputs](extend.html#start-from-an-observed-perimeter) |
+| `fire_is_real_perim` | logical | Start from an observed perimeter instead: see [Ignitions and perimeters](ignitions.html#start-from-an-observed-perimeter) |
 
 ## Spread, heat release and coupling
 
@@ -107,7 +107,7 @@ Firebrand spotting is off by default (`fs_firebrand_gen_lim = 0`). A value above
 | `fci_d`, `fct` | Canopy load and canopy burn time |
 | `fgi_1h`, `fgi_10h`, `fgi_100h`, `fgi_1000h`, `fgi_live` | Load per moisture class, used as weights by the moisture model |
 
-Editing a column changes that fuel type everywhere it occurs. The third group, `&fuel_moisture`, is covered on the [fuel-moisture page](moisture.html#the-moisture-model).
+Editing a column changes that fuel type everywhere it occurs. The third group, `&fuel_moisture`, is covered on the [fuel-moisture page](moisture.html#route-d-the-moisture-model).
 
 ## How fuel codes become categories
 

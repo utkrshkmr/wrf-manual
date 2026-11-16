@@ -19,30 +19,38 @@
 <a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
 <h4>Start</h4><ol>
 <li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
+<li><a href="quickstart.html"><span class="n">0</span><span>Quick start</span></a></li>
 </ol>
-<h4>The manual: WPS to WRF-Fire</h4><ol>
-<li><a href="env.html"><span class="n">0</span><span>Phase 0 · Environment and data</span></a></li>
-<li><a href="domain.html"><span class="n">1</span><span>Phase 1 · Domain design</span></a></li>
-<li><a href="geogrid.html"><span class="n">2</span><span>Phase 2 · Static data (geogrid)</span></a></li>
-<li><a href="ungrib.html"><span class="n">3</span><span>Phase 3 · Weather (ungrib)</span></a></li>
-<li><a href="metgrid.html"><span class="n">4</span><span>Phase 4 · Merge (metgrid)</span></a></li>
-<li><a href="real.html"><span class="n">5</span><span>Phase 5 · real.exe and namelist.input</span></a></li>
-<li><a href="fire.html"><span class="n">6</span><span>Phase 6 · The fire model</span></a></li>
-<li><a href="moisture.html"><span class="n">7</span><span>Fuel moisture in depth</span></a></li>
-<li><a href="extend.html"><span class="n">8</span><span>Other research inputs</span></a></li>
-<li><a href="run.html" class="on"><span class="n">9</span><span>Running it on Slurm</span></a></li>
-<li><a href="reference.html"><span class="n">10</span><span>Reference and failures</span></a></li>
+<h4>Running fires</h4><ol>
+<li><a href="gates.html"><span class="n">1</span><span>The gating system</span></a></li>
+<li><a href="example.html"><span class="n">2</span><span>Worked example: every fire</span></a></li>
+<li><a href="skill.html"><span class="n">3</span><span>Skill file for chat assistants</span></a></li>
 </ol>
-<h4>Running it safely</h4><ol>
-<li><a href="gates.html"><span class="n">11</span><span>The gating system</span></a></li>
-<li><a href="example.html"><span class="n">12</span><span>Worked example: every fire</span></a></li>
-<li><a href="skill.html"><span class="n">13</span><span>Skill file for chat assistants</span></a></li>
+<h4>Advanced: research inputs</h4><ol>
+<li><a href="extend.html"><span class="n">4</span><span>Where each change goes</span></a></li>
+<li><a href="moisture.html"><span class="n">5</span><span>Fuel moisture</span></a></li>
+<li><a href="fuelmap.html"><span class="n">6</span><span>The fuel map</span></a></li>
+<li><a href="fuelprops.html"><span class="n">7</span><span>How a fuel type burns</span></a></li>
+<li><a href="ignitions.html"><span class="n">8</span><span>Ignitions and perimeters</span></a></li>
+<li><a href="terrain.html"><span class="n">9</span><span>Terrain and slope</span></a></li>
+<li><a href="coupling.html"><span class="n">10</span><span>Fire and atmosphere</span></a></li>
+</ol>
+<h4>WRF mechanics</h4><ol>
+<li><a href="env.html"><span class="n">11</span><span>Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">12</span><span>Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">13</span><span>Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">14</span><span>Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">15</span><span>Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">16</span><span>real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">17</span><span>The fire model</span></a></li>
+<li><a href="run.html" class="on"><span class="n">18</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">19</span><span>Reference and failures</span></a></li>
 </ol>
 <button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
 </nav>
 <main>
 <article class="page">
-<p class="kicker">Operations</p>
+<p class="kicker">WRF mechanics · Operations</p>
 <h1>Running it on Slurm</h1>
 <p class="lead">The whole chain as batch jobs on CCR, how many ranks a fire can use, how long to ask for, how to survive the 72-hour limit, and what to check after each phase.</p>
 <nav class="toc"><b>On this page</b><ul><li><a href="#the-whole-chain-as-two-jobs">The whole chain as two jobs</a></li><li><a href="#how-many-ranks">How many ranks</a></li><li><a href="#how-long-to-ask-for">How long to ask for</a></li><li><a href="#the-72-hour-limit-and-restarts">The 72-hour limit and restarts</a></li><li><a href="#what-to-check-after-each-phase">What to check after each phase</a></li><li><a href="#ending-classes">Ending classes</a></li></ul></nav>
@@ -199,7 +207,7 @@ j=$(sbatch --parsable wps.sbatch); sbatch --dependency=afterok:$j wrf.sbatch
 </tbody>
 </table></div>
 <p>Always read <strong>all</strong> ranks' logs (<code>grep -l &lt;pattern&gt; rsl.error.*</code>). The rank that hits a problem is often not rank 0.</p>
-<nav class="pager"><a class="prev" href="extend.html"><small>Previous</small>Other research inputs</a><a class="next" href="reference.html"><small>Next</small>Reference and failures</a></nav>
+<nav class="pager"><a class="prev" href="fire.html"><small>Previous</small>The fire model</a><a class="next" href="reference.html"><small>Next</small>Reference and failures</a></nav>
 <footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/run.md</code>.</footer>
 </article>
 </main>

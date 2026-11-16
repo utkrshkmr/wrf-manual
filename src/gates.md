@@ -1,7 +1,7 @@
 ---
 title: The gating system
 kicker: Running it safely
-lead: Eight small commands carry a fire from its record to a checked run. Each one does one step, runs the checks for it, and writes what it did to a shared ledger. Nothing reaches the queue until the cheap checks have passed, and nothing is ever deleted.
+lead: Nine small commands carry a fire from its record to a checked run. Each one does one step, runs the checks for it, and writes what it did to a shared ledger. Nothing reaches the queue until the cheap checks have passed, and nothing is ever deleted.
 ---
 
 ## Why gates
@@ -96,6 +96,7 @@ Rules the commands keep:
 | `wrf-gate D FIRE GATE_C_DIR [--minutes 2] [--ranks N]` | Two simulated minutes of wrf.exe on one node, no output, then gate D | gate C did not pass |
 | `wrf-submit FIRE SPEC_DIR --nodes --ranks --time [--constraint] [--name]` | The production run: links gate C's files, submits wrf.exe, runs gate E when the job ends | no passed gate D for the same namelists and inputs; ranks over the cap; walltime over 72 h; the same namelists already queued |
 | `wrf-gate E FIRE RUN_DIR` | Reruns gate E, for a run that was killed before its own gate E | — |
+| `wrf-watch [FIRE] [--mine] [--active] [--every SECONDS]` | Every submitted job: Slurm state, elapsed and limit, simulated time reached, % done, seconds per step, ETA, and warnings (log idle over 30 min, won't finish in its time limit, pending reason, failed or timed out, gate results) | — |
 | `wrf-status [FIRE]` | All fires, or one fire's record, versions, gates and runs with who started them and the job state | — |
 | `wrf-setaside PATH "reason"` | Moves something into `setaside/` instead of deleting it | it is in use (see above) |
 | `wrf-ledger-verify` | Checks that no ledger line was edited or removed | — |
@@ -145,6 +146,24 @@ wrf.exe must print `SUCCESS COMPLETE WRF` after two simulated minutes, and no ra
 
 The ending is classed as **finished**, **domain edge** (the fire reached the fire domain's boundary, which WRF reports as a stop), **crash** or **killed / still running**. Then: history files for every domain, finite values, the first ignited cell within 10 minutes and 1 km of the record, the burnt area at the last output, whether the burnt area reaches within 8 cells of the edge, and whether the output reaches the record's end.
 
+## Watching jobs
+
+```bash
+wrf-watch --active
+wrf-watch CANYON_2025
+wrf-watch --mine --every 120
+```
+
+```text
+wrfgate jobs  2026-11-17 14:02:11
+FIRE            RUN                         KIND       BY             JOB       STATE     ELAPSED     LIMIT   SIM TIME  DONE  S/STEP   ETA  NOTES
+CANYON_2025     20261117_120200_campaign    production Utkarsh Kumar  26901234  RUNNING   1:58:40  48:00:00 08-07 21:10   11%    5.42  21h03
+LONG_2024       20261117_093000_dt4         production Utkarsh Kumar  26900871  RUNNING  10:12:05  12:00:00 07-16 02:40   21%    6.10  38h40 won't finish: needs ~48h52 of 12h00
+EATON_2025      20261117_131500_gateD_camp  gate D     Utkarsh Kumar  26901377  PENDING      0:00     45:00          -     -       -     -  Priority
+```
+
+It reads every run folder that has a `JOBID`, asks Slurm about all of them at once (`squeue`, then `sacct` for finished ones), and reads the end of each run's `rsl.error.0000` for the simulated time and the seconds per step. The ETA is the remaining simulated time divided by the coarse time step, times the recent seconds per step. It changes nothing, so anyone can run it as often as they like.
+
 ## The ledger
 
 Every command writes one JSON line when it starts and one when it ends (exit code, seconds), and gates and jobs add their own events: `inputs_added`, `gate_C`, `submitted`, `run_start`, `run_end`. Each line holds the user, the profile name, host, Slurm job ID, release, time, and the SHA-256 of the line before it, so editing or removing any line breaks the chain and `wrf-ledger-verify` reports where.
@@ -171,6 +190,7 @@ The honest limit: anyone can still call `sbatch` by hand. Such a run has no mani
 | `lib/wrfgate/geo.py` | exact Albers projection and reading WPS tiles |
 | `lib/wrfgate/metem.py` | reading `met_em` files and building the fire mesh's coordinates |
 | `lib/wrfgate/gate_a.py` … `gate_e.py` | the five gates; each also runs on its own with `python3 -m wrfgate.gate_X --help` |
+| `lib/wrfgate/watch.py` | `wrf-watch`: Slurm state, progress and ETA of every submitted job |
 | `lib/wrfgate/record.py`, `ledger.py` | the record and the ledger from the command line |
 
 All of it is in the site's repository under [`tools/wrfgate/`](https://github.com/utkrshkmr/wrf-manual/tree/main/tools/wrfgate).

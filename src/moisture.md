@@ -1,6 +1,6 @@
 ---
-title: Fuel moisture in depth
-kicker: Deep dive
+title: Fuel moisture
+kicker: Advanced · research inputs
 lead: The spread rate reads one field, FMC_G, the dead fuel moisture in each fire cell. By default it is a single number for the whole fire. This page shows every way to make it richer, from a per-cell map to a moisture model driven by the weather, with the exact variables, formats and commands.
 ---
 

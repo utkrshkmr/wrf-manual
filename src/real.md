@@ -1,6 +1,6 @@
 ---
 title: real.exe and namelist.input
-kicker: Phase 5
+kicker: WRF mechanics · Phase 5
 lead: real.exe builds the model's vertical grid from the met_em files and writes the initial state (wrfinput) and the boundary conditions (wrfbdy). It reads the same namelist.input that wrf.exe will read, so this page covers that file's core sections.
 ---
 

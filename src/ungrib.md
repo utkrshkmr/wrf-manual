@@ -1,6 +1,6 @@
 ---
 title: Weather
-kicker: Phase 3 · ungrib.exe
+kicker: WRF mechanics · Phase 3 · ungrib.exe
 lead: ungrib turns one weather model's GRIB files into WPS intermediate files, one per time. The weather product you choose sets the initial state, the boundaries, and even which land-surface model WRF can run.
 ---
 

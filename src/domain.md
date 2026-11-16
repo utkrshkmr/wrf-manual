@@ -1,6 +1,6 @@
 ---
 title: Domain design
-kicker: Phase 1 · namelist.wps
+kicker: WRF mechanics · Phase 1 · namelist.wps
 lead: namelist.wps fixes the geometry for everything that follows. The domains, dates and fire-grid ratio written here are repeated exactly in namelist.input, so decide them once and copy them.
 ---
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fuel moisture in depth · WRF-Fire Manual</title>
+<title>Fuel moisture · WRF-Fire Manual</title>
 <meta name="description" content="The spread rate reads one field, FMC_G, the dead fuel moisture in each fire cell. By default it is a single number for the whole fire. This page shows every way to make it richer, from a per-cell map to a moisture model driven by the weather, with the exact variables, formats and commands.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,31 +19,39 @@
 <a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
 <h4>Start</h4><ol>
 <li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
+<li><a href="quickstart.html"><span class="n">0</span><span>Quick start</span></a></li>
 </ol>
-<h4>The manual: WPS to WRF-Fire</h4><ol>
-<li><a href="env.html"><span class="n">0</span><span>Phase 0 · Environment and data</span></a></li>
-<li><a href="domain.html"><span class="n">1</span><span>Phase 1 · Domain design</span></a></li>
-<li><a href="geogrid.html"><span class="n">2</span><span>Phase 2 · Static data (geogrid)</span></a></li>
-<li><a href="ungrib.html"><span class="n">3</span><span>Phase 3 · Weather (ungrib)</span></a></li>
-<li><a href="metgrid.html"><span class="n">4</span><span>Phase 4 · Merge (metgrid)</span></a></li>
-<li><a href="real.html"><span class="n">5</span><span>Phase 5 · real.exe and namelist.input</span></a></li>
-<li><a href="fire.html"><span class="n">6</span><span>Phase 6 · The fire model</span></a></li>
-<li><a href="moisture.html" class="on"><span class="n">7</span><span>Fuel moisture in depth</span></a></li>
-<li><a href="extend.html"><span class="n">8</span><span>Other research inputs</span></a></li>
-<li><a href="run.html"><span class="n">9</span><span>Running it on Slurm</span></a></li>
-<li><a href="reference.html"><span class="n">10</span><span>Reference and failures</span></a></li>
+<h4>Running fires</h4><ol>
+<li><a href="gates.html"><span class="n">1</span><span>The gating system</span></a></li>
+<li><a href="example.html"><span class="n">2</span><span>Worked example: every fire</span></a></li>
+<li><a href="skill.html"><span class="n">3</span><span>Skill file for chat assistants</span></a></li>
 </ol>
-<h4>Running it safely</h4><ol>
-<li><a href="gates.html"><span class="n">11</span><span>The gating system</span></a></li>
-<li><a href="example.html"><span class="n">12</span><span>Worked example: every fire</span></a></li>
-<li><a href="skill.html"><span class="n">13</span><span>Skill file for chat assistants</span></a></li>
+<h4>Advanced: research inputs</h4><ol>
+<li><a href="extend.html"><span class="n">4</span><span>Where each change goes</span></a></li>
+<li><a href="moisture.html" class="on"><span class="n">5</span><span>Fuel moisture</span></a></li>
+<li><a href="fuelmap.html"><span class="n">6</span><span>The fuel map</span></a></li>
+<li><a href="fuelprops.html"><span class="n">7</span><span>How a fuel type burns</span></a></li>
+<li><a href="ignitions.html"><span class="n">8</span><span>Ignitions and perimeters</span></a></li>
+<li><a href="terrain.html"><span class="n">9</span><span>Terrain and slope</span></a></li>
+<li><a href="coupling.html"><span class="n">10</span><span>Fire and atmosphere</span></a></li>
+</ol>
+<h4>WRF mechanics</h4><ol>
+<li><a href="env.html"><span class="n">11</span><span>Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">12</span><span>Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">13</span><span>Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">14</span><span>Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">15</span><span>Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">16</span><span>real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">17</span><span>The fire model</span></a></li>
+<li><a href="run.html"><span class="n">18</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">19</span><span>Reference and failures</span></a></li>
 </ol>
 <button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
 </nav>
 <main>
 <article class="page">
-<p class="kicker">Deep dive</p>
-<h1>Fuel moisture in depth</h1>
+<p class="kicker">Advanced · research inputs</p>
+<h1>Fuel moisture</h1>
 <p class="lead">The spread rate reads one field, FMC_G, the dead fuel moisture in each fire cell. By default it is a single number for the whole fire. This page shows every way to make it richer, from a per-cell map to a moisture model driven by the weather, with the exact variables, formats and commands.</p>
 <nav class="toc"><b>On this page</b><ul><li><a href="#what-fuel-moisture-does-in-the-model">What fuel moisture does in the model</a></li><li><a href="#four-routes">Four routes</a></li><li><a href="#route-b-a-per-cell-moisture-map">Route B: a per-cell moisture map</a></li><li><a href="#route-c-moisture-by-size-class">Route C: moisture by size class</a></li><li><a href="#route-d-the-moisture-model">Route D: the moisture model</a></li><li><a href="#which-route-for-which-question">Which route for which question</a></li></ul></nav>
 <h2 id="what-fuel-moisture-does-in-the-model">What fuel moisture does in the model</h2>
@@ -437,7 +445,7 @@ print(f&quot;FMC_G set on {fny} x {fnx} fire cells (sr = {sr}): {out.min():.3f} 
 </tr>
 </tbody>
 </table></div>
-<nav class="pager"><a class="prev" href="fire.html"><small>Previous</small>Phase 6 · The fire model</a><a class="next" href="extend.html"><small>Next</small>Other research inputs</a></nav>
+<nav class="pager"><a class="prev" href="extend.html"><small>Previous</small>Where each change goes</a><a class="next" href="fuelmap.html"><small>Next</small>The fuel map</a></nav>
 <footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/moisture.md</code>.</footer>
 </article>
 </main>

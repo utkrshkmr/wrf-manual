@@ -1,6 +1,6 @@
 ---
 title: Running it on Slurm
-kicker: Operations
+kicker: WRF mechanics · Operations
 lead: The whole chain as batch jobs on CCR, how many ranks a fire can use, how long to ask for, how to survive the 72-hour limit, and what to check after each phase.
 ---
 

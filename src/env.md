@@ -1,6 +1,6 @@
 ---
 title: Environment and data
-kicker: Phase 0
+kicker: WRF mechanics · Phase 0
 lead: One module line gives you WPS and WRF built together. Before running anything, you need four datasets on disk, three tables, and one working folder per simulation.
 ---
 

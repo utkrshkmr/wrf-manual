@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The fuel map · WRF-Fire Manual</title>
+<meta name="description" content="The fuel map, NFUEL_CAT on the fire mesh, decides what burns where. Use a different LANDFIRE release, cut a fuel break, or mark a treated area, either for every run of a fire or for one run only.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</head>
+<body>
+<div class="topbar"><a href="index.html">WRF-Fire Manual</a><button type="button" onclick="document.querySelector('.side').classList.add('open')">Menu</button></div>
+<div class="layout">
+<nav class="side" aria-label="Site">
+<button type="button" class="close" onclick="this.parentNode.classList.remove('open')">Close</button>
+<a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
+<h4>Start</h4><ol>
+<li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
+<li><a href="quickstart.html"><span class="n">0</span><span>Quick start</span></a></li>
+</ol>
+<h4>Running fires</h4><ol>
+<li><a href="gates.html"><span class="n">1</span><span>The gating system</span></a></li>
+<li><a href="example.html"><span class="n">2</span><span>Worked example: every fire</span></a></li>
+<li><a href="skill.html"><span class="n">3</span><span>Skill file for chat assistants</span></a></li>
+</ol>
+<h4>Advanced: research inputs</h4><ol>
+<li><a href="extend.html"><span class="n">4</span><span>Where each change goes</span></a></li>
+<li><a href="moisture.html"><span class="n">5</span><span>Fuel moisture</span></a></li>
+<li><a href="fuelmap.html" class="on"><span class="n">6</span><span>The fuel map</span></a></li>
+<li><a href="fuelprops.html"><span class="n">7</span><span>How a fuel type burns</span></a></li>
+<li><a href="ignitions.html"><span class="n">8</span><span>Ignitions and perimeters</span></a></li>
+<li><a href="terrain.html"><span class="n">9</span><span>Terrain and slope</span></a></li>
+<li><a href="coupling.html"><span class="n">10</span><span>Fire and atmosphere</span></a></li>
+</ol>
+<h4>WRF mechanics</h4><ol>
+<li><a href="env.html"><span class="n">11</span><span>Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">12</span><span>Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">13</span><span>Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">14</span><span>Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">15</span><span>Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">16</span><span>real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">17</span><span>The fire model</span></a></li>
+<li><a href="run.html"><span class="n">18</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">19</span><span>Reference and failures</span></a></li>
+</ol>
+<button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
+</nav>
+<main>
+<article class="page">
+<p class="kicker">Advanced · research inputs</p>
+<h1>The fuel map</h1>
+<p class="lead">The fuel map, NFUEL_CAT on the fire mesh, decides what burns where. Use a different LANDFIRE release, cut a fuel break, or mark a treated area, either for every run of a fire or for one run only.</p>
+<nav class="toc"><b>On this page</b><ul><li><a href="#what-it-does-in-the-model">What it does in the model</a></li><li><a href="#choosing-a-landfire-release">Choosing a LANDFIRE release</a></li><li><a href="#edit-the-fuel-map">Edit the fuel map</a></li><li><a href="#checking-it">Checking it</a></li></ul></nav>
+<h2 id="what-it-does-in-the-model">What it does in the model</h2>
+<p>Each fire cell holds one fuel code. WRF maps the code to a category (<a href="fire.html#how-fuel-codes-become-categories">the code map</a>), and the category's column in <code>namelist.fire</code> gives the load, depth and other properties the spread rate uses. Changing the map changes which column each cell reads.</p>
+<h2 id="choosing-a-landfire-release">Choosing a LANDFIRE release</h2>
+<p>The shared folder holds several releases, each as WPS tiles: <code>/projects/academic/negarkhodoe/wrf/static/landfire/&lt;LF2016|LF2022|LF2023|LF2024|LF2025&gt;/FBFM40/</code>. Match the release to the fire's date: the landscape a fire burned is the one mapped before it. A fire's record names its reference layer (<code>fuel_layer</code>), and gate B's <strong>B07 release scan</strong> shows which release an existing input actually matches, cell by cell.</p>
+<p>To build inputs with another release, point the fuel entry of <code>GEOGRID.TBL</code> at that folder under its own resolution key (<a href="geogrid.html#resolution-keys">how</a>) and select the key in <code>geog_data_res</code>.</p>
+<h2 id="edit-the-fuel-map">Edit the fuel map</h2>
+<p>Two ways, depending on whether the change is for one run or for every run of a fire.</p>
+<ul>
+<li><strong>For every run:</strong> build a new geogrid layer (<a href="geogrid.html#writing-your-own-layer">how</a>) with the change, give it its own resolution key such as <code>lf2024_break</code>, and select it in <code>geog_data_res</code>.</li>
+<li><strong>For one run:</strong> change <code>NFUEL_CAT</code> in <code>wrfinput_d02</code> after <code>real.exe</code>. The script below turns everything inside a polygon into code 99 (non-burnable), a simple fuel break. It uses the same fire-mesh positions as the <a href="ignitions.html#start-from-an-observed-perimeter">perimeter script</a>.</li>
+</ul>
+<pre><code class="language-python">&quot;&quot;&quot;Make a polygon non-burnable: usage python3 fuel_break.py wrfinput_d02 polygon.csv [code]&quot;&quot;&quot;
+import sys
+import numpy as np
+from netCDF4 import Dataset
+from matplotlib.path import Path
+from scipy.interpolate import RegularGridInterpolator
+
+wrfinput, csv = sys.argv[1], sys.argv[2]
+code = int(sys.argv[3]) if len(sys.argv) &gt; 3 else 99
+d = Dataset(wrfinput, &quot;r+&quot;)
+xlat, xlon = d[&quot;XLAT&quot;][0], d[&quot;XLONG&quot;][0]
+ny, nx = xlat.shape
+fny, fnx = d[&quot;NFUEL_CAT&quot;].shape[-2:]
+sr = round(fnx / (nx + 1))
+FY, FX = np.meshgrid(np.clip((np.arange(fny) + 0.5) / sr - 0.5, 0, ny - 1),
+                     np.clip((np.arange(fnx) + 0.5) / sr - 0.5, 0, nx - 1), indexing=&quot;ij&quot;)
+pts = np.stack([FY.ravel(), FX.ravel()], axis=1)
+ix = (np.arange(ny), np.arange(nx))
+lon = RegularGridInterpolator(ix, xlon)(pts)
+lat = RegularGridInterpolator(ix, xlat)(pts)
+inside = Path(np.loadtxt(csv, delimiter=&quot;,&quot;)).contains_points(np.stack([lon, lat], 1)).reshape(fny, fnx)
+f = d[&quot;NFUEL_CAT&quot;][0]
+f[inside] = code
+d[&quot;NFUEL_CAT&quot;][0] = f
+d.close()
+print(f&quot;{inside.sum()} fire cells set to code {code}&quot;)
+</code></pre>
+<p>Any code WRF maps to category 14 is "no fuel" (<a href="fire.html#how-fuel-codes-become-categories">the code map</a>): the non-burnable LANDFIRE codes 91–99 all are.</p>
+<h2 id="checking-it">Checking it</h2>
+<ul>
+<li><code>wrf-add-inputs</code> runs gate A (<strong>A14</strong> valid codes, <strong>A15</strong> burnable share, <strong>A21</strong> ignition cell burnable) and gate B (<strong>B02</strong> agreement with LANDFIRE). An edited map is meant to disagree with LANDFIRE where you edited it: B02 tells you by how much, and B03 lists which codes changed into which.</li>
+<li>For a one-run edit in <code>wrfinput_d02</code>, compare <code>NFUEL_CAT</code> before and after with <code>ncdump</code> or the script's own output, and keep the edited file's script and polygon beside the spec.</li>
+</ul>
+<nav class="pager"><a class="prev" href="moisture.html"><small>Previous</small>Fuel moisture</a><a class="next" href="fuelprops.html"><small>Next</small>How a fuel type burns</a></nav>
+<footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/fuelmap.md</code>.</footer>
+</article>
+</main>
+</div>
+<script>
+function toggleTheme(){var d=document.documentElement;var cur=d.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var nx=cur==='dark'?'light':'dark';d.setAttribute('data-theme',nx);try{localStorage.setItem('theme',nx);}catch(e){}}
+</script>
+</body>
+</html>

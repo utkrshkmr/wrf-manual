@@ -1,6 +1,6 @@
 ---
 title: Merge
-kicker: Phase 4 · metgrid.exe
+kicker: WRF mechanics · Phase 4 · metgrid.exe
 lead: metgrid interpolates each intermediate file onto each domain and adds the static fields from geo_em. The result, one met_em file per domain per time, is everything real.exe needs.
 ---
 

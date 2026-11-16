@@ -19,24 +19,32 @@
 <a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
 <h4>Start</h4><ol>
 <li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
+<li><a href="quickstart.html"><span class="n">0</span><span>Quick start</span></a></li>
 </ol>
-<h4>The manual: WPS to WRF-Fire</h4><ol>
-<li><a href="env.html"><span class="n">0</span><span>Phase 0 · Environment and data</span></a></li>
-<li><a href="domain.html"><span class="n">1</span><span>Phase 1 · Domain design</span></a></li>
-<li><a href="geogrid.html"><span class="n">2</span><span>Phase 2 · Static data (geogrid)</span></a></li>
-<li><a href="ungrib.html"><span class="n">3</span><span>Phase 3 · Weather (ungrib)</span></a></li>
-<li><a href="metgrid.html"><span class="n">4</span><span>Phase 4 · Merge (metgrid)</span></a></li>
-<li><a href="real.html"><span class="n">5</span><span>Phase 5 · real.exe and namelist.input</span></a></li>
-<li><a href="fire.html"><span class="n">6</span><span>Phase 6 · The fire model</span></a></li>
-<li><a href="moisture.html"><span class="n">7</span><span>Fuel moisture in depth</span></a></li>
-<li><a href="extend.html"><span class="n">8</span><span>Other research inputs</span></a></li>
-<li><a href="run.html"><span class="n">9</span><span>Running it on Slurm</span></a></li>
-<li><a href="reference.html"><span class="n">10</span><span>Reference and failures</span></a></li>
+<h4>Running fires</h4><ol>
+<li><a href="gates.html"><span class="n">1</span><span>The gating system</span></a></li>
+<li><a href="example.html"><span class="n">2</span><span>Worked example: every fire</span></a></li>
+<li><a href="skill.html" class="on"><span class="n">3</span><span>Skill file for chat assistants</span></a></li>
 </ol>
-<h4>Running it safely</h4><ol>
-<li><a href="gates.html"><span class="n">11</span><span>The gating system</span></a></li>
-<li><a href="example.html"><span class="n">12</span><span>Worked example: every fire</span></a></li>
-<li><a href="skill.html" class="on"><span class="n">13</span><span>Skill file for chat assistants</span></a></li>
+<h4>Advanced: research inputs</h4><ol>
+<li><a href="extend.html"><span class="n">4</span><span>Where each change goes</span></a></li>
+<li><a href="moisture.html"><span class="n">5</span><span>Fuel moisture</span></a></li>
+<li><a href="fuelmap.html"><span class="n">6</span><span>The fuel map</span></a></li>
+<li><a href="fuelprops.html"><span class="n">7</span><span>How a fuel type burns</span></a></li>
+<li><a href="ignitions.html"><span class="n">8</span><span>Ignitions and perimeters</span></a></li>
+<li><a href="terrain.html"><span class="n">9</span><span>Terrain and slope</span></a></li>
+<li><a href="coupling.html"><span class="n">10</span><span>Fire and atmosphere</span></a></li>
+</ol>
+<h4>WRF mechanics</h4><ol>
+<li><a href="env.html"><span class="n">11</span><span>Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">12</span><span>Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">13</span><span>Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">14</span><span>Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">15</span><span>Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">16</span><span>real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">17</span><span>The fire model</span></a></li>
+<li><a href="run.html"><span class="n">18</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">19</span><span>Reference and failures</span></a></li>
 </ol>
 <button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
 </nav>
@@ -244,7 +252,10 @@ State nodes, ranks, node type, walltime and core-hours, and wait for a yes. Then
 wrf-submit FIRE /path/to/spec_folder --nodes N --ranks R --time HH:MM:SS --constraint SAPPHIRE-RAPIDS-IB --name label
 ```
 
-## Step 7: when it ends
+## Step 7: while it runs, and when it ends
+
+While it runs: `wrf-watch --mine` (see Other commands).
+
 
 Ask for `cat /projects/academic/negarkhodoe/wrf/fires/FIRE/runs/&lt;stamp&gt;_&lt;label&gt;/GATES.txt`. Gate E's ending:
 
@@ -253,15 +264,67 @@ Ask for `cat /projects/academic/negarkhodoe/wrf/fires/FIRE/runs/&lt;stamp&gt;_&l
 - **crash**: ask for `grep -l -i -E &quot;error|cfl|nan&quot; /path/run/rsl.error.*` and the tail of the first file it lists.
 - **killed_or_running**: hit its time limit or was cancelled; `sacct -j JOBID` says which. Then `wrf-gate E FIRE RUN_FOLDER`.
 
+## When the user hits an error you cannot place: look it up in the repo
+
+The lab's manual and the gating code are public in https://github.com/utkrshkmr/wrf-manual. Every page's source is plain Markdown, and every check's code is short Python, so the exact answer is usually one search away. Before guessing, look up the part that matches the error.
+
+Base address for raw files: `https://raw.githubusercontent.com/utkrshkmr/wrf-manual/main/`
+
+| The error or question is about | Read |
+| --- | --- |
+| any failure message, which settings must agree | `src/reference.md` (sections &quot;Failure modes&quot;, &quot;Settings that must agree&quot;) |
+| modules, data locations, folders | `src/env.md` |
+| `namelist.wps`, domain sizes, nests, fire-mesh ratio | `src/domain.md` |
+| geogrid, `GEOGRID.TBL`, fuel or terrain layers, `End of record` | `src/geogrid.md` |
+| ungrib, Vtables, GRIB files | `src/ungrib.md` |
+| metgrid, `METGRID.TBL`, what a `met_em` holds | `src/metgrid.md` |
+| real.exe, `namelist.input` (`&amp;time_control`, `&amp;domains`, physics) | `src/real.md` |
+| `&amp;fire` options, ignition, `namelist.fire`, fuel categories | `src/fire.md` |
+| fuel moisture (`fire_fmc_read`, `FMC_G`, moisture model) | `src/moisture.md` |
+| which file or setting a research change goes in | `src/extend.md` |
+| a different fuel map, fuel breaks, LANDFIRE releases | `src/fuelmap.md` |
+| changing how a fuel type burns (`namelist.fire` columns) | `src/fuelprops.md` |
+| several ignitions, an observed perimeter (`LFN_HIST`) | `src/ignitions.md` |
+| fine terrain (`ZSF`), slope sensitivity | `src/terrain.md` |
+| fire–atmosphere coupling, heat release, spread wind | `src/coupling.md` |
+| install and first steps | `src/quickstart.md` |
+| ranks, walltime, 72-hour limit, restarts, how a run ended | `src/run.md` |
+| what a gate check means or why it failed | `src/gates.md`, then the gate's code: `tools/wrfgate/lib/wrfgate/gate_a.py` … `gate_e.py` (search for the check ID, e.g. `C07_`) |
+| what a `wrf-*` command does or why it refused | `tools/wrfgate/bin/&lt;command&gt;` (the refusals are the `wg_die` lines) |
+| `wrf-watch` columns and warnings | `tools/wrfgate/lib/wrfgate/watch.py` |
+| an example of a whole run | `src/example.md` |
+
+How to look:
+
+- **If you can open web pages**, fetch the raw file (base address + path) and search it for the error text or the variable name.
+- **If you cannot**, give the user one command that pulls just the relevant part, and ask them to paste the result. Replace `PATH` and the search words:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/utkrshkmr/wrf-manual/main/PATH | grep -n -i -B3 -A15 &quot;SEARCH WORDS&quot;
+```
+
+  For example, for `End of record` from geogrid: `PATH` = `src/geogrid.md`, search `End of record`; for gate C's `C07_boundaries`: `PATH` = `tools/wrfgate/lib/wrfgate/gate_c.py`, search `C07_`.
+- **Searching every page at once** for a message:
+
+```bash
+for p in quickstart env domain geogrid ungrib metgrid real fire moisture extend fuelmap fuelprops ignitions terrain coupling run reference gates example; do curl -fsSL https://raw.githubusercontent.com/utkrshkmr/wrf-manual/main/src/$p.md | grep -n -i -H --label=$p -A8 &quot;SEARCH WORDS&quot;; done
+```
+
+- Quote what you found (page and line) when you explain the fix. If the repo has nothing on it, say so, and then reason from the logs.
+
 ## Other commands
 
 ```bash
 wrf-status FIRE
+wrf-watch --active
+wrf-watch --mine --every 120
 wrf-setaside /projects/academic/negarkhodoe/wrf/fires/FIRE/runs/RUN &quot;reason&quot;
 ```
+
+`wrf-watch` lists every job the system submitted with its Slurm state, simulated time reached, % of the window, seconds per step, ETA and warnings (&quot;log idle&quot;, &quot;won't finish: needs … of …&quot;, the pending reason, failed or timed out, gate results). When the user asks &quot;how is my run doing&quot;, ask for `wrf-watch --mine` and read it; if it says &quot;won't finish&quot;, plan a restart or more nodes with them before the time limit hits.
 </code></pre>
 </div>
-<nav class="pager"><a class="prev" href="example.html"><small>Previous</small>Worked example: every fire</a><span></span></nav>
+<nav class="pager"><a class="prev" href="example.html"><small>Previous</small>Worked example: every fire</a><a class="next" href="extend.html"><small>Next</small>Where each change goes</a></nav>
 <footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/skill.md</code>.</footer>
 </article>
 </main>

@@ -19,30 +19,38 @@
 <a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
 <h4>Start</h4><ol>
 <li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
+<li><a href="quickstart.html"><span class="n">0</span><span>Quick start</span></a></li>
 </ol>
-<h4>The manual: WPS to WRF-Fire</h4><ol>
-<li><a href="env.html"><span class="n">0</span><span>Phase 0 · Environment and data</span></a></li>
-<li><a href="domain.html"><span class="n">1</span><span>Phase 1 · Domain design</span></a></li>
-<li><a href="geogrid.html"><span class="n">2</span><span>Phase 2 · Static data (geogrid)</span></a></li>
-<li><a href="ungrib.html"><span class="n">3</span><span>Phase 3 · Weather (ungrib)</span></a></li>
-<li><a href="metgrid.html" class="on"><span class="n">4</span><span>Phase 4 · Merge (metgrid)</span></a></li>
-<li><a href="real.html"><span class="n">5</span><span>Phase 5 · real.exe and namelist.input</span></a></li>
-<li><a href="fire.html"><span class="n">6</span><span>Phase 6 · The fire model</span></a></li>
-<li><a href="moisture.html"><span class="n">7</span><span>Fuel moisture in depth</span></a></li>
-<li><a href="extend.html"><span class="n">8</span><span>Other research inputs</span></a></li>
-<li><a href="run.html"><span class="n">9</span><span>Running it on Slurm</span></a></li>
-<li><a href="reference.html"><span class="n">10</span><span>Reference and failures</span></a></li>
+<h4>Running fires</h4><ol>
+<li><a href="gates.html"><span class="n">1</span><span>The gating system</span></a></li>
+<li><a href="example.html"><span class="n">2</span><span>Worked example: every fire</span></a></li>
+<li><a href="skill.html"><span class="n">3</span><span>Skill file for chat assistants</span></a></li>
 </ol>
-<h4>Running it safely</h4><ol>
-<li><a href="gates.html"><span class="n">11</span><span>The gating system</span></a></li>
-<li><a href="example.html"><span class="n">12</span><span>Worked example: every fire</span></a></li>
-<li><a href="skill.html"><span class="n">13</span><span>Skill file for chat assistants</span></a></li>
+<h4>Advanced: research inputs</h4><ol>
+<li><a href="extend.html"><span class="n">4</span><span>Where each change goes</span></a></li>
+<li><a href="moisture.html"><span class="n">5</span><span>Fuel moisture</span></a></li>
+<li><a href="fuelmap.html"><span class="n">6</span><span>The fuel map</span></a></li>
+<li><a href="fuelprops.html"><span class="n">7</span><span>How a fuel type burns</span></a></li>
+<li><a href="ignitions.html"><span class="n">8</span><span>Ignitions and perimeters</span></a></li>
+<li><a href="terrain.html"><span class="n">9</span><span>Terrain and slope</span></a></li>
+<li><a href="coupling.html"><span class="n">10</span><span>Fire and atmosphere</span></a></li>
+</ol>
+<h4>WRF mechanics</h4><ol>
+<li><a href="env.html"><span class="n">11</span><span>Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">12</span><span>Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">13</span><span>Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">14</span><span>Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html" class="on"><span class="n">15</span><span>Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">16</span><span>real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">17</span><span>The fire model</span></a></li>
+<li><a href="run.html"><span class="n">18</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">19</span><span>Reference and failures</span></a></li>
 </ol>
 <button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
 </nav>
 <main>
 <article class="page">
-<p class="kicker">Phase 4 · metgrid.exe</p>
+<p class="kicker">WRF mechanics · Phase 4 · metgrid.exe</p>
 <h1>Merge</h1>
 <p class="lead">metgrid interpolates each intermediate file onto each domain and adds the static fields from geo_em. The result, one met_em file per domain per time, is everything real.exe needs.</p>
 <nav class="toc"><b>On this page</b><ul><li><a href="#running-it">Running it</a></li><li><a href="#what-a-met-em-file-holds">What a met_em file holds</a></li><li><a href="#metgrid-tbl">METGRID.TBL</a></li><li><a href="#comparing-two-sets-of-met-em-files">Comparing two sets of met_em files</a></li></ul></nav>
@@ -134,7 +142,7 @@ ls met_em.d0* | wc -l
 <pre><code class="language-bash">python3 /projects/academic/negarkhodoe/utkarshk/pipeline/compare_met_em.py &lt;new_dir&gt; &lt;reference_dir&gt;
 </code></pre>
 <p>What to expect: static and fire fields identical (<code>NFUEL_CAT</code> matching in at least 99.9% of cells), and weather fields equal or within rounding when the GRIB files are the same.</p>
-<nav class="pager"><a class="prev" href="ungrib.html"><small>Previous</small>Phase 3 · Weather (ungrib)</a><a class="next" href="real.html"><small>Next</small>Phase 5 · real.exe and namelist.input</a></nav>
+<nav class="pager"><a class="prev" href="ungrib.html"><small>Previous</small>Weather (ungrib)</a><a class="next" href="real.html"><small>Next</small>real.exe and namelist.input</a></nav>
 <footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/metgrid.md</code>.</footer>
 </article>
 </main>

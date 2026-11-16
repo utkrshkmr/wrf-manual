@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fire and atmosphere · WRF-Fire Manual</title>
+<meta name="description" content="The fire heats the air, the air changes the wind, and the wind drives the fire. Turn the feedback off, scale it, release the heat higher or lower, choose which wind drives the spread, or replace the fire with a prescribed heat source.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</head>
+<body>
+<div class="topbar"><a href="index.html">WRF-Fire Manual</a><button type="button" onclick="document.querySelector('.side').classList.add('open')">Menu</button></div>
+<div class="layout">
+<nav class="side" aria-label="Site">
+<button type="button" class="close" onclick="this.parentNode.classList.remove('open')">Close</button>
+<a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
+<h4>Start</h4><ol>
+<li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
+<li><a href="quickstart.html"><span class="n">0</span><span>Quick start</span></a></li>
+</ol>
+<h4>Running fires</h4><ol>
+<li><a href="gates.html"><span class="n">1</span><span>The gating system</span></a></li>
+<li><a href="example.html"><span class="n">2</span><span>Worked example: every fire</span></a></li>
+<li><a href="skill.html"><span class="n">3</span><span>Skill file for chat assistants</span></a></li>
+</ol>
+<h4>Advanced: research inputs</h4><ol>
+<li><a href="extend.html"><span class="n">4</span><span>Where each change goes</span></a></li>
+<li><a href="moisture.html"><span class="n">5</span><span>Fuel moisture</span></a></li>
+<li><a href="fuelmap.html"><span class="n">6</span><span>The fuel map</span></a></li>
+<li><a href="fuelprops.html"><span class="n">7</span><span>How a fuel type burns</span></a></li>
+<li><a href="ignitions.html"><span class="n">8</span><span>Ignitions and perimeters</span></a></li>
+<li><a href="terrain.html"><span class="n">9</span><span>Terrain and slope</span></a></li>
+<li><a href="coupling.html" class="on"><span class="n">10</span><span>Fire and atmosphere</span></a></li>
+</ol>
+<h4>WRF mechanics</h4><ol>
+<li><a href="env.html"><span class="n">11</span><span>Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">12</span><span>Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">13</span><span>Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">14</span><span>Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">15</span><span>Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">16</span><span>real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">17</span><span>The fire model</span></a></li>
+<li><a href="run.html"><span class="n">18</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">19</span><span>Reference and failures</span></a></li>
+</ol>
+<button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
+</nav>
+<main>
+<article class="page">
+<p class="kicker">Advanced · research inputs</p>
+<h1>Fire and atmosphere</h1>
+<p class="lead">The fire heats the air, the air changes the wind, and the wind drives the fire. Turn the feedback off, scale it, release the heat higher or lower, choose which wind drives the spread, or replace the fire with a prescribed heat source.</p>
+<nav class="toc"><b>On this page</b><ul><li><a href="#the-coupling-experiments">The coupling experiments</a></li><li><a href="#which-wind-drives-the-spread">Which wind drives the spread</a></li><li><a href="#a-prescribed-heat-source">A prescribed heat source</a></li><li><a href="#running-the-variants">Running the variants</a></li></ul></nav>
+<h2 id="the-coupling-experiments">The coupling experiments</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Experiment</th>
+<th>Settings</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>One-way coupling (the fire doesn't change the weather)</td>
+<td><code>fire_atm_feedback = 0</code></td>
+</tr>
+<tr>
+<td>Stronger or weaker coupling</td>
+<td><code>fire_atm_feedback</code> between 0 and 1, or above</td>
+</tr>
+<tr>
+<td>Heat released lower or higher</td>
+<td><code>fire_ext_grnd</code> (default 50 m), or <code>fire_sfc_flx = 1</code> with <code>fire_heat_peak</code></td>
+</tr>
+<tr>
+<td>A prescribed, constant heat source</td>
+<td><code>fire_const_time</code> (when to freeze), <code>fire_const_grnhfx</code>, <code>fire_const_grnqfx</code></td>
+</tr>
+<tr>
+<td>Wind for the spread taken higher up</td>
+<td><code>fire_lsm_zcoupling = .true.</code>, <code>fire_lsm_zcoupling_ref = 50</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>All of these are <code>&amp;fire</code> settings on the fire domain; the defaults are on the <a href="fire.html#spread-heat-release-and-coupling">fire model page</a>.</p>
+<h2 id="which-wind-drives-the-spread">Which wind drives the spread</h2>
+<p>By default the spread rate uses the wind at <code>fire_wind_height</code> (6.1 m, the 20 ft of fire-behaviour practice), interpolated from the model's lowest levels. With <code>fire_lsm_zcoupling = .true.</code> the wind is taken at <code>fire_lsm_zcoupling_ref</code> (50 m) and brought down with a log profile, which is less sensitive to how the lowest model levels are placed. Each fuel's <code>windrf</code> then reduces it to mid-flame height.</p>
+<h2 id="a-prescribed-heat-source">A prescribed heat source</h2>
+<p><code>fire_const_time</code> freezes the fire at that many seconds after the start; from then on each burning cell releases the constant fluxes <code>fire_const_grnhfx</code> (sensible, W/m²) and <code>fire_const_grnqfx</code> (latent). It separates the atmosphere's response to a known heat source from the fire's own spread.</p>
+<h2 id="running-the-variants">Running the variants</h2>
+<p>Each experiment is a copy of the fire's spec with one <code>&amp;fire</code> change, through gates C and D, then <code>wrf-submit</code> with a <code>--name</code> that says what changed (<code>--name oneway</code>, <code>--name feedback05</code>). One-way coupling (<code>fire_atm_feedback = 0</code>) is the usual first comparison: the difference between it and the baseline is the fire's own effect on its weather.</p>
+<nav class="pager"><a class="prev" href="terrain.html"><small>Previous</small>Terrain and slope</a><a class="next" href="env.html"><small>Next</small>Environment and data</a></nav>
+<footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/coupling.md</code>.</footer>
+</article>
+</main>
+</div>
+<script>
+function toggleTheme(){var d=document.documentElement;var cur=d.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var nx=cur==='dark'?'light':'dark';d.setAttribute('data-theme',nx);try{localStorage.setItem('theme',nx);}catch(e){}}
+</script>
+</body>
+</html>

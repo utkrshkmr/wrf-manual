@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How a fuel type burns · WRF-Fire Manual</title>
+<meta name="description" content="Every fuel category has a column of properties in namelist.fire: load, depth, surface-to-volume ratio, moisture of extinction and more. Changing one column changes how that fuel type burns everywhere it occurs, without touching the map.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</head>
+<body>
+<div class="topbar"><a href="index.html">WRF-Fire Manual</a><button type="button" onclick="document.querySelector('.side').classList.add('open')">Menu</button></div>
+<div class="layout">
+<nav class="side" aria-label="Site">
+<button type="button" class="close" onclick="this.parentNode.classList.remove('open')">Close</button>
+<a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
+<h4>Start</h4><ol>
+<li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
+<li><a href="quickstart.html"><span class="n">0</span><span>Quick start</span></a></li>
+</ol>
+<h4>Running fires</h4><ol>
+<li><a href="gates.html"><span class="n">1</span><span>The gating system</span></a></li>
+<li><a href="example.html"><span class="n">2</span><span>Worked example: every fire</span></a></li>
+<li><a href="skill.html"><span class="n">3</span><span>Skill file for chat assistants</span></a></li>
+</ol>
+<h4>Advanced: research inputs</h4><ol>
+<li><a href="extend.html"><span class="n">4</span><span>Where each change goes</span></a></li>
+<li><a href="moisture.html"><span class="n">5</span><span>Fuel moisture</span></a></li>
+<li><a href="fuelmap.html"><span class="n">6</span><span>The fuel map</span></a></li>
+<li><a href="fuelprops.html" class="on"><span class="n">7</span><span>How a fuel type burns</span></a></li>
+<li><a href="ignitions.html"><span class="n">8</span><span>Ignitions and perimeters</span></a></li>
+<li><a href="terrain.html"><span class="n">9</span><span>Terrain and slope</span></a></li>
+<li><a href="coupling.html"><span class="n">10</span><span>Fire and atmosphere</span></a></li>
+</ol>
+<h4>WRF mechanics</h4><ol>
+<li><a href="env.html"><span class="n">11</span><span>Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">12</span><span>Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">13</span><span>Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">14</span><span>Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">15</span><span>Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">16</span><span>real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">17</span><span>The fire model</span></a></li>
+<li><a href="run.html"><span class="n">18</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">19</span><span>Reference and failures</span></a></li>
+</ol>
+<button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
+</nav>
+<main>
+<article class="page">
+<p class="kicker">Advanced · research inputs</p>
+<h1>How a fuel type burns</h1>
+<p class="lead">Every fuel category has a column of properties in namelist.fire: load, depth, surface-to-volume ratio, moisture of extinction and more. Changing one column changes how that fuel type burns everywhere it occurs, without touching the map.</p>
+
+<h2 id="the-parameters">The parameters</h2>
+<p>The full list of <code>&amp;fuel_scalars</code> and <code>&amp;fuel_categories</code> is on the <a href="fire.html#namelist-fire">fire model page</a>. The ones most often changed in experiments:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>What raising it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fgi</code></td>
+<td>more dead fuel load: more heat, usually faster spread</td>
+</tr>
+<tr>
+<td><code>fueldepthm</code></td>
+<td>deeper fuel bed: faster spread, taller flames</td>
+</tr>
+<tr>
+<td><code>savr</code></td>
+<td>finer fuel particles: dry out and ignite faster</td>
+</tr>
+<tr>
+<td><code>fuelmce</code></td>
+<td>higher moisture of extinction: keeps burning in wetter conditions</td>
+</tr>
+<tr>
+<td><code>windrf</code></td>
+<td>more of the reference wind reaches the flames</td>
+</tr>
+<tr>
+<td><code>weight</code></td>
+<td>longer burn-out time: heat released over longer</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="change-how-a-fuel-type-burns">Change how a fuel type burns</h2>
+<p>Each column of <code>&amp;fuel_categories</code> in <code>namelist.fire</code> is one fuel category. To test a different load or depth for, say, Scott and Burgan GR2 (code 102, category 16), change the 16th value of <code>fgi</code> or <code>fueldepthm</code>. Copy <code>test/em_fire/namelist.fire.sb40</code> from the WRF source as the starting point: it already has <code>nfuelcats = 54</code> and all 54 columns.</p>
+<div class="note">
+<p><span class="callout-title">New fuel types</span></p>
+<p>The code map is fixed in the WRF source: only Anderson codes 1–13 and the 40 Scott and Burgan codes reach a category. A brand-new category (55–60) would never be reached from <code>NFUEL_CAT</code> without changing the code. For a custom fuel, repurpose a category you are not using, for example one of the Anderson 1–13 in a LANDFIRE-based run, and write your custom code number for it into the fuel map.</p>
+</div>
+<h2 id="as-a-variant-run">As a variant run</h2>
+<ol>
+<li>Copy the fire's spec: <code>cp -r /projects/academic/negarkhodoe/wrf/fires/FIRE/specs/campaign /projects/academic/negarkhodoe/wrf/people/$USER/work/FIRE_gr2load</code> (copies are writable; the original stays locked).</li>
+<li>Edit the copy's <code>namelist.fire</code>: change only the columns you mean to, and note them in a <code>README</code> beside it.</li>
+<li><code>wrf-gate C FIRE &lt;copy&gt;</code> then <code>wrf-gate D FIRE &lt;gate C folder&gt;</code>; gate C's <strong>C13</strong> checks that <code>nfuelcats</code> covers code 204 if the map has it.</li>
+<li>After the run, compare <code>namelist.fire.output</code> in the run folder with the baseline's: it is what WRF actually used.</li>
+</ol>
+<nav class="pager"><a class="prev" href="fuelmap.html"><small>Previous</small>The fuel map</a><a class="next" href="ignitions.html"><small>Next</small>Ignitions and perimeters</a></nav>
+<footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/fuelprops.md</code>.</footer>
+</article>
+</main>
+</div>
+<script>
+function toggleTheme(){var d=document.documentElement;var cur=d.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var nx=cur==='dark'?'light':'dark';d.setAttribute('data-theme',nx);try{localStorage.setItem('theme',nx);}catch(e){}}
+</script>
+</body>
+</html>

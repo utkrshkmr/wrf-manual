@@ -172,7 +172,10 @@ State nodes, ranks, node type, walltime and core-hours, and wait for a yes. Then
 wrf-submit FIRE /path/to/spec_folder --nodes N --ranks R --time HH:MM:SS --constraint SAPPHIRE-RAPIDS-IB --name label
 ```
 
-## Step 7: when it ends
+## Step 7: while it runs, and when it ends
+
+While it runs: `wrf-watch --mine` (see Other commands).
+
 
 Ask for `cat /projects/academic/negarkhodoe/wrf/fires/FIRE/runs/<stamp>_<label>/GATES.txt`. Gate E's ending:
 
@@ -181,9 +184,61 @@ Ask for `cat /projects/academic/negarkhodoe/wrf/fires/FIRE/runs/<stamp>_<label>/
 - **crash**: ask for `grep -l -i -E "error|cfl|nan" /path/run/rsl.error.*` and the tail of the first file it lists.
 - **killed_or_running**: hit its time limit or was cancelled; `sacct -j JOBID` says which. Then `wrf-gate E FIRE RUN_FOLDER`.
 
+## When the user hits an error you cannot place: look it up in the repo
+
+The lab's manual and the gating code are public in https://github.com/utkrshkmr/wrf-manual. Every page's source is plain Markdown, and every check's code is short Python, so the exact answer is usually one search away. Before guessing, look up the part that matches the error.
+
+Base address for raw files: `https://raw.githubusercontent.com/utkrshkmr/wrf-manual/main/`
+
+| The error or question is about | Read |
+| --- | --- |
+| any failure message, which settings must agree | `src/reference.md` (sections "Failure modes", "Settings that must agree") |
+| modules, data locations, folders | `src/env.md` |
+| `namelist.wps`, domain sizes, nests, fire-mesh ratio | `src/domain.md` |
+| geogrid, `GEOGRID.TBL`, fuel or terrain layers, `End of record` | `src/geogrid.md` |
+| ungrib, Vtables, GRIB files | `src/ungrib.md` |
+| metgrid, `METGRID.TBL`, what a `met_em` holds | `src/metgrid.md` |
+| real.exe, `namelist.input` (`&time_control`, `&domains`, physics) | `src/real.md` |
+| `&fire` options, ignition, `namelist.fire`, fuel categories | `src/fire.md` |
+| fuel moisture (`fire_fmc_read`, `FMC_G`, moisture model) | `src/moisture.md` |
+| which file or setting a research change goes in | `src/extend.md` |
+| a different fuel map, fuel breaks, LANDFIRE releases | `src/fuelmap.md` |
+| changing how a fuel type burns (`namelist.fire` columns) | `src/fuelprops.md` |
+| several ignitions, an observed perimeter (`LFN_HIST`) | `src/ignitions.md` |
+| fine terrain (`ZSF`), slope sensitivity | `src/terrain.md` |
+| fire–atmosphere coupling, heat release, spread wind | `src/coupling.md` |
+| install and first steps | `src/quickstart.md` |
+| ranks, walltime, 72-hour limit, restarts, how a run ended | `src/run.md` |
+| what a gate check means or why it failed | `src/gates.md`, then the gate's code: `tools/wrfgate/lib/wrfgate/gate_a.py` … `gate_e.py` (search for the check ID, e.g. `C07_`) |
+| what a `wrf-*` command does or why it refused | `tools/wrfgate/bin/<command>` (the refusals are the `wg_die` lines) |
+| `wrf-watch` columns and warnings | `tools/wrfgate/lib/wrfgate/watch.py` |
+| an example of a whole run | `src/example.md` |
+
+How to look:
+
+- **If you can open web pages**, fetch the raw file (base address + path) and search it for the error text or the variable name.
+- **If you cannot**, give the user one command that pulls just the relevant part, and ask them to paste the result. Replace `PATH` and the search words:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/utkrshkmr/wrf-manual/main/PATH | grep -n -i -B3 -A15 "SEARCH WORDS"
+```
+
+  For example, for `End of record` from geogrid: `PATH` = `src/geogrid.md`, search `End of record`; for gate C's `C07_boundaries`: `PATH` = `tools/wrfgate/lib/wrfgate/gate_c.py`, search `C07_`.
+- **Searching every page at once** for a message:
+
+```bash
+for p in quickstart env domain geogrid ungrib metgrid real fire moisture extend fuelmap fuelprops ignitions terrain coupling run reference gates example; do curl -fsSL https://raw.githubusercontent.com/utkrshkmr/wrf-manual/main/src/$p.md | grep -n -i -H --label=$p -A8 "SEARCH WORDS"; done
+```
+
+- Quote what you found (page and line) when you explain the fix. If the repo has nothing on it, say so, and then reason from the logs.
+
 ## Other commands
 
 ```bash
 wrf-status FIRE
+wrf-watch --active
+wrf-watch --mine --every 120
 wrf-setaside /projects/academic/negarkhodoe/wrf/fires/FIRE/runs/RUN "reason"
 ```
+
+`wrf-watch` lists every job the system submitted with its Slurm state, simulated time reached, % of the window, seconds per step, ETA and warnings ("log idle", "won't finish: needs … of …", the pending reason, failed or timed out, gate results). When the user asks "how is my run doing", ask for `wrf-watch --mine` and read it; if it says "won't finish", plan a restart or more nodes with them before the time limit hits.

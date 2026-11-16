@@ -1,6 +1,6 @@
 ---
 title: Static data
-kicker: Phase 2 · geogrid.exe
+kicker: WRF mechanics · Phase 2 · geogrid.exe
 lead: geogrid puts every static map onto every domain. GEOGRID.TBL decides which dataset feeds which field and how it is interpolated, so any GIS layer can enter the simulation as a new entry plus a folder of tiles.
 ---
 
@@ -143,7 +143,7 @@ name = MY_FIELD
 ===============================
 ```
 
-The field appears in `geo_em` and is carried through to `met_em`. Whether `real.exe` then copies it into `wrfinput` depends on its name: only fields WRF's Registry declares as input are read. A fire-grid field named `FMC_G` or `LFN_HIST` is one WRF knows; see [Fuel moisture](moisture.html) and [Other research inputs](extend.html).
+The field appears in `geo_em` and is carried through to `met_em`. Whether `real.exe` then copies it into `wrfinput` depends on its name: only fields WRF's Registry declares as input are read. A fire-grid field named `FMC_G` or `LFN_HIST` is one WRF knows; see [Fuel moisture](moisture.html) and [Ignitions and perimeters](ignitions.html#start-from-an-observed-perimeter).
 
 ## Fuel data for a different area or year
 

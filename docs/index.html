@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>WRF-Fire, from raw data to a burning fire · WRF-Fire Manual</title>
-<meta name="description" content="A hands-on manual for building, checking and running a WRF-Fire simulation on UB&#x27;s CCR cluster, with every input explained and a gating system that checks each step before it costs queue time.">
+<title>Run WRF-Fire on CCR · WRF-Fire Manual</title>
+<meta name="description" content="Everything the lab needs to run wildfire simulations on UB&#x27;s cluster: a quick start, a set of commands that check every step before it costs queue time, an AI-chat helper, and a full manual of how WRF-Fire works.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -19,34 +19,69 @@
 <a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
 <h4>Start</h4><ol>
 <li><a href="index.html" class="on"><span class="n"></span><span>Overview</span></a></li>
+<li><a href="quickstart.html"><span class="n">0</span><span>Quick start</span></a></li>
 </ol>
-<h4>The manual: WPS to WRF-Fire</h4><ol>
-<li><a href="env.html"><span class="n">0</span><span>Phase 0 · Environment and data</span></a></li>
-<li><a href="domain.html"><span class="n">1</span><span>Phase 1 · Domain design</span></a></li>
-<li><a href="geogrid.html"><span class="n">2</span><span>Phase 2 · Static data (geogrid)</span></a></li>
-<li><a href="ungrib.html"><span class="n">3</span><span>Phase 3 · Weather (ungrib)</span></a></li>
-<li><a href="metgrid.html"><span class="n">4</span><span>Phase 4 · Merge (metgrid)</span></a></li>
-<li><a href="real.html"><span class="n">5</span><span>Phase 5 · real.exe and namelist.input</span></a></li>
-<li><a href="fire.html"><span class="n">6</span><span>Phase 6 · The fire model</span></a></li>
-<li><a href="moisture.html"><span class="n">7</span><span>Fuel moisture in depth</span></a></li>
-<li><a href="extend.html"><span class="n">8</span><span>Other research inputs</span></a></li>
-<li><a href="run.html"><span class="n">9</span><span>Running it on Slurm</span></a></li>
-<li><a href="reference.html"><span class="n">10</span><span>Reference and failures</span></a></li>
+<h4>Running fires</h4><ol>
+<li><a href="gates.html"><span class="n">1</span><span>The gating system</span></a></li>
+<li><a href="example.html"><span class="n">2</span><span>Worked example: every fire</span></a></li>
+<li><a href="skill.html"><span class="n">3</span><span>Skill file for chat assistants</span></a></li>
 </ol>
-<h4>Running it safely</h4><ol>
-<li><a href="gates.html"><span class="n">11</span><span>The gating system</span></a></li>
-<li><a href="example.html"><span class="n">12</span><span>Worked example: every fire</span></a></li>
-<li><a href="skill.html"><span class="n">13</span><span>Skill file for chat assistants</span></a></li>
+<h4>Advanced: research inputs</h4><ol>
+<li><a href="extend.html"><span class="n">4</span><span>Where each change goes</span></a></li>
+<li><a href="moisture.html"><span class="n">5</span><span>Fuel moisture</span></a></li>
+<li><a href="fuelmap.html"><span class="n">6</span><span>The fuel map</span></a></li>
+<li><a href="fuelprops.html"><span class="n">7</span><span>How a fuel type burns</span></a></li>
+<li><a href="ignitions.html"><span class="n">8</span><span>Ignitions and perimeters</span></a></li>
+<li><a href="terrain.html"><span class="n">9</span><span>Terrain and slope</span></a></li>
+<li><a href="coupling.html"><span class="n">10</span><span>Fire and atmosphere</span></a></li>
+</ol>
+<h4>WRF mechanics</h4><ol>
+<li><a href="env.html"><span class="n">11</span><span>Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">12</span><span>Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">13</span><span>Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">14</span><span>Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">15</span><span>Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">16</span><span>real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">17</span><span>The fire model</span></a></li>
+<li><a href="run.html"><span class="n">18</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">19</span><span>Reference and failures</span></a></li>
 </ol>
 <button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
 </nav>
 <main>
 <article class="page">
 <p class="kicker">WRF 4.6 · WPS 4.6 · UB CCR</p>
-<h1>WRF-Fire, from raw data to a burning fire</h1>
-<p class="lead">A hands-on manual for building, checking and running a WRF-Fire simulation on UB's CCR cluster, with every input explained and a gating system that checks each step before it costs queue time.</p>
+<h1>Run WRF-Fire on CCR</h1>
+<p class="lead">Everything the lab needs to run wildfire simulations on UB's cluster: a quick start, a set of commands that check every step before it costs queue time, an AI-chat helper, and a full manual of how WRF-Fire works.</p>
 
-<p>A WRF-Fire run is six programs in a row. Each one reads a namelist and a few files, and writes the files the next one reads. Once you know what each file holds and which variable controls it, every research change becomes one of a few kinds of edit: a new map, a new field in an input file, or a new value in a namelist. The manual walks the chain from start to finish, with Canyon 2025 as the worked example, and the gating pages show how each input and run is checked before and after it uses the cluster.</p>
+<h2 id="start-here">Start here</h2>
+<div class="cards" markdown="0">
+<a class="card" href="quickstart.html"><span class="k">10 minutes</span><h3 id="quick-start">Quick start</h3><p>Install, set yourself up, and start your first run.</p></a>
+<a class="card" href="skill.html"><span class="k">Easiest</span><h3 id="use-it-from-an-ai-chat">Use it from an AI chat</h3><p>Copy one block of text into any chat assistant; it walks you through the rest.</p></a>
+<a class="card" href="example.html"><span class="k">Example</span><h3 id="every-fire-we-have-run">Every fire we have run</h3><p>Eaton, Canyon, Cranston, Long and the NCAR fires, command by command.</p></a>
+</div>
+
+<h2 id="running-fires">Running fires</h2>
+<p>Every run goes through a few <code>wrf-*</code> commands. Each does one step, checks it (the "gates"), and refuses to go on if something is wrong, so a typo or a misplaced map is caught in minutes instead of after a day in the queue. Jobs are signed with your name, Slurm emails you, <code>wrf-watch</code> shows how every job is doing, and nothing is ever deleted.</p>
+<div class="cards" markdown="0">
+<a class="card" href="gates.html"><span class="k">Reference</span><h3 id="the-gating-system">The gating system</h3><p>The commands, what each gate checks, the folders, monitoring and the log.</p></a>
+<a class="card" href="run.html"><span class="k">Sizing</span><h3 id="ranks-and-walltime">Ranks and walltime</h3><p>How many cores to ask for, how long, and what to do past 72 hours.</p></a>
+<a class="card" href="reference.html"><span class="k">Help</span><h3 id="failures-and-fixes">Failures and fixes</h3><p>Common errors from WPS, real.exe and wrf.exe, and what they mean.</p></a>
+</div>
+
+<h2 id="advanced-research-inputs">Advanced: research inputs</h2>
+<p>Changing what the fire sees, one theme per page, each with the variables, ready-to-run scripts and the checks that confirm the change took effect.</p>
+<div class="cards" markdown="0">
+<a class="card" href="moisture.html"><span class="k">Moisture</span><h3 id="fuel-moisture">Fuel moisture</h3><p>From one number to a per-cell map and a moisture model driven by the weather.</p></a>
+<a class="card" href="fuelmap.html"><span class="k">Map</span><h3 id="the-fuel-map">The fuel map</h3><p>Other LANDFIRE releases, fuel breaks, treated areas.</p></a>
+<a class="card" href="fuelprops.html"><span class="k">Table</span><h3 id="how-a-fuel-type-burns">How a fuel type burns</h3><p>Load, depth, extinction moisture and the other <code>namelist.fire</code> columns.</p></a>
+<a class="card" href="ignitions.html"><span class="k">Start</span><h3 id="ignitions-and-perimeters">Ignitions and perimeters</h3><p>Points, lines, staggered ignitions, or an observed perimeter.</p></a>
+<a class="card" href="terrain.html"><span class="k">Ground</span><h3 id="terrain-and-slope">Terrain and slope</h3><p>Fine 30 m terrain for the fire, and slope sensitivity tests.</p></a>
+<a class="card" href="coupling.html"><span class="k">Air</span><h3 id="fire-and-atmosphere">Fire and atmosphere</h3><p>One-way coupling, heat release height, spread wind, prescribed heat.</p></a>
+</div>
+
+<h2 id="wrf-mechanics">WRF mechanics</h2>
+<p>How the six programs turn maps and weather into a burning fire: every file, every namelist variable, with Canyon 2025 as the example. Read this when you build a new fire's inputs from scratch, or want to know why a setting matters.</p>
 <figure><div class="fig"><svg viewBox="0 0 960 560" role="img" aria-label="Six programs turn static maps and weather into a coupled fire run">
 <defs><marker id="pl-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker></defs>
 <text x="20" y="28" class="t-title">Six programs turn static maps and weather into a coupled fire run</text>
@@ -109,35 +144,24 @@
 <circle cx="562" cy="384" r="10" class="fill-acc"/><text x="562" y="388" text-anchor="middle" style="fill:var(--bg);font-size:11.5px;font-weight:700">4</text>
 </g>
 <text x="20" y="540" class="t-body"><tspan class="t-acc" style="font-weight:600">Where research inputs enter: </tspan>1 a new static map  ·  2 an extra gridded weather field  ·  3 a per-cell field in wrfinput  ·  4 fuel tables, moisture model, ignition</text>
-</svg></div><figcaption><strong>The whole chain.</strong> Grey boxes are programs, dashed boxes are files. The orange numbers mark the four places a research input can enter; each has its own section in the manual.</figcaption></figure>
+</svg></div><figcaption><strong>The whole chain.</strong> Grey boxes are programs, dashed boxes are files. The orange numbers mark the four places a research input can enter.</figcaption></figure>
 
-<h2 id="the-manual">The manual</h2>
 <div class="cards" markdown="0">
-<a class="card" href="env.html"><span class="k">Phase 0</span><h3 id="environment-and-data">Environment and data</h3><p>Modules, folders, the static datasets and the tables WPS needs.</p></a>
-<a class="card" href="domain.html"><span class="k">Phase 1</span><h3 id="domain-design">Domain design</h3><p>Every <code>namelist.wps</code> variable: nests, projection, the fire-grid ratio.</p></a>
-<a class="card" href="geogrid.html"><span class="k">Phase 2</span><h3 id="static-data">Static data</h3><p><code>GEOGRID.TBL</code>, the fuel and terrain layers, and how to add your own map.</p></a>
-<a class="card" href="ungrib.html"><span class="k">Phase 3</span><h3 id="weather">Weather</h3><p>GRIB products, Vtables, intermediate files, hand-made fields.</p></a>
-<a class="card" href="metgrid.html"><span class="k">Phase 4</span><h3 id="merge">Merge</h3><p>What a <code>met_em</code> file holds and how fields are interpolated.</p></a>
+<a class="card" href="env.html"><span class="k">Phase 0</span><h3 id="environment-and-data">Environment and data</h3><p>Modules, folders, the static datasets and tables.</p></a>
+<a class="card" href="domain.html"><span class="k">Phase 1</span><h3 id="domain-design">Domain design</h3><p><code>namelist.wps</code>: nests, projection, the fire-grid ratio.</p></a>
+<a class="card" href="geogrid.html"><span class="k">Phase 2</span><h3 id="static-data">Static data</h3><p><code>GEOGRID.TBL</code>, fuel and terrain layers, your own maps.</p></a>
+<a class="card" href="ungrib.html"><span class="k">Phase 3</span><h3 id="weather">Weather</h3><p>GRIB products, Vtables, intermediate files.</p></a>
+<a class="card" href="metgrid.html"><span class="k">Phase 4</span><h3 id="merge">Merge</h3><p>What a <code>met_em</code> file holds.</p></a>
 <a class="card" href="real.html"><span class="k">Phase 5</span><h3 id="real-exe">real.exe</h3><p><code>namelist.input</code>: time, domains, physics, boundaries.</p></a>
-<a class="card" href="fire.html"><span class="k">Phase 6</span><h3 id="the-fire-model">The fire model</h3><p>Every <code>&amp;fire</code> option, ignition, coupling, <code>namelist.fire</code> fuels.</p></a>
-<a class="card" href="moisture.html"><span class="k">Deep dive</span><h3 id="fuel-moisture">Fuel moisture</h3><p>Four ways to set it, from one number to a per-cell map and a live moisture model.</p></a>
-<a class="card" href="extend.html"><span class="k">Deep dive</span><h3 id="other-research-inputs">Other research inputs</h3><p>Fuel edits, custom fuel types, observed perimeters, terrain, heat-flux experiments.</p></a>
+<a class="card" href="fire.html"><span class="k">Phase 6</span><h3 id="the-fire-model">The fire model</h3><p>Every <code>&amp;fire</code> option and <code>namelist.fire</code>.</p></a>
 </div>
 
-<h2 id="running-it-safely">Running it safely</h2>
-<div class="cards" markdown="0">
-<a class="card" href="gates.html"><span class="k">Gates</span><h3 id="the-gating-system">The gating system</h3><p>Eight commands, five gates, your profile, the folders and the ledger.</p></a>
-<a class="card" href="example.html"><span class="k">Example</span><h3 id="every-fire-we-have-run">Every fire we have run</h3><p>Eaton first, then Canyon, Cranston, Long and the NCAR fires, command by command.</p></a>
-<a class="card" href="skill.html"><span class="k">For chat assistants</span><h3 id="skill-file">Skill file</h3><p>Paste it into any AI chat and it walks you through running a fire.</p></a>
-</div>
-
-<h2 id="how-to-read-this-site">How to read this site</h2>
+<h2 id="about-this-site">About this site</h2>
 <ul>
-<li>Variable names are WRF's and WPS's own, in <code>code</code>. Defaults come from WRF 4.6.0's <code>Registry/registry.fire</code> and the <code>test/em_fire</code> examples.</li>
-<li>Paths are CCR's. The lab's shared folder is <code>/projects/academic/negarkhodoe/wrf/</code>.</li>
-<li>To rebuild the site after editing a page in <code>src/</code>, run <code>python3 tools/build.py</code>.</li>
+<li>Variable names are WRF's and WPS's own, in <code>code</code>; defaults are from WRF 4.6.0's source. Paths are CCR's; the lab's shared folder is <code>/projects/academic/negarkhodoe/wrf/</code>.</li>
+<li>The site and the gating code live in <a href="https://github.com/utkrshkmr/wrf-manual">github.com/utkrshkmr/wrf-manual</a>. To rebuild the site after editing a page in <code>src/</code>, run <code>python3 tools/build.py</code>.</li>
 </ul>
-<nav class="pager"><span></span><a class="next" href="env.html"><small>Next</small>Phase 0 · Environment and data</a></nav>
+<nav class="pager"><span></span><a class="next" href="quickstart.html"><small>Next</small>Quick start</a></nav>
 <footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/index.md</code>.</footer>
 </article>
 </main>
