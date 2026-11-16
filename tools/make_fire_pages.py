@@ -1,174 +1,116 @@
-"""Write one example page per fire (src/fire-<slug>.md) from the facts below.
-Values marked None are not known to this site yet: the page says so and shows the command that prints them."""
+"""Write one page per fire we have run (src/fire-<slug>.md). Plain-language, setup-and-run only."""
 import pathlib
 SRC = pathlib.Path(__file__).resolve().parent.parent / "src"
 W = "/projects/academic/negarkhodoe/wrf"
 
 FIRES = [
  dict(slug="eaton", name="EATON_2025", title="Eaton 2025",
-      lead="The largest fire we run: an 81 km fire domain at 100 m, 2,025-rank cap, and a full run that needs 24 whole nodes. Ignited in the evening of January 7 local time, in Santa Ana winds.",
-      card=dict(start="2025-01-08 00:00", end="2025-01-08 17:00", ignition_time="2025-01-08 02:18", ignition_lat="34.186040", ignition_lon="-118.093250",
-                ignition_radius_m="100", outer_cells="450", outer_dx_m="900", fire_cells="811", fire_ratio="9", fire_start_i="180", fire_start_j="180",
-                fire_mesh_ratio="4", weather_interval_s="10800", fuel_layer=f"{W}/static/landfire/LF2024/FBFM40", fuel_moisture="0.08",
-                fire_feedback="1", time_step_s="3", base_spec="EATON_2025/campaign"),
-      other="`fire_lsm_zcoupling = .true.` with `fire_lsm_zcoupling_ref = 60`, `fire_ignition_ros1 = 0.10`, ignition over 800 s (`fire_ignition_end_time1 = 9080`), `fire_upwinding = 9`, `fire_lsm_reinit = .true.`; physics `mp_physics = 6`, `ra_lw_physics = 4`, `ra_sw_physics = 1`, `sf_sfclay_physics = 1`, `sf_surface_physics = 2`, `bl_pbl_physics = 1, 0`, no cumulus; 60 vertical levels, weather with 41 levels and 9 soil levels every 3 hours.",
-      source="the NCAR reference case `eaton_100_25_LF2024_WRF` and our campaign namelist",
-      cap="2,025", run=dict(nodes="24", ranks="1530", time="24:00:00", constraint="SAPPHIRE-RAPIDS-IB"),
-      sizing="In the campaign, 1,530 ranks on 24 Sapphire Rapids nodes ran at 1.16 s per step, and the first 5 simulated hours took 3.7 h. The fire makes later hours slower, so 24 h for all 17 leaves room under the 72-hour limit. That is 24 × 64 × 24 ≈ 36,900 core-hours charged.",
-      gated="Gate D on one Sapphire Rapids node: add `--ranks 64 --constraint SAPPHIRE-RAPIDS-IB`, so the measured rate is for the node type the run will use.",
-      notes=["Rank 0 used 168 GB in the campaign: whole 512 GB nodes (Sapphire Rapids or Ice Lake), never Cascade Lake.",
-             "An earlier CCR namelist for Eaton had `fire_fuel_read = 0` (one fuel everywhere) instead of `-1` (the fuel map). The card prints `fire_fuel_read` under *Measured*; gate C fails if it is not `-1`."]),
+      about="Los Angeles County, January 2025. Ignited in the evening of January 7 local time, driven by Santa Ana winds. The largest fire we run: it needs many nodes.",
+      card=[("start", "2025-01-08 00:00"), ("end", "2025-01-08 17:00"), ("ignition_time", "2025-01-08 02:18"),
+            ("ignition_lat", "34.186040"), ("ignition_lon", "-118.093250"), ("ignition_radius_m", "100"),
+            ("outer_cells", "450"), ("outer_dx_m", "900"), ("fire_cells", "811"), ("fire_ratio", "9"), ("fire_mesh_ratio", "4"),
+            ("weather_interval_s", "10800"), ("fuel_layer", f"{W}/static/landfire/LF2024/FBFM40"), ("fuel_moisture", "0.08"),
+            ("time_step_s", "3"), ("base_spec", "EATON_2025/campaign")],
+      facts=[("Simulated", "17 hours, Jan 8 00:00 to 17:00 UTC"), ("Ignition", "Jan 8 02:18 UTC (Jan 7, 6:18 pm local) at 34.18604, −118.09325"),
+             ("Fire area", "81 km square at 100 m"), ("Fuel map", "LANDFIRE 2024"), ("Size of the run", "24 whole nodes, about 1,530 processes; about 13–24 hours")],
+      notes=["`wrf-next` will suggest 24 Sapphire Rapids nodes. That is a large request (tens of thousands of core-hours): check with the lab before you answer *y*.",
+             "Its first process needs a lot of memory, so it only runs on the 512 GB nodes; `wrf-next` asks for those automatically."]),
  dict(slug="canyon", name="CANYON_2025", title="Canyon 2025",
-      lead="Our worked example throughout the manual: a 21.6 km fire domain at 100 m on a 54 × 54 outer grid, HRRR weather every hour, LANDFIRE 2024 fuels. One node is enough.",
-      card=dict(start="2025-08-07 18:00", end="2025-08-09 00:00", ignition_time="2025-08-07 20:25", ignition_lat=None, ignition_lon=None,
-                center_lat="34.46681", center_lon="-118.70165", outer_cells="54", outer_dx_m="900", fire_cells="217", fire_ratio="9",
-                fire_start_i="15", fire_start_j="15", fire_mesh_ratio="4", weather="HRRR", weather_interval_s="3600", vtable="Vtable.HRRR.prs",
-                fuel_layer=f"{W}/static/landfire/LF2024/FBFM40", fuel_key="lf2024", terrain_layer=f"{W}/static/CA_1s", terrain_key="ca_1s",
-                base_spec="CANYON_2025/campaign"),
-      other=None, source="Nisha's `namelist.wps` (shown on [Domain design](domain.html)) and the campaign",
-      cap="25", run=dict(nodes="1", ranks="25", time="48:00:00", constraint=""),
-      sizing="25 ranks is WRF's cap for this grid (the 54 × 54 outer domain allows ⌊54/10⌋² = 25), so one whole node of any type. The campaign simulated the full 30 hours; use gate D's rate to check 48 h before submitting.",
-      gated="Gate D on one node with the default ranks.",
-      notes=["Its fuel map is LANDFIRE **2024**. Two input sets exist and they were not made identically: Nisha's matches the LF2024 layer placed from its north-west corner (98.6%), the `Thursday_deadline_fires` set matches it placed from the south-west corner (98.3%). The registered version names which one it is; gate B reports the match."]),
+      about="Ventura and Los Angeles counties, August 2025. A small, quick fire: one node is enough, and it is the example used throughout this site.",
+      card=[("start", "2025-08-07 18:00"), ("end", "2025-08-09 00:00"), ("ignition_time", "2025-08-07 20:25"),
+            ("ignition_lat", "34.439636"), ("ignition_lon", "-118.735548"),
+            ("outer_cells", "54"), ("outer_dx_m", "900"), ("fire_cells", "217"), ("fire_ratio", "9"), ("fire_mesh_ratio", "4"),
+            ("weather_interval_s", "3600"), ("fuel_layer", f"{W}/static/landfire/LF2024/FBFM40"), ("base_spec", "CANYON_2025/campaign")],
+      facts=[("Simulated", "30 hours, Aug 7 18:00 to Aug 9 00:00 UTC"), ("Ignition", "Aug 7 20:25 UTC at 34.439636, −118.735548"),
+             ("Grids", "outer 54 × 54, fire 217 × 217"), ("Fuel map", "LANDFIRE 2024"), ("Size of the run", "1 node, 25 processes")],
+      notes=[]),
  dict(slug="cranston", name="CRANSTON_2018", title="Cranston 2018",
-      lead="A mid-sized fire: 1.0 million column updates per step, a rank cap of 36, and a 20-hour window. One node; its measured run time is the anchor of our walltime rule.",
-      card=dict(start="2018-07-25 16:00", end="2018-07-26 12:00", ignition_time=None, ignition_lat=None, ignition_lon=None, fuel_layer=f"{W}/static/landfire/LF2016/FBFM40", base_spec="CRANSTON_2018/campaign"),
-      other=None, source="the campaign",
-      cap="36", run=dict(nodes="1", ranks="36", time="48:00:00", constraint=""),
-      sizing="36 ranks on one node. The full 20-hour run took 41.6 h in the campaign; on Sapphire Rapids it ran at 6.19 s per step, on Cascade Lake at 9.95 s. Ask for 48 h (Cascade Lake) or about 30 h on Sapphire Rapids (`--constraint SAPPHIRE-RAPIDS-IB`) after checking gate D's rate.",
-      gated="Gate D on one node with the default ranks.",
-      notes=["Its fuel map is LANDFIRE **2016**: 98.4% of fire cells match LF2016, under 35% match any later release.",
-             "The fire's `met_em` folders exist in three versions (`CRANSTON`, `CRANSTON/met_files`, `CRANSTON/met_files1`); the registered input version names the one used. Check `wrf-status CRANSTON_2018`."]),
+      about="Riverside County, July 2018. A mid-sized fire on one node, with a long run time.",
+      card=[("start", "2018-07-25 16:00"), ("end", "2018-07-26 12:00"), ("ignition_time", "2018-07-25 18:41"),
+            ("ignition_lat", "33.711295"), ("ignition_lon", "-116.769312"),
+            ("outer_cells", "71x64"), ("fire_cells", "370x307"),
+            ("fuel_layer", f"{W}/static/landfire/LF2016/FBFM40"), ("base_spec", "CRANSTON_2018/campaign")],
+      facts=[("Simulated", "20 hours, Jul 25 16:00 to Jul 26 12:00 UTC"), ("Ignition", "Jul 25 18:41 UTC at 33.711295, −116.769312"),
+             ("Grids", "outer 71 × 64, fire 370 × 307"), ("Fuel map", "LANDFIRE 2016"), ("Size of the run", "1 node, 36 processes; about 30–42 hours")],
+      notes=["It takes more than a day and a half on the slower nodes; `wrf-next` sizes the time limit from its test run."]),
  dict(slug="long", name="LONG_2024", title="Long 2024",
-      lead="A 28-hour window with a rank cap of 36. In the campaign the fire reached the edge of its fire domain before the end, which WRF treats as a stop.",
-      card=dict(start="2024-07-15 20:00", end="2024-07-17 00:00", ignition_time=None, ignition_lat=None, ignition_lon=None, fuel_layer=f"{W}/static/landfire/LF2023/FBFM40", base_spec="LONG_2024/campaign"),
-      other=None, source="the campaign",
-      cap="36", run=dict(nodes="1", ranks="36", time="56:00:00", constraint="SAPPHIRE-RAPIDS-IB"),
-      sizing="36 ranks on one Sapphire Rapids node; 56 h leaves room for the full window. Check against gate D's rate first.",
-      gated="Gate D on one Sapphire Rapids node: `--constraint SAPPHIRE-RAPIDS-IB`.",
-      notes=["Its fuel map is LANDFIRE **2023** (97.9% match; LF2022 is close behind at 97.2%), not 2024 (89%).",
-             "**It reaches the domain edge.** In the campaign the fire hit the fire domain's boundary at Jul 16 22:24 and WRF stopped. Gate E classes that ending as *domain edge*, not a crash. To run past it, make a variant card with a larger `fire_cells` (and `outer_cells` if needed), which means new `met_em` files: `wrf-card --make … --wps`."]),
- dict(slug="airport", name="AIRPORT", title="Airport",
-      lead="One of the three fires we have as NCAR `met_em` files only. It has not been run on CCR yet, so its card starts from the inputs and a base spec.",
-      card=dict(start=None, end=None, ignition_time=None, ignition_lat=None, ignition_lon=None, base_spec="CANYON_2025/campaign"),
-      other=None, source="the NCAR `met_em` files", cap=None, run=None, sizing=None, gated="Gate D on one node with the default ranks.",
-      notes=["**Its `met_em` files have no fuel map**: `NFUEL_CAT` is 0 in every fire cell. Gate A fails (A14/A15) and the fire cannot run on these inputs with `fire_fuel_read = -1`. It needs new `met_em` files: make it from a card with `--wps`."]),
- dict(slug="bradford", name="BRADFORD_BRANCH", title="Bradford Branch",
-      lead="NCAR `met_em` files only; not yet run on CCR. Its card starts from the inputs and a base spec.",
-      card=dict(start=None, end=None, ignition_time=None, ignition_lat=None, ignition_lon=None, base_spec="CANYON_2025/campaign"),
-      other=None, source="the NCAR `met_em` files", cap=None, run=None, sizing=None, gated="Gate D on one node with the default ranks.",
-      notes=["**Its fuel map matches none of our LANDFIRE releases** (best: LF2024 at 57%). It was made from data we do not have (another release, product or area); gate B fails until the right layer is found or the inputs are remade from a card."]),
- dict(slug="carmel", name="CARMEL", title="Carmel",
-      lead="NCAR `met_em` files only; not yet run on CCR. Its card starts from the inputs and a base spec.",
-      card=dict(start=None, end=None, ignition_time=None, ignition_lat=None, ignition_lon=None, base_spec="CANYON_2025/campaign"),
-      other=None, source="the NCAR `met_em` files", cap=None, run=None, sizing=None, gated="Gate D on one node with the default ranks.",
-      notes=["**Its fuel map matches none of our LANDFIRE releases** (best: LF2016 at 66%). The release between 2016 and 2022 that we do not have (LF 2019 or 2020) is the likely source; gate B fails until that layer is added or the inputs are remade from a card."]),
+      about="Kern County, July 2024. One node; in our earlier run the fire reached the edge of its simulated area before the end.",
+      card=[("start", "2024-07-15 20:00"), ("end", "2024-07-17 00:00"), ("ignition_time", "2024-07-15 21:30"),
+            ("ignition_lat", "35.830005"), ("ignition_lon", "-118.175345"),
+            ("outer_cells", "60x63"), ("fire_cells", "271x298"),
+            ("fuel_layer", f"{W}/static/landfire/LF2023/FBFM40"), ("base_spec", "LONG_2024/campaign")],
+      facts=[("Simulated", "28 hours, Jul 15 20:00 to Jul 17 00:00 UTC"), ("Ignition", "Jul 15 21:30 UTC at 35.830005, −118.175345"),
+             ("Grids", "outer 60 × 63, fire 271 × 298"), ("Fuel map", "LANDFIRE 2023"), ("Size of the run", "1 node, 36 processes")],
+      notes=["**It stops early, and that is expected.** In our earlier run the fire reached the edge of the fire area at Jul 16 22:24 UTC and the model stopped. `wrf-next` reports this as *domain edge*, not as a failure. To go further, make a variation with a larger fire area (`fire_cells`) and run it with `--wps`."]),
 ]
-
-ORDER = ["name", "start", "end", "ignition_time", "ignition_lat", "ignition_lon", "ignition_radius_m", "center_lat", "center_lon",
-         "outer_cells", "outer_dx_m", "fire_cells", "fire_ratio", "fire_start_i", "fire_start_j", "fire_mesh_ratio",
-         "weather", "weather_interval_s", "vtable", "fuel_layer", "fuel_key", "terrain_layer", "terrain_key",
-         "fuel_moisture", "fire_feedback", "time_step_s", "base_spec"]
-
-
-def card_text(f):
-    c = dict(f["card"]); c["name"] = f["name"]
-    lines = []
-    for k in ORDER:
-        if k in c:
-            v = c[k] if c[k] is not None else "(printed by wrf-card)"
-            lines.append(f"{k + ':':<20} {v}")
-    return "\n".join(lines)
 
 
 def page(f):
-    F, D = f["name"], f"{W}/fires/{f['name']}"
-    missing = [k for k, v in f["card"].items() if v is None]
-    run = f["run"]
-    sub = (f"wrf-submit {F} {D}/specs/campaign --nodes {run['nodes']} --ranks {run['ranks']} --time {run['time']}"
-           + (f" --constraint {run['constraint']}" if run and run["constraint"] else "") + " --name rerun") if run else None
-    dflag = " --ranks 64 --constraint SAPPHIRE-RAPIDS-IB" if f["slug"] == "eaton" else (" --constraint SAPPHIRE-RAPIDS-IB" if f["slug"] == "long" else "")
-    out = [f"---\ntitle: {f['title']}\nkicker: Examples · {F}\nlead: {f['lead']}\n---\n"]
-    out.append("## The fire card\n")
-    out.append(f"Everything that defines this fire, from {f['source']}. The exact card, with every value read from the shared folder, is one command away:\n")
-    out.append(f"```bash\nwrf-card {F}\n```\n")
-    out.append(f"```text\n{card_text(f)}\n```\n")
-    if missing:
-        out.append(f"<div class=\"note\" markdown=\"1\">\nValues shown as *(printed by wrf-card)* ({', '.join('`' + m + '`' for m in missing)}) are in the fire's record in the shared folder but not yet on this page.\n</div>\n")
-    if f["other"]:
-        out.append(f"Other settings in its spec that the card carries over through `base_spec`: {f['other']}\n")
-    if f["cap"]:
-        out.append(f"Rank cap: **{f['cap']}**.\n")
-    out.append("## Run it from an AI chat\n")
-    out.append(f"Copy the [skill](skill.html) into a new chat, then paste underneath:\n")
-    out.append(f"```text\nRun this fire. Here is its card:\n<paste the output of: wrf-card {F}>\n```\n")
-    out.append("The assistant checks the card with you, then walks you through the commands below one at a time.\n")
-    out.append("## Run it with the commands\n")
-    out.append("**1. Check the fire and its inputs.**\n")
-    out.append(f"```bash\nwrf-status {F}\nwrf-card {F}\n```\n")
-    out.append("Read the card: times, ignition, domains, and under *Measured* the gate A and B results and `fire_fuel_read` (must be `-1`).\n")
-    if f["slug"] in ("airport", "bradford", "carmel"):
-        out.append(f"""**2. Make its spec from a card.** These fires have inputs but no spec of their own yet. Print the card, fill in what is missing from the record and the inputs, keep `base_spec: CANYON_2025/campaign` for the lab's physics, and make the spec without rerunning WPS:
+    F, s = f["name"], f["slug"]
+    card = "\n".join(f"{k + ':':<20} {v}" for k, v in [("name", F)] + f["card"])
+    facts = "\n".join(f"| {a} | {b} |" for a, b in f["facts"])
+    out = f"""---
+title: {f['title']}
+kicker: Fires we have run · {F}
+lead: {f['about']}
+---
+
+| | |
+| --- | --- |
+{facts}
+
+Its files are already in the shared folder, checked and ready. You only need to have [set up](start.html) once.
+
+## Run it
+
+**1. Start it.**
 
 ```bash
-wrf-card {F} > {W}/people/$USER/work/{f['slug']}.card
-wrf-card --make {W}/people/$USER/work/{f['slug']}.card
+wrf-next {F}
 ```
 
-It prints the spec folder (`people/$USER/work/{F}_<time>/spec`). Its domain sizes and grid spacing must match the `met_em` files; gate C checks them.
+It checks everything and submits the first job. You get an email when it ends.
 
-**3. Gate C (real.exe), then gate D (2-minute smoke run).**
+**2. After each email, run the same command again.**
 
 ```bash
-wrf-gate C {F} {W}/people/$USER/work/{F}_<time>/spec
-wrf-gate D {F} {D}/runs/<stamp>_gateC_spec
+wrf-next {F}
 ```
 
-**4. Size and submit.** The rank cap is in gate C's `GATES.txt` (`C15`). Use one whole node at the cap if it is under 64, and set the walltime from gate D's seconds per step ([how](run.html)):
+Each time, it reports how the last step went and starts the next one. There are four steps: the weather and map files (already done for this fire), the start files, a 2-minute test run, and the simulation itself.
+
+**3. Before the simulation, it asks you.** It shows the size it suggests (nodes, processes, time limit and the most it can cost) and waits for *y*.
+
+**4. While it runs**, `wrf-next {F}` shows how far it has got and the time left.
+
+**5. When it is done**, `wrf-next {F}` says how it ended and where the results are: the `wrfout_*` files in the run folder it prints.
+
+If a step fails, `wrf-next` prints what is wrong in plain words. If it is not clear what to do, paste the output into the [AI chat helper](skill.html).
+
+## Its settings
+
+These are the settings that define the fire. `wrf-card {F}` prints all of them, including everything not shown here.
+
+```text
+{card}
+```
+
+## Try a variation
+
+Change one setting, for example drier fuel, and run it as your own copy:
 
 ```bash
-wrf-submit {F} {W}/people/$USER/work/{F}_<time>/spec --nodes 1 --ranks <cap> --time <HH:MM:SS>
-```
-""")
-    else:
-        out.append(f"""**2. Gate C: real.exe on the campaign spec.**
-
-```bash
-wrf-gate C {F} {D}/specs/campaign
+wrf-card {F} > {W}/people/$USER/work/{s}_dry.card
+nano {W}/people/$USER/work/{s}_dry.card
+wrf-card --make {W}/people/$USER/work/{s}_dry.card
+wrf-next {F}
 ```
 
-It prints the run folder; Slurm emails you when it ends. Then `cat {D}/runs/<stamp>_gateC_campaign/GATES.txt`.
-
-**3. Gate D: two minutes of wrf.exe.** {f['gated']}
-
-```bash
-wrf-gate D {F} {D}/runs/<stamp>_gateC_campaign{dflag}
-```
-
-**4. Submit.** {f['sizing']}
-
-```bash
-{sub}
-```
-""")
-    out.append("**5. Watch it, and read how it ended.**\n")
-    out.append(f"```bash\nwrf-watch {F}\ncat {D}/runs/<stamp>_rerun/GATES.txt\n```\n")
-    out.append("Gate E runs inside the job when it ends: *finished*, *domain edge*, *crash* or *killed*, plus whether the first burning cell matches the card's ignition time and place.\n")
-    out.append("## Make a variant\n")
-    out.append(f"""Copy the card, change what you are testing (and the `note:` line), and make it. Times and domains unchanged means the existing inputs are reused, so no WPS:
-
-```bash
-wrf-card {F} > {W}/people/$USER/work/{f['slug']}_variant.card
-wrf-card --make {W}/people/$USER/work/{f['slug']}_variant.card
-```
-
-Then gates C and D and `wrf-submit` on the spec folder it prints, with a `--name` that says what changed. Ideas: [fuel moisture](moisture.html), [one-way coupling](coupling.html), [slope sensitivity](terrain.html#the-slope-effect), [another ignition](ignitions.html).
-""")
+In the editor, change the line you want (for example `fuel_moisture: 0.05`) and the `note:` line, then save (Ctrl-O, Enter) and exit (Ctrl-X). `wrf-next` always uses your newest copy. Settings you can change are listed on [Your own fire](newfire.html#5-changing-settings).
+"""
     if f["notes"]:
-        out.append("## Good to know\n")
-        out += [f"- {n}" for n in f["notes"]]
-        out.append("")
-    (SRC / f"fire-{f['slug']}.md").write_text("\n".join(out) + "\n")
+        out += "\n## Good to know\n\n" + "\n".join(f"- {n}" for n in f["notes"]) + "\n"
+    (SRC / f"fire-{s}.md").write_text(out)
 
 
 if __name__ == "__main__":

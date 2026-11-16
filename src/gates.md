@@ -1,7 +1,7 @@
 ---
-title: The gating system
-kicker: Running it safely
-lead: Ten small commands carry a fire from its record to a checked run. Each one does one step, runs the checks for it, and writes what it did to a shared ledger. Nothing reaches the queue until the cheap checks have passed, and nothing is ever deleted.
+title: The checks behind each step
+kicker: How it works
+lead: A few small commands carry a fire from its record to a checked run. Each one does one step, runs the checks for it, and writes what it did to a shared ledger. Nothing reaches the queue until the cheap checks have passed, and nothing is ever deleted.
 ---
 
 ## Why gates
@@ -14,15 +14,9 @@ It also answers, for every file in the shared folder, who made it, when, from wh
 
 ## Getting started
 
-Once per person:
+See [Set up](start.html). This page explains what the commands check and where they keep things; you do not need it to run a fire.
 
-```bash
-echo 'source /projects/academic/negarkhodoe/wrf/pipeline/current/setup.sh' >> ~/.bashrc
-source /projects/academic/negarkhodoe/wrf/pipeline/current/setup.sh
-wrf-me --name "Your Name" --email you@buffalo.edu --mail END,FAIL
-```
-
-`setup.sh` puts the commands on your `PATH` and adds a shell hook that logs your commands that touch the shared folder. `wrf-me` writes your profile.
+`wrf-next FIRE` runs the steps below in order for you; the individual commands are listed here for when you want to run one step yourself.
 
 ## Your profile
 
@@ -87,6 +81,7 @@ Rules the commands keep:
 | `wrf-gate D FIRE GATE_C_DIR [--minutes 2] [--ranks N]` | Two simulated minutes of wrf.exe on one node, no output, then gate D | gate C did not pass |
 | `wrf-submit FIRE SPEC_DIR --nodes --ranks --time [--constraint] [--name]` | The production run: links gate C's files, submits wrf.exe, runs gate E when the job ends | no passed gate D for the same namelists and inputs; ranks over the cap; walltime over 72 h; the same namelists already queued |
 | `wrf-gate E FIRE RUN_DIR` | Reruns gate E, for a run that was killed before its own gate E | — |
+| `wrf-next FIRE [--yes] [--retry] [--spec DIR]` | Looks at where the fire is and does the next step: waits for WPS, submits gate C, then gate D, then proposes the run size from gate D's measured rate and submits after a yes; afterwards shows progress and how it ended | — |
 | `wrf-watch [FIRE] [--mine] [--active] [--every SECONDS]` | Every submitted job: Slurm state, elapsed and limit, simulated time reached, % done, seconds per step, ETA, and warnings (log idle over 30 min, won't finish in its time limit, pending reason, failed or timed out, gate results) | — |
 | `wrf-status [FIRE]` | All fires, or one fire's record, versions, gates and runs with who started them and the job state | — |
 | `wrf-setaside PATH "reason"` | Moves something into `setaside/` instead of deleting it | it is in use (see above) |

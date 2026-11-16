@@ -1,6 +1,6 @@
 ---
-title: Skill file for chat assistants
-kicker: Running it safely
+title: AI chat helper
+kicker: Help
 lead: One block of text you paste at the start of a chat with any AI assistant. It tells the assistant how our setup works, so it can walk you through running any fire, one command at a time, and read what CCR prints back.
 ---
 
@@ -8,7 +8,7 @@ lead: One block of text you paste at the start of a chat with any AI assistant. 
 
 1. **Copy the skill.** Press **Copy the skill** below (or select the whole block and copy it).
 2. **Start a new chat** with your assistant (Claude, ChatGPT, Gemini, or any other) and paste it as your first message.
-3. **Underneath, paste the fire's card and one line saying what you want.** A card is the fire's settings: name, window, ignition time and place, domains and a few model settings ([what a card is](quickstart.html#2-describe-the-fire-as-a-card)). For example:
+3. **Underneath, paste the fire's card and one line saying what you want.** A card is the fire's settings: name, window, ignition time and place, domains and a few model settings ([what a card is](newfire.html#1-describe-the-fire)). For example:
    - a filled card from `wrf-card --template`, and *"Run this fire."*
    - the output of `wrf-card LONG_2024` with `time_step_s` changed, and *"Run this as a variant."*
    - the output of `wrf-card CANYON_2025`, plus its gate C `GATES.txt`, and *"Gate C failed; what is wrong?"*

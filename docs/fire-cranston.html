@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cranston 2018 · WRF-Fire Manual</title>
-<meta name="description" content="A mid-sized fire: 1.0 million column updates per step, a rank cap of 36, and a 20-hour window. One node; its measured run time is the anchor of our walltime rule.">
+<meta name="description" content="Riverside County, July 2018. A mid-sized fire on one node, with a long run time.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -17,106 +17,119 @@
 <nav class="side" aria-label="Site">
 <button type="button" class="close" onclick="this.parentNode.classList.remove('open')">Close</button>
 <a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
-<h4>Start</h4><ol>
+<h4>Start here</h4><ol>
 <li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
-<li><a href="quickstart.html"><span class="n">0</span><span>Quick start</span></a></li>
+<li><a href="start.html"><span class="n">0</span><span>Set up (once)</span></a></li>
+<li><a href="newfire.html"><span class="n">1</span><span>Your own fire</span></a></li>
 </ol>
-<h4>Running fires</h4><ol>
-<li><a href="gates.html"><span class="n">1</span><span>The gating system</span></a></li>
-<li><a href="skill.html"><span class="n">2</span><span>Skill file for chat assistants</span></a></li>
+<h4>Fires we have run</h4><ol>
+<li><a href="fire-eaton.html"><span class="n">2</span><span>Eaton 2025</span></a></li>
+<li><a href="fire-canyon.html"><span class="n">3</span><span>Canyon 2025</span></a></li>
+<li><a href="fire-cranston.html" class="on"><span class="n">4</span><span>Cranston 2018</span></a></li>
+<li><a href="fire-long.html"><span class="n">5</span><span>Long 2024</span></a></li>
 </ol>
-<h4>Examples</h4><ol>
-<li><a href="example.html"><span class="n">3</span><span>All fires at a glance</span></a></li>
-<li><a href="fire-eaton.html"><span class="n">4</span><span>Eaton 2025</span></a></li>
-<li><a href="fire-canyon.html"><span class="n">5</span><span>Canyon 2025</span></a></li>
-<li><a href="fire-cranston.html" class="on"><span class="n">6</span><span>Cranston 2018</span></a></li>
-<li><a href="fire-long.html"><span class="n">7</span><span>Long 2024</span></a></li>
-<li><a href="fire-airport.html"><span class="n">8</span><span>Airport</span></a></li>
-<li><a href="fire-bradford.html"><span class="n">9</span><span>Bradford Branch</span></a></li>
-<li><a href="fire-carmel.html"><span class="n">10</span><span>Carmel</span></a></li>
+<h4>Help</h4><ol>
+<li><a href="skill.html"><span class="n">6</span><span>AI chat helper</span></a></li>
+</ol>
+<h4>How it works</h4><ol>
+<li><a href="gates.html"><span class="n">7</span><span>The checks behind each step</span></a></li>
 </ol>
 <h4>Advanced: research inputs</h4><ol>
-<li><a href="extend.html"><span class="n">11</span><span>Where each change goes</span></a></li>
-<li><a href="moisture.html"><span class="n">12</span><span>Fuel moisture</span></a></li>
-<li><a href="fuelmap.html"><span class="n">13</span><span>The fuel map</span></a></li>
-<li><a href="fuelprops.html"><span class="n">14</span><span>How a fuel type burns</span></a></li>
-<li><a href="ignitions.html"><span class="n">15</span><span>Ignitions and perimeters</span></a></li>
-<li><a href="terrain.html"><span class="n">16</span><span>Terrain and slope</span></a></li>
-<li><a href="coupling.html"><span class="n">17</span><span>Fire and atmosphere</span></a></li>
+<li><a href="extend.html"><span class="n">8</span><span>Where each change goes</span></a></li>
+<li><a href="moisture.html"><span class="n">9</span><span>Fuel moisture</span></a></li>
+<li><a href="fuelmap.html"><span class="n">10</span><span>The fuel map</span></a></li>
+<li><a href="fuelprops.html"><span class="n">11</span><span>How a fuel type burns</span></a></li>
+<li><a href="ignitions.html"><span class="n">12</span><span>Ignitions and perimeters</span></a></li>
+<li><a href="terrain.html"><span class="n">13</span><span>Terrain and slope</span></a></li>
+<li><a href="coupling.html"><span class="n">14</span><span>Fire and atmosphere</span></a></li>
 </ol>
 <h4>WRF mechanics</h4><ol>
-<li><a href="env.html"><span class="n">18</span><span>Environment and data</span></a></li>
-<li><a href="domain.html"><span class="n">19</span><span>Domain design</span></a></li>
-<li><a href="geogrid.html"><span class="n">20</span><span>Static data (geogrid)</span></a></li>
-<li><a href="ungrib.html"><span class="n">21</span><span>Weather (ungrib)</span></a></li>
-<li><a href="metgrid.html"><span class="n">22</span><span>Merge (metgrid)</span></a></li>
-<li><a href="real.html"><span class="n">23</span><span>real.exe and namelist.input</span></a></li>
-<li><a href="fire.html"><span class="n">24</span><span>The fire model</span></a></li>
-<li><a href="run.html"><span class="n">25</span><span>Running it on Slurm</span></a></li>
-<li><a href="reference.html"><span class="n">26</span><span>Reference and failures</span></a></li>
+<li><a href="env.html"><span class="n">15</span><span>Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">16</span><span>Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">17</span><span>Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">18</span><span>Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">19</span><span>Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">20</span><span>real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">21</span><span>The fire model</span></a></li>
+<li><a href="run.html"><span class="n">22</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">23</span><span>Reference and failures</span></a></li>
 </ol>
 <button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
 </nav>
 <main>
 <article class="page">
-<p class="kicker">Examples · CRANSTON_2018</p>
+<p class="kicker">Fires we have run · CRANSTON_2018</p>
 <h1>Cranston 2018</h1>
-<p class="lead">A mid-sized fire: 1.0 million column updates per step, a rank cap of 36, and a 20-hour window. One node; its measured run time is the anchor of our walltime rule.</p>
-<nav class="toc"><b>On this page</b><ul><li><a href="#the-fire-card">The fire card</a></li><li><a href="#run-it-from-an-ai-chat">Run it from an AI chat</a></li><li><a href="#run-it-with-the-commands">Run it with the commands</a></li><li><a href="#make-a-variant">Make a variant</a></li><li><a href="#good-to-know">Good to know</a></li></ul></nav>
-<h2 id="the-fire-card">The fire card</h2>
-<p>Everything that defines this fire, from the campaign. The exact card, with every value read from the shared folder, is one command away:</p>
-<pre><code class="language-bash">wrf-card CRANSTON_2018
+<p class="lead">Riverside County, July 2018. A mid-sized fire on one node, with a long run time.</p>
+<nav class="toc"><b>On this page</b><ul><li><a href="#run-it">Run it</a></li><li><a href="#its-settings">Its settings</a></li><li><a href="#try-a-variation">Try a variation</a></li><li><a href="#good-to-know">Good to know</a></li></ul></nav>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Simulated</td>
+<td>20 hours, Jul 25 16:00 to Jul 26 12:00 UTC</td>
+</tr>
+<tr>
+<td>Ignition</td>
+<td>Jul 25 18:41 UTC at 33.711295, −116.769312</td>
+</tr>
+<tr>
+<td>Grids</td>
+<td>outer 71 × 64, fire 370 × 307</td>
+</tr>
+<tr>
+<td>Fuel map</td>
+<td>LANDFIRE 2016</td>
+</tr>
+<tr>
+<td>Size of the run</td>
+<td>1 node, 36 processes; about 30–42 hours</td>
+</tr>
+</tbody>
+</table></div>
+<p>Its files are already in the shared folder, checked and ready. You only need to have <a href="start.html">set up</a> once.</p>
+<h2 id="run-it">Run it</h2>
+<p><strong>1. Start it.</strong></p>
+<pre><code class="language-bash">wrf-next CRANSTON_2018
 </code></pre>
+<p>It checks everything and submits the first job. You get an email when it ends.</p>
+<p><strong>2. After each email, run the same command again.</strong></p>
+<pre><code class="language-bash">wrf-next CRANSTON_2018
+</code></pre>
+<p>Each time, it reports how the last step went and starts the next one. There are four steps: the weather and map files (already done for this fire), the start files, a 2-minute test run, and the simulation itself.</p>
+<p><strong>3. Before the simulation, it asks you.</strong> It shows the size it suggests (nodes, processes, time limit and the most it can cost) and waits for <em>y</em>.</p>
+<p><strong>4. While it runs</strong>, <code>wrf-next CRANSTON_2018</code> shows how far it has got and the time left.</p>
+<p><strong>5. When it is done</strong>, <code>wrf-next CRANSTON_2018</code> says how it ended and where the results are: the <code>wrfout_*</code> files in the run folder it prints.</p>
+<p>If a step fails, <code>wrf-next</code> prints what is wrong in plain words. If it is not clear what to do, paste the output into the <a href="skill.html">AI chat helper</a>.</p>
+<h2 id="its-settings">Its settings</h2>
+<p>These are the settings that define the fire. <code>wrf-card CRANSTON_2018</code> prints all of them, including everything not shown here.</p>
 <pre><code class="language-text">name:                CRANSTON_2018
 start:               2018-07-25 16:00
 end:                 2018-07-26 12:00
-ignition_time:       (printed by wrf-card)
-ignition_lat:        (printed by wrf-card)
-ignition_lon:        (printed by wrf-card)
+ignition_time:       2018-07-25 18:41
+ignition_lat:        33.711295
+ignition_lon:        -116.769312
+outer_cells:         71x64
+fire_cells:          370x307
 fuel_layer:          /projects/academic/negarkhodoe/wrf/static/landfire/LF2016/FBFM40
 base_spec:           CRANSTON_2018/campaign
 </code></pre>
-<div class="note">
-<p>Values shown as <em>(printed by wrf-card)</em> (<code>ignition_time</code>, <code>ignition_lat</code>, <code>ignition_lon</code>) are in the fire's record in the shared folder but not yet on this page.</p>
-</div>
-<p>Rank cap: <strong>36</strong>.</p>
-<h2 id="run-it-from-an-ai-chat">Run it from an AI chat</h2>
-<p>Copy the <a href="skill.html">skill</a> into a new chat, then paste underneath:</p>
-<pre><code class="language-text">Run this fire. Here is its card:
-&lt;paste the output of: wrf-card CRANSTON_2018&gt;
+<h2 id="try-a-variation">Try a variation</h2>
+<p>Change one setting, for example drier fuel, and run it as your own copy:</p>
+<pre><code class="language-bash">wrf-card CRANSTON_2018 &gt; /projects/academic/negarkhodoe/wrf/people/$USER/work/cranston_dry.card
+nano /projects/academic/negarkhodoe/wrf/people/$USER/work/cranston_dry.card
+wrf-card --make /projects/academic/negarkhodoe/wrf/people/$USER/work/cranston_dry.card
+wrf-next CRANSTON_2018
 </code></pre>
-<p>The assistant checks the card with you, then walks you through the commands below one at a time.</p>
-<h2 id="run-it-with-the-commands">Run it with the commands</h2>
-<p><strong>1. Check the fire and its inputs.</strong></p>
-<pre><code class="language-bash">wrf-status CRANSTON_2018
-wrf-card CRANSTON_2018
-</code></pre>
-<p>Read the card: times, ignition, domains, and under <em>Measured</em> the gate A and B results and <code>fire_fuel_read</code> (must be <code>-1</code>).</p>
-<p><strong>2. Gate C: real.exe on the campaign spec.</strong></p>
-<pre><code class="language-bash">wrf-gate C CRANSTON_2018 /projects/academic/negarkhodoe/wrf/fires/CRANSTON_2018/specs/campaign
-</code></pre>
-<p>It prints the run folder; Slurm emails you when it ends. Then <code>cat /projects/academic/negarkhodoe/wrf/fires/CRANSTON_2018/runs/&lt;stamp&gt;_gateC_campaign/GATES.txt</code>.</p>
-<p><strong>3. Gate D: two minutes of wrf.exe.</strong> Gate D on one node with the default ranks.</p>
-<pre><code class="language-bash">wrf-gate D CRANSTON_2018 /projects/academic/negarkhodoe/wrf/fires/CRANSTON_2018/runs/&lt;stamp&gt;_gateC_campaign
-</code></pre>
-<p><strong>4. Submit.</strong> 36 ranks on one node. The full 20-hour run took 41.6 h in the campaign; on Sapphire Rapids it ran at 6.19 s per step, on Cascade Lake at 9.95 s. Ask for 48 h (Cascade Lake) or about 30 h on Sapphire Rapids (<code>--constraint SAPPHIRE-RAPIDS-IB</code>) after checking gate D's rate.</p>
-<pre><code class="language-bash">wrf-submit CRANSTON_2018 /projects/academic/negarkhodoe/wrf/fires/CRANSTON_2018/specs/campaign --nodes 1 --ranks 36 --time 48:00:00 --name rerun
-</code></pre>
-<p><strong>5. Watch it, and read how it ended.</strong></p>
-<pre><code class="language-bash">wrf-watch CRANSTON_2018
-cat /projects/academic/negarkhodoe/wrf/fires/CRANSTON_2018/runs/&lt;stamp&gt;_rerun/GATES.txt
-</code></pre>
-<p>Gate E runs inside the job when it ends: <em>finished</em>, <em>domain edge</em>, <em>crash</em> or <em>killed</em>, plus whether the first burning cell matches the card's ignition time and place.</p>
-<h2 id="make-a-variant">Make a variant</h2>
-<p>Copy the card, change what you are testing (and the <code>note:</code> line), and make it. Times and domains unchanged means the existing inputs are reused, so no WPS:</p>
-<pre><code class="language-bash">wrf-card CRANSTON_2018 &gt; /projects/academic/negarkhodoe/wrf/people/$USER/work/cranston_variant.card
-wrf-card --make /projects/academic/negarkhodoe/wrf/people/$USER/work/cranston_variant.card
-</code></pre>
-<p>Then gates C and D and <code>wrf-submit</code> on the spec folder it prints, with a <code>--name</code> that says what changed. Ideas: <a href="moisture.html">fuel moisture</a>, <a href="coupling.html">one-way coupling</a>, <a href="terrain.html#the-slope-effect">slope sensitivity</a>, <a href="ignitions.html">another ignition</a>.</p>
+<p>In the editor, change the line you want (for example <code>fuel_moisture: 0.05</code>) and the <code>note:</code> line, then save (Ctrl-O, Enter) and exit (Ctrl-X). <code>wrf-next</code> always uses your newest copy. Settings you can change are listed on <a href="newfire.html#5-changing-settings">Your own fire</a>.</p>
 <h2 id="good-to-know">Good to know</h2>
 <ul>
-<li>Its fuel map is LANDFIRE <strong>2016</strong>: 98.4% of fire cells match LF2016, under 35% match any later release.</li>
-<li>The fire's <code>met_em</code> folders exist in three versions (<code>CRANSTON</code>, <code>CRANSTON/met_files</code>, <code>CRANSTON/met_files1</code>); the registered input version names the one used. Check <code>wrf-status CRANSTON_2018</code>.</li>
+<li>It takes more than a day and a half on the slower nodes; <code>wrf-next</code> sizes the time limit from its test run.</li>
 </ul>
 <nav class="pager"><a class="prev" href="fire-canyon.html"><small>Previous</small>Canyon 2025</a><a class="next" href="fire-long.html"><small>Next</small>Long 2024</a></nav>
 <footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/fire-cranston.md</code>.</footer>

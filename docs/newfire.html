@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your own fire · WRF-Fire Manual</title>
+<meta name="description" content="Answer six questions about the fire, then run the same command after each email until it is done. Nothing else to edit by hand.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</head>
+<body>
+<div class="topbar"><a href="index.html">WRF-Fire Manual</a><button type="button" onclick="document.querySelector('.side').classList.add('open')">Menu</button></div>
+<div class="layout">
+<nav class="side" aria-label="Site">
+<button type="button" class="close" onclick="this.parentNode.classList.remove('open')">Close</button>
+<a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
+<h4>Start here</h4><ol>
+<li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
+<li><a href="start.html"><span class="n">0</span><span>Set up (once)</span></a></li>
+<li><a href="newfire.html" class="on"><span class="n">1</span><span>Your own fire</span></a></li>
+</ol>
+<h4>Fires we have run</h4><ol>
+<li><a href="fire-eaton.html"><span class="n">2</span><span>Eaton 2025</span></a></li>
+<li><a href="fire-canyon.html"><span class="n">3</span><span>Canyon 2025</span></a></li>
+<li><a href="fire-cranston.html"><span class="n">4</span><span>Cranston 2018</span></a></li>
+<li><a href="fire-long.html"><span class="n">5</span><span>Long 2024</span></a></li>
+</ol>
+<h4>Help</h4><ol>
+<li><a href="skill.html"><span class="n">6</span><span>AI chat helper</span></a></li>
+</ol>
+<h4>How it works</h4><ol>
+<li><a href="gates.html"><span class="n">7</span><span>The checks behind each step</span></a></li>
+</ol>
+<h4>Advanced: research inputs</h4><ol>
+<li><a href="extend.html"><span class="n">8</span><span>Where each change goes</span></a></li>
+<li><a href="moisture.html"><span class="n">9</span><span>Fuel moisture</span></a></li>
+<li><a href="fuelmap.html"><span class="n">10</span><span>The fuel map</span></a></li>
+<li><a href="fuelprops.html"><span class="n">11</span><span>How a fuel type burns</span></a></li>
+<li><a href="ignitions.html"><span class="n">12</span><span>Ignitions and perimeters</span></a></li>
+<li><a href="terrain.html"><span class="n">13</span><span>Terrain and slope</span></a></li>
+<li><a href="coupling.html"><span class="n">14</span><span>Fire and atmosphere</span></a></li>
+</ol>
+<h4>WRF mechanics</h4><ol>
+<li><a href="env.html"><span class="n">15</span><span>Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">16</span><span>Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">17</span><span>Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">18</span><span>Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">19</span><span>Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">20</span><span>real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">21</span><span>The fire model</span></a></li>
+<li><a href="run.html"><span class="n">22</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">23</span><span>Reference and failures</span></a></li>
+</ol>
+<button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
+</nav>
+<main>
+<article class="page">
+<p class="kicker">Step 2</p>
+<h1>Your own fire</h1>
+<p class="lead">Answer six questions about the fire, then run the same command after each email until it is done. Nothing else to edit by hand.</p>
+<nav class="toc"><b>On this page</b><ul><li><a href="#1-describe-the-fire">1. Describe the fire</a></li><li><a href="#2-get-its-weather">2. Get its weather</a></li><li><a href="#3-make-the-fire">3. Make the fire</a></li><li><a href="#4-run-it">4. Run it</a></li><li><a href="#5-changing-settings">5. Changing settings</a></li><li><a href="#where-things-are">Where things are</a></li></ul></nav>
+<h2 id="1-describe-the-fire">1. Describe the fire</h2>
+<pre><code class="language-bash">wrf-card --new /projects/academic/negarkhodoe/wrf/people/$USER/work/bridge.card
+</code></pre>
+<p>It asks six questions. Have these ready:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Example answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A short name, capitals with the year</td>
+<td><code>BRIDGE_2024</code></td>
+</tr>
+<tr>
+<td>When it ignited, local California time</td>
+<td><code>2024-09-08 14:30</code></td>
+</tr>
+<tr>
+<td>Where it ignited, latitude and longitude (right-click the spot in Google Maps to copy them)</td>
+<td><code>34.2997</code> and <code>-117.7756</code></td>
+</tr>
+<tr>
+<td>Hours of weather before ignition</td>
+<td>press Enter for 2</td>
+</tr>
+<tr>
+<td>Hours to simulate after ignition</td>
+<td><code>30</code></td>
+</tr>
+<tr>
+<td>How far the fire spread from the ignition point, in km</td>
+<td><code>12</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>It then shows a summary, picks the fuel map for that year and a fire area big enough for the spread you gave, and saves your answers as the fire's <strong>card</strong>, a short text file. A finished session looks like this:</p>
+<pre><code class="language-text">Summary
+  fire          BRIDGE_2024
+  ignition      2024-09-08 21:30 UTC at 34.299700, -117.775600
+  simulated     2024-09-08 19:00 to 2024-09-10 04:00 UTC (33 h)
+  fire area     30.6 km square at 100 m, inside a 58 km area at 900 m
+  fuel map      LANDFIRE 2023
+  weather       HRRR, hourly
+
+Saved the card: /projects/academic/negarkhodoe/wrf/people/ukumar/work/bridge.card
+</code></pre>
+<h2 id="2-get-its-weather">2. Get its weather</h2>
+<pre><code class="language-bash">wrf-card --weather /projects/academic/negarkhodoe/wrf/people/$USER/work/bridge.card
+</code></pre>
+<p>It downloads the hourly weather (HRRR) for the simulated period into the lab's shared weather folder, skipping hours already there. It takes a few minutes per hour of weather, so leave it running. If some files fail, run it again.</p>
+<h2 id="3-make-the-fire">3. Make the fire</h2>
+<pre><code class="language-bash">wrf-card --make /projects/academic/negarkhodoe/wrf/people/$USER/work/bridge.card --wps
+</code></pre>
+<p>It checks the card (for example that the ignition sits well inside the fire area), registers the fire, writes all the model settings, and starts the job that builds the weather and map files. You get an email when that job ends.</p>
+<h2 id="4-run-it">4. Run it</h2>
+<p>After each email, run:</p>
+<pre><code class="language-bash">wrf-next BRIDGE_2024
+</code></pre>
+<p>Each time it says how the last step went and starts the next:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Step</th>
+<th>What happens</th>
+<th>Usual time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Weather and map files</td>
+<td>started by step 3 above</td>
+<td>1–3 hours</td>
+</tr>
+<tr>
+<td>2. Start files</td>
+<td>prepares the model's first state</td>
+<td>under 1 hour</td>
+</tr>
+<tr>
+<td>3. Test run</td>
+<td>2 minutes of simulated time, to catch problems early</td>
+<td>under 1 hour</td>
+</tr>
+<tr>
+<td>4. The simulation</td>
+<td>asks you first, showing its size and cost</td>
+<td>hours to days</td>
+</tr>
+</tbody>
+</table></div>
+<p>Queue waits come on top of these times. While the simulation runs, <code>wrf-next BRIDGE_2024</code> shows how far it has got and the time left. When it ends, it says how it ended and where the results are.</p>
+<p>If a step fails, <code>wrf-next</code> prints what is wrong. The usual fix is to correct one line of the card (step 5) and make it again. If it is not clear, paste the output into the <a href="skill.html">AI chat helper</a>.</p>
+<h2 id="5-changing-settings">5. Changing settings</h2>
+<p>Open the card in an editor, change a line, save, and make it again:</p>
+<pre><code class="language-bash">nano /projects/academic/negarkhodoe/wrf/people/$USER/work/bridge.card
+wrf-card --make /projects/academic/negarkhodoe/wrf/people/$USER/work/bridge.card
+wrf-next BRIDGE_2024
+</code></pre>
+<p>In <code>nano</code>: change the value, then Ctrl-O, Enter to save and Ctrl-X to exit. Add <code>--wps</code> to the <code>--make</code> line only when you changed a line marked <em>new weather and map files</em> below.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Line</th>
+<th>What it means</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>note</code></td>
+<td>a few words about this run, saved with it</td>
+<td><code>drier fuel test</code></td>
+</tr>
+<tr>
+<td><code>fuel_moisture</code></td>
+<td>how wet the dead fuel is, as a fraction</td>
+<td><code>0.05</code> (5%, drier)</td>
+</tr>
+<tr>
+<td><code>fire_feedback</code></td>
+<td>1 = the fire changes the wind, 0 = it does not</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td><code>slope_factor</code></td>
+<td>how strongly slope speeds the fire, 1 = normal</td>
+<td><code>1.5</code></td>
+</tr>
+<tr>
+<td><code>ignition_radius_m</code></td>
+<td>size of the first burning circle, in metres</td>
+<td><code>100</code></td>
+</tr>
+<tr>
+<td><code>ignition_lat</code>, <code>ignition_lon</code></td>
+<td>where it starts (must stay inside the fire area)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ignition_time</code></td>
+<td>when it starts, UTC (must stay inside the simulated period)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>start</code>, <code>end</code></td>
+<td>the simulated period, UTC</td>
+<td><em>new weather and map files</em></td>
+</tr>
+<tr>
+<td><code>fire_cells</code></td>
+<td>size of the fire area, in 100 m cells per side</td>
+<td><em>new weather and map files</em></td>
+</tr>
+<tr>
+<td><code>outer_cells</code></td>
+<td>size of the surrounding area, in 900 m cells per side</td>
+<td><em>new weather and map files</em></td>
+</tr>
+</tbody>
+</table></div>
+<p>Each <code>--make</code> keeps the earlier versions; <code>wrf-next</code> uses your newest.</p>
+<h2 id="where-things-are">Where things are</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>What</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>your cards and settings</td>
+<td><code>/projects/academic/negarkhodoe/wrf/people/$USER/work/</code></td>
+</tr>
+<tr>
+<td>the fire's runs and results</td>
+<td><code>/projects/academic/negarkhodoe/wrf/fires/BRIDGE_2024/runs/</code></td>
+</tr>
+<tr>
+<td>all your jobs</td>
+<td><code>wrf-watch --mine</code></td>
+</tr>
+</tbody>
+</table></div>
+<nav class="pager"><a class="prev" href="start.html"><small>Previous</small>Set up (once)</a><a class="next" href="fire-eaton.html"><small>Next</small>Eaton 2025</a></nav>
+<footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/newfire.md</code>.</footer>
+</article>
+</main>
+</div>
+<script>
+function toggleTheme(){var d=document.documentElement;var cur=d.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var nx=cur==='dark'?'light':'dark';d.setAttribute('data-theme',nx);try{localStorage.setItem('theme',nx);}catch(e){}}
+</script>
+</body>
+</html>

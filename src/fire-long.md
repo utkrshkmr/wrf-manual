@@ -1,98 +1,75 @@
 ---
 title: Long 2024
-kicker: Examples · LONG_2024
-lead: A 28-hour window with a rank cap of 36. In the campaign the fire reached the edge of its fire domain before the end, which WRF treats as a stop.
+kicker: Fires we have run · LONG_2024
+lead: Kern County, July 2024. One node; in our earlier run the fire reached the edge of its simulated area before the end.
 ---
 
-## The fire card
+| | |
+| --- | --- |
+| Simulated | 28 hours, Jul 15 20:00 to Jul 17 00:00 UTC |
+| Ignition | Jul 15 21:30 UTC at 35.830005, −118.175345 |
+| Grids | outer 60 × 63, fire 271 × 298 |
+| Fuel map | LANDFIRE 2023 |
+| Size of the run | 1 node, 36 processes |
 
-Everything that defines this fire, from the campaign. The exact card, with every value read from the shared folder, is one command away:
+Its files are already in the shared folder, checked and ready. You only need to have [set up](start.html) once.
+
+## Run it
+
+**1. Start it.**
 
 ```bash
-wrf-card LONG_2024
+wrf-next LONG_2024
 ```
+
+It checks everything and submits the first job. You get an email when it ends.
+
+**2. After each email, run the same command again.**
+
+```bash
+wrf-next LONG_2024
+```
+
+Each time, it reports how the last step went and starts the next one. There are four steps: the weather and map files (already done for this fire), the start files, a 2-minute test run, and the simulation itself.
+
+**3. Before the simulation, it asks you.** It shows the size it suggests (nodes, processes, time limit and the most it can cost) and waits for *y*.
+
+**4. While it runs**, `wrf-next LONG_2024` shows how far it has got and the time left.
+
+**5. When it is done**, `wrf-next LONG_2024` says how it ended and where the results are: the `wrfout_*` files in the run folder it prints.
+
+If a step fails, `wrf-next` prints what is wrong in plain words. If it is not clear what to do, paste the output into the [AI chat helper](skill.html).
+
+## Its settings
+
+These are the settings that define the fire. `wrf-card LONG_2024` prints all of them, including everything not shown here.
 
 ```text
 name:                LONG_2024
 start:               2024-07-15 20:00
 end:                 2024-07-17 00:00
-ignition_time:       (printed by wrf-card)
-ignition_lat:        (printed by wrf-card)
-ignition_lon:        (printed by wrf-card)
+ignition_time:       2024-07-15 21:30
+ignition_lat:        35.830005
+ignition_lon:        -118.175345
+outer_cells:         60x63
+fire_cells:          271x298
 fuel_layer:          /projects/academic/negarkhodoe/wrf/static/landfire/LF2023/FBFM40
 base_spec:           LONG_2024/campaign
 ```
 
-<div class="note" markdown="1">
-Values shown as *(printed by wrf-card)* (`ignition_time`, `ignition_lat`, `ignition_lon`) are in the fire's record in the shared folder but not yet on this page.
-</div>
+## Try a variation
 
-Rank cap: **36**.
-
-## Run it from an AI chat
-
-Copy the [skill](skill.html) into a new chat, then paste underneath:
-
-```text
-Run this fire. Here is its card:
-<paste the output of: wrf-card LONG_2024>
-```
-
-The assistant checks the card with you, then walks you through the commands below one at a time.
-
-## Run it with the commands
-
-**1. Check the fire and its inputs.**
+Change one setting, for example drier fuel, and run it as your own copy:
 
 ```bash
-wrf-status LONG_2024
-wrf-card LONG_2024
+wrf-card LONG_2024 > /projects/academic/negarkhodoe/wrf/people/$USER/work/long_dry.card
+nano /projects/academic/negarkhodoe/wrf/people/$USER/work/long_dry.card
+wrf-card --make /projects/academic/negarkhodoe/wrf/people/$USER/work/long_dry.card
+wrf-next LONG_2024
 ```
 
-Read the card: times, ignition, domains, and under *Measured* the gate A and B results and `fire_fuel_read` (must be `-1`).
-
-**2. Gate C: real.exe on the campaign spec.**
-
-```bash
-wrf-gate C LONG_2024 /projects/academic/negarkhodoe/wrf/fires/LONG_2024/specs/campaign
-```
-
-It prints the run folder; Slurm emails you when it ends. Then `cat /projects/academic/negarkhodoe/wrf/fires/LONG_2024/runs/<stamp>_gateC_campaign/GATES.txt`.
-
-**3. Gate D: two minutes of wrf.exe.** Gate D on one Sapphire Rapids node: `--constraint SAPPHIRE-RAPIDS-IB`.
-
-```bash
-wrf-gate D LONG_2024 /projects/academic/negarkhodoe/wrf/fires/LONG_2024/runs/<stamp>_gateC_campaign --constraint SAPPHIRE-RAPIDS-IB
-```
-
-**4. Submit.** 36 ranks on one Sapphire Rapids node; 56 h leaves room for the full window. Check against gate D's rate first.
-
-```bash
-wrf-submit LONG_2024 /projects/academic/negarkhodoe/wrf/fires/LONG_2024/specs/campaign --nodes 1 --ranks 36 --time 56:00:00 --constraint SAPPHIRE-RAPIDS-IB --name rerun
-```
-
-**5. Watch it, and read how it ended.**
-
-```bash
-wrf-watch LONG_2024
-cat /projects/academic/negarkhodoe/wrf/fires/LONG_2024/runs/<stamp>_rerun/GATES.txt
-```
-
-Gate E runs inside the job when it ends: *finished*, *domain edge*, *crash* or *killed*, plus whether the first burning cell matches the card's ignition time and place.
-
-## Make a variant
-
-Copy the card, change what you are testing (and the `note:` line), and make it. Times and domains unchanged means the existing inputs are reused, so no WPS:
-
-```bash
-wrf-card LONG_2024 > /projects/academic/negarkhodoe/wrf/people/$USER/work/long_variant.card
-wrf-card --make /projects/academic/negarkhodoe/wrf/people/$USER/work/long_variant.card
-```
-
-Then gates C and D and `wrf-submit` on the spec folder it prints, with a `--name` that says what changed. Ideas: [fuel moisture](moisture.html), [one-way coupling](coupling.html), [slope sensitivity](terrain.html#the-slope-effect), [another ignition](ignitions.html).
+In the editor, change the line you want (for example `fuel_moisture: 0.05`) and the `note:` line, then save (Ctrl-O, Enter) and exit (Ctrl-X). `wrf-next` always uses your newest copy. Settings you can change are listed on [Your own fire](newfire.html#5-changing-settings).
 
 ## Good to know
 
-- Its fuel map is LANDFIRE **2023** (97.9% match; LF2022 is close behind at 97.2%), not 2024 (89%).
-- **It reaches the domain edge.** In the campaign the fire hit the fire domain's boundary at Jul 16 22:24 and WRF stopped. Gate E classes that ending as *domain edge*, not a crash. To run past it, make a variant card with a larger `fire_cells` (and `outer_cells` if needed), which means new `met_em` files: `wrf-card --make … --wps`.
-
+- **It stops early, and that is expected.** In our earlier run the fire reached the edge of the fire area at Jul 16 22:24 UTC and the model stopped. `wrf-next` reports this as *domain edge*, not as a failure. To go further, make a variation with a larger fire area (`fire_cells`) and run it with `--wps`.

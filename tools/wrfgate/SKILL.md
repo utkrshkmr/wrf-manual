@@ -46,34 +46,39 @@ If `wrf-me` says there is no profile: ask for their full name, their email, and 
 
 ## Step 1: the fire card (always start here)
 
-Every fire, new or already run, is described by its **card**: name, window, ignition time and place, domains, data, a few fire-model settings, and `base_spec` (the fire whose physics and other settings are reused). Work from the card, never from a vague request like "run Canyon".
+Every fire is described by its **card**: name, simulated period, ignition time and place, the size of the fire area, and a few model settings. Work from the card, never from a vague request like "run Canyon".
+
+The lab's fires are `EATON_2025`, `CANYON_2025`, `CRANSTON_2018` and `LONG_2024`; each is ready to run. Airport, Bradford Branch and Carmel are not to be used (their inputs are wrong or being redone).
 
 - **The user pasted a card**: read it back as a short table and confirm it before anything else.
-- **The user names a fire that exists** (`wrf-status` lists it): ask for `wrf-card FIRE` and show them its settings, including the *Measured* lines (gate results, rank cap, `fire_fuel_read`, which must be `-1`). Ask what, if anything, should change.
-- **A new fire**: ask for `wrf-card --template`, or start from the closest existing card (`wrf-card CANYON_2025` for a small fire, `wrf-card EATON_2025` for a large one). Ask the user for the facts you need: name, start and end (UTC), ignition time (UTC), ignition latitude and longitude, how far the fire spread (to size `fire_cells`), and which weather files exist. Never invent them. Fill in the card with them and show it before going on.
+- **The user names a fire that exists**: ask for `wrf-card FIRE` and show its settings. Ask what, if anything, should change.
+- **A new fire**: have the user run `wrf-card --new /projects/academic/negarkhodoe/wrf/people/$USER/work/NAME.card` and answer its six questions (name, local ignition time, latitude and longitude, hours before and after ignition, how far the fire spread in km). Help them find the answers; never invent them. It prints a summary: read it with them.
+- **A variation of an existing fire**: `wrf-card FIRE > /projects/academic/negarkhodoe/wrf/people/$USER/work/NAME.card`, edit one line with `nano`, save.
 
-Card rules to check with the user:
+Lines a user may change, in plain words: `fuel_moisture` (dead fuel wetness, fraction), `fire_feedback` (1 the fire changes the wind, 0 not), `slope_factor`, `ignition_radius_m`, `ignition_lat/lon/time`, `note`. Changing `start`, `end`, `fire_cells` or `outer_cells` needs new weather and map files (`--wps`).
 
-- `start` < `ignition_time` < `end`; at least an hour of weather before ignition is better.
-- `(fire_cells - 1)` must divide by `fire_ratio`; the fire domain needs 5 outer cells of margin inside the outer one; the ignition at least 2 km (better: much more) inside the fire domain. `wrf-card --make` checks all three.
-- `fuel_layer`: the LANDFIRE release before the fire's date.
-- A change to times or domains needs new `met_em` files (WPS). A change to anything else (moisture, feedback, slope, `base_spec`, time step) reuses the fire's existing inputs.
+## Step 2: weather, make, and run with wrf-next
 
-Have them save the card as a file, e.g. `/projects/academic/negarkhodoe/wrf/people/$USER/work/<name>.card` (they can paste it with `cat > FILE <<'EOF'` … `EOF`).
-
-## Step 2: make the fire from its card
+For a new fire, or changed `start`/`end`/`fire_cells`/`outer_cells`:
 
 ```bash
-wrf-card --make /projects/academic/negarkhodoe/wrf/people/$USER/work/<name>.card
+wrf-card --weather CARD_FILE
+wrf-card --make CARD_FILE --wps
 ```
 
-It checks the card, records the fire (if new), and writes `namelist.wps`, `wps.sbatch` and a spec folder (`spec/namelist.input`, `spec/namelist.fire`) into `people/$USER/work/<NAME>_<time>/`. Read its notes (ignition distance from the edge, rank cap) back to the user.
+`--weather` downloads missing hourly HRRR files (on a login node; rerun if some fail). `--make` checks the card, records the fire, writes the settings and submits the job that builds the weather and map files (WPS). For a variation that keeps the period and the areas: `wrf-card --make CARD_FILE` without `--wps`.
 
-- **New met_em needed** (new fire, or changed times or domains): add `--wps`. It submits WPS on one core; when WPS succeeds, the `met_em` files are registered and gates A and B run automatically. If WPS fails, ask for `tail -20` of `geogrid.log`, `ungrib.log` or `metgrid.log` in that folder, and of `wps_<job>.out`.
-- **Inputs already registered**: no `--wps`; go to Step 3 with `wrf-status FIRE`, then Step 5 with the printed spec folder.
-- A fire whose `met_em` came from elsewhere (not WPS here): `wrf-add-inputs FIRE /path/to/met_em_folder --note "where these came from"`.
+Then the user runs, after each email:
 
-## Step 3: read gates A and B
+```bash
+wrf-next FIRE
+```
+
+It reports how the last step went and starts the next: (1) WPS, (2) start files = gate C, (3) 2-minute test = gate D, (4) the simulation, for which it proposes nodes, processes, time limit and the maximum cost, and asks y/N. Before they answer *y* for a large request (more than one node), make sure they know the cost. `wrf-next FIRE --retry` redoes a step that ended without a result. Read every `wrf-next` output they paste and explain it simply. The steps below are what `wrf-next` does; use them to explain a failure.
+
+A fire whose `met_em` came from elsewhere: `wrf-add-inputs FIRE /path/to/met_em_folder --note "where these came from"`.
+
+## Step 3: if the weather and map files fail their checks
 
 ```bash
 wrf-status FIRE
@@ -97,7 +102,7 @@ cat /projects/academic/negarkhodoe/wrf/fires/FIRE/inputs/VERSION.gates/GATES.txt
 
 The card writes the spec. Edit the spec folder by hand only for settings the card does not hold (physics, extra ignitions, output fields), in the copy under `people/$USER/work/`, never in `fires/*/specs/`. Values that must match the inputs (gate C checks them): `max_dom`, `e_we`, `e_sn`, `dx`, `dy`, `parent_grid_ratio`, `i_parent_start`, `j_parent_start`, `num_metgrid_levels`, `num_metgrid_soil_levels`, `sr_x`/`sr_y`, start and end times. `num_metgrid_levels` comes from `base_spec`; if the weather product differs from the base fire's, set it from `ncdump -h` of one `met_em.d01` file.
 
-## Step 5: gates C and D
+## Step 5: if the start files or the test run fail
 
 ```bash
 wrf-gate C FIRE /path/to/spec_folder
@@ -122,7 +127,7 @@ For a large fire add `--ranks 64 --constraint SAPPHIRE-RAPIDS-IB`.
 
 Any change to the spec means gates C and D again.
 
-## Step 6: size and submit
+## Step 6: sizing, if the user wants to choose it
 
 - **Ranks:** at most gate C's rank cap. Small fire: the cap on one node. Large fire: up to 24 whole nodes.
 - **Node types:** Cascade Lake 40 cores, Ice Lake 56, Sapphire Rapids 64 (fastest).
@@ -169,13 +174,14 @@ Base address for raw files: `https://raw.githubusercontent.com/utkrshkmr/wrf-man
 | several ignitions, an observed perimeter (`LFN_HIST`) | `src/ignitions.md` |
 | fine terrain (`ZSF`), slope sensitivity | `src/terrain.md` |
 | fire–atmosphere coupling, heat release, spread wind | `src/coupling.md` |
-| first steps | `src/quickstart.md` |
+| setting up | `src/start.md` |
 | ranks, walltime, 72-hour limit, restarts, how a run ended | `src/run.md` |
 | what a gate check means or why it failed | `src/gates.md`, then the gate's code: `tools/wrfgate/lib/wrfgate/gate_a.py` … `gate_e.py` (search for the check ID, e.g. `C07_`) |
 | what a `wrf-*` command does or why it refused | `tools/wrfgate/bin/<command>` (the refusals are the `wg_die` lines) |
 | `wrf-watch` columns and warnings | `tools/wrfgate/lib/wrfgate/watch.py` |
-| a fire we have run, step by step | `src/fire-eaton.md`, `fire-canyon.md`, `fire-cranston.md`, `fire-long.md`, `fire-airport.md`, `fire-bradford.md`, `fire-carmel.md` |
-| fire cards (`wrf-card`) | `src/quickstart.md`, `tools/wrfgate/lib/wrfgate/card.py` |
+| a fire we have run | `src/fire-eaton.md`, `src/fire-canyon.md`, `src/fire-cranston.md`, `src/fire-long.md` |
+| a new fire, step by step, and the card's lines | `src/newfire.md` |
+| fire cards and `wrf-next` | `tools/wrfgate/lib/wrfgate/card.py`, `tools/wrfgate/lib/wrfgate/nextstep.py` |
 
 How to look:
 
@@ -190,7 +196,7 @@ curl -fsSL https://raw.githubusercontent.com/utkrshkmr/wrf-manual/main/PATH | gr
 - **Searching every page at once** for a message:
 
 ```bash
-for p in quickstart env domain geogrid ungrib metgrid real fire moisture extend fuelmap fuelprops ignitions terrain coupling run reference gates example fire-eaton fire-canyon fire-cranston fire-long; do curl -fsSL https://raw.githubusercontent.com/utkrshkmr/wrf-manual/main/src/$p.md | grep -n -i -H --label=$p -A8 "SEARCH WORDS"; done
+for p in start newfire env domain geogrid ungrib metgrid real fire moisture extend fuelmap fuelprops ignitions terrain coupling run reference gates fire-eaton fire-canyon fire-cranston fire-long; do curl -fsSL https://raw.githubusercontent.com/utkrshkmr/wrf-manual/main/src/$p.md | grep -n -i -H --label=$p -A8 "SEARCH WORDS"; done
 ```
 
 - Quote what you found (page and line) when you explain the fix. If the repo has nothing on it, say so, and then reason from the logs.

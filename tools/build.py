@@ -18,23 +18,22 @@ SRC = ROOT / "src"
 OUT = ROOT / "docs"
 
 NAV = [
-    ("Start", [
+    ("Start here", [
         ("index", "Overview"),
-        ("quickstart", "Quick start"),
+        ("start", "Set up (once)"),
+        ("newfire", "Your own fire"),
     ]),
-    ("Running fires", [
-        ("gates", "The gating system"),
-        ("skill", "Skill file for chat assistants"),
-    ]),
-    ("Examples", [
-        ("example", "All fires at a glance"),
+    ("Fires we have run", [
         ("fire-eaton", "Eaton 2025"),
         ("fire-canyon", "Canyon 2025"),
         ("fire-cranston", "Cranston 2018"),
         ("fire-long", "Long 2024"),
-        ("fire-airport", "Airport"),
-        ("fire-bradford", "Bradford Branch"),
-        ("fire-carmel", "Carmel"),
+    ]),
+    ("Help", [
+        ("skill", "AI chat helper"),
+    ]),
+    ("How it works", [
+        ("gates", "The checks behind each step"),
     ]),
     ("Advanced: research inputs", [
         ("extend", "Where each change goes"),
@@ -69,7 +68,8 @@ NAV = [
 ]
 
 # Pages kept in src/ but not published for now (the "Our work on CCR" section).
-HIDDEN = {"setup", "fuelmatch", "campaign", "scaling", "costmodel", "queue", "lessons", "design"}
+HIDDEN = {"setup", "fuelmatch", "campaign", "scaling", "costmodel", "queue", "lessons", "design",
+          "quickstart", "example", "fire-airport", "fire-bradford", "fire-carmel"}
 NAV = [(g, [(s, t) for s, t in items if s not in HIDDEN]) for g, items in NAV]
 NAV = [(g, items) for g, items in NAV if items]
 

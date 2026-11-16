@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Set up (once) · WRF-Fire Manual</title>
+<meta name="description" content="Three lines in your CCR terminal, once. After that every fire is run with the same few commands.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</head>
+<body>
+<div class="topbar"><a href="index.html">WRF-Fire Manual</a><button type="button" onclick="document.querySelector('.side').classList.add('open')">Menu</button></div>
+<div class="layout">
+<nav class="side" aria-label="Site">
+<button type="button" class="close" onclick="this.parentNode.classList.remove('open')">Close</button>
+<a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
+<h4>Start here</h4><ol>
+<li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
+<li><a href="start.html" class="on"><span class="n">0</span><span>Set up (once)</span></a></li>
+<li><a href="newfire.html"><span class="n">1</span><span>Your own fire</span></a></li>
+</ol>
+<h4>Fires we have run</h4><ol>
+<li><a href="fire-eaton.html"><span class="n">2</span><span>Eaton 2025</span></a></li>
+<li><a href="fire-canyon.html"><span class="n">3</span><span>Canyon 2025</span></a></li>
+<li><a href="fire-cranston.html"><span class="n">4</span><span>Cranston 2018</span></a></li>
+<li><a href="fire-long.html"><span class="n">5</span><span>Long 2024</span></a></li>
+</ol>
+<h4>Help</h4><ol>
+<li><a href="skill.html"><span class="n">6</span><span>AI chat helper</span></a></li>
+</ol>
+<h4>How it works</h4><ol>
+<li><a href="gates.html"><span class="n">7</span><span>The checks behind each step</span></a></li>
+</ol>
+<h4>Advanced: research inputs</h4><ol>
+<li><a href="extend.html"><span class="n">8</span><span>Where each change goes</span></a></li>
+<li><a href="moisture.html"><span class="n">9</span><span>Fuel moisture</span></a></li>
+<li><a href="fuelmap.html"><span class="n">10</span><span>The fuel map</span></a></li>
+<li><a href="fuelprops.html"><span class="n">11</span><span>How a fuel type burns</span></a></li>
+<li><a href="ignitions.html"><span class="n">12</span><span>Ignitions and perimeters</span></a></li>
+<li><a href="terrain.html"><span class="n">13</span><span>Terrain and slope</span></a></li>
+<li><a href="coupling.html"><span class="n">14</span><span>Fire and atmosphere</span></a></li>
+</ol>
+<h4>WRF mechanics</h4><ol>
+<li><a href="env.html"><span class="n">15</span><span>Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">16</span><span>Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">17</span><span>Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">18</span><span>Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">19</span><span>Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">20</span><span>real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">21</span><span>The fire model</span></a></li>
+<li><a href="run.html"><span class="n">22</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">23</span><span>Reference and failures</span></a></li>
+</ol>
+<button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
+</nav>
+<main>
+<article class="page">
+<p class="kicker">Step 1</p>
+<h1>Set up (once)</h1>
+<p class="lead">Three lines in your CCR terminal, once. After that every fire is run with the same few commands.</p>
+
+<h2 id="what-you-need">What you need</h2>
+<ul>
+<li>A CCR account in the lab's group (<code>grp-negarkhodoe</code>). If you can open <code>/projects/academic/negarkhodoe</code>, you have it.</li>
+<li>A terminal on CCR: log in with <code>ssh</code> as you normally do, or open a shell from CCR's OnDemand web portal.</li>
+</ul>
+<h2 id="set-up">Set up</h2>
+<p>Copy these three lines into the terminal, with your own name and email in the last one, and press Enter:</p>
+<pre><code class="language-bash">echo 'source /projects/academic/negarkhodoe/wrf/pipeline/current/setup.sh' &gt;&gt; ~/.bashrc
+source /projects/academic/negarkhodoe/wrf/pipeline/current/setup.sh
+wrf-me --name &quot;Your Name&quot; --email you@buffalo.edu
+</code></pre>
+<ul>
+<li>The first line makes the commands available every time you log in. The second makes them available now.</li>
+<li>The third saves your name and email. Every run you start is labelled with your name, and the cluster emails you when each of your jobs ends or fails.</li>
+</ul>
+<h2 id="check-it-worked">Check it worked</h2>
+<pre><code class="language-bash">wrf-status
+</code></pre>
+<p>You should see a list of fires, including <code>EATON_2025</code>, <code>CANYON_2025</code>, <code>CRANSTON_2018</code> and <code>LONG_2024</code>.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>If you see</th>
+<th>Do this</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>command not found</code></td>
+<td>Run the second line again, or log out and back in</td>
+</tr>
+<tr>
+<td><code>no profile for …</code></td>
+<td>Run the <code>wrf-me</code> line again</td>
+</tr>
+<tr>
+<td><code>Permission denied</code></td>
+<td>Your account is not in the lab's group yet: ask the lab</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="emails">Emails</h2>
+<p>By default you get an email when a job ends or fails. To change that:</p>
+<pre><code class="language-bash">wrf-me --mail ALL
+wrf-me --mail NONE
+wrf-me --mail END,FAIL
+</code></pre>
+<h2 id="next">Next</h2>
+<ul>
+<li>Run a fire we have already set up: <a href="fire-eaton.html">Eaton</a>, <a href="fire-canyon.html">Canyon</a>, <a href="fire-cranston.html">Cranston</a> or <a href="fire-long.html">Long</a>.</li>
+<li>Set up a new fire: <a href="newfire.html">Your own fire</a>.</li>
+<li>Prefer to be guided? The <a href="skill.html">AI chat helper</a> walks you through either, one command at a time.</li>
+</ul>
+<nav class="pager"><a class="prev" href="index.html"><small>Previous</small>Overview</a><a class="next" href="newfire.html"><small>Next</small>Your own fire</a></nav>
+<footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/start.md</code>.</footer>
+</article>
+</main>
+</div>
+<script>
+function toggleTheme(){var d=document.documentElement;var cur=d.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var nx=cur==='dark'?'light':'dark';d.setAttribute('data-theme',nx);try{localStorage.setItem('theme',nx);}catch(e){}}
+</script>
+</body>
+</html>

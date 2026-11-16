@@ -18,13 +18,13 @@ source $W/pipeline/current/setup.sh
 source $W/pipeline/current/lib/wrfgate.sh
 wg_person || { echo "no profile for $USER: run wrf-me --name ... --email ... first"; exit 1; }
 wg_log event=arrange_start job=$SLURM_JOB_ID
-FIRES="EATON_2025 CANYON_2025 CRANSTON_2018 LONG_2024 AIRPORT BRADFORD_BRANCH CARMEL"
+FIRES="EATON_2025 CANYON_2025 CRANSTON_2018 LONG_2024"
 declare -A SHORT=([EATON_2025]=EATON [CANYON_2025]=CANYON [CRANSTON_2018]=CRANSTON [LONG_2024]=LONG [AIRPORT]=AIRPORT [BRADFORD_BRANCH]=BRADFORD_BRANCH [CARMEL]=CARMEL)
 declare -A METROOTS=(
   [EATON_2025]="$P/utkarshk/fires/EATON"
-  [CANYON_2025]="$P/Thursday_deadline_fires/CANYON $P/utkarshk/fires/CANYON $P/WRF_NCAR_Fires/CANYON"
-  [CRANSTON_2018]="$P/Thursday_deadline_fires/CRANSTON $P/utkarshk/fires/CRANSTON"
-  [LONG_2024]="$P/Thursday_deadline_fires/LONG $P/utkarshk/fires/LONG"
+  [CANYON_2025]="$P/utkarshk/fires/CANYON"
+  [CRANSTON_2018]="$P/utkarshk/fires/CRANSTON"
+  [LONG_2024]="$P/utkarshk/fires/LONG"
   [AIRPORT]="$P/WRF_NCAR_Fires/AIRPORT"
   [BRADFORD_BRANCH]="$P/WRF_NCAR_Fires/BRADFORD_BRANCH"
   [CARMEL]="$P/WRF_NCAR_Fires/CARMEL")

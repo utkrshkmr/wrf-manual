@@ -425,14 +425,178 @@ def make(card_path, out):
     print(f"wrote {out}/namelist.wps, wps.sbatch, spec/namelist.input" + (", spec/namelist.fire" if nf else "") + ", fire.card")
 
 
+
+# ------------------------------------------------------------------ guided card builder
+def _ask(q, default=None, check=None):
+    while True:
+        hint = f" [{default}]" if default not in (None, "") else ""
+        try:
+            a = input(f"{q}{hint}: ").strip()
+        except EOFError:
+            raise SystemExit("\nstopped")
+        if not a and default not in (None, ""):
+            a = str(default)
+        if not a:
+            print("  please type an answer"); continue
+        if check:
+            msg = check(a)
+            if msg:
+                print("  " + msg); continue
+        return a
+
+
+def _local_to_utc(s):
+    """'YYYY-MM-DD HH:MM' California time, or the same followed by UTC -> naive UTC datetime."""
+    s = s.strip()
+    utc = s.upper().endswith("UTC")
+    t = parse_time(s[:-3].strip() if utc else s)
+    if utc:
+        return t
+    from zoneinfo import ZoneInfo
+    return t.replace(tzinfo=ZoneInfo("America/Los_Angeles")).astimezone(_dt.timezone.utc).replace(tzinfo=None)
+
+
+def fuel_release(year):
+    have = sorted(int(os.path.basename(p)[2:]) for p in glob.glob(os.path.join(ROOT, "static", "landfire", "LF20??")))
+    have = have or [2016, 2022, 2023, 2024, 2025]
+    before = [y for y in have if y < year]
+    return f"LF{before[-1] if before else have[0]}"
+
+
+def new(out_path):
+    print("New fire card. Answer each question; press Enter to keep the value in [brackets].\n")
+    def okname(a):
+        return None if a.replace("_", "").isalnum() and a.upper() == a and a[0].isalpha() else "use capital letters, digits and _ only, e.g. BRIDGE_2024"
+    name = _ask("1. Short name for the fire, capitals with the year (e.g. BRIDGE_2024)", check=okname)
+    def oktime(a):
+        try:
+            _local_to_utc(a); return None
+        except Exception as e:
+            return f"could not read that: {e}. Example: 2024-09-08 14:30"
+    print("\n2. When did it ignite? Give the local California time, e.g. 2024-09-08 14:30")
+    print("   (or the time in UTC with UTC at the end, e.g. 2024-09-08 21:30 UTC)")
+    ti = _local_to_utc(_ask("   Ignition time", check=oktime))
+    print(f"   = {ti:%Y-%m-%d %H:%M} UTC")
+    def oklat(a):
+        try:
+            v = float(a); return None if 32 <= v <= 43 else "California latitudes are between 32 and 43"
+        except ValueError:
+            return "a number, e.g. 34.4396"
+    def oklon(a):
+        try:
+            v = float(a); return None if -125 <= v <= -114 else "California longitudes are between -125 and -114 (negative, west)"
+        except ValueError:
+            return "a number, e.g. -118.7355"
+    print("\n3. Where did it ignite? Decimal degrees, as on Google Maps (right-click a point to copy them).")
+    lat = float(_ask("   Latitude", check=oklat)); lon = float(_ask("   Longitude", check=oklon))
+    def okh(a):
+        try:
+            v = float(a); return None if 0.5 <= v <= 48 else "between 0.5 and 48"
+        except ValueError:
+            return "a number"
+    print("\n4. How long should the simulation be?")
+    before = float(_ask("   Hours of weather before ignition (lets the winds settle)", 2, okh))
+    after = float(_ask("   Hours to simulate after ignition", 24, okh))
+    start = (ti - _dt.timedelta(hours=before)).replace(minute=0, second=0)
+    end = ti + _dt.timedelta(hours=after)
+    end = end.replace(minute=0, second=0) + (_dt.timedelta(hours=1) if end.minute or end.second else _dt.timedelta(0))
+    def okkm(a):
+        try:
+            v = float(a); return None if 1 <= v <= 60 else "between 1 and 60 km"
+        except ValueError:
+            return "a number"
+    print("\n5. How far did (or might) the fire spread from the ignition point, at most, in km?")
+    print("   The fire area is made big enough to hold that in every direction, plus a margin.")
+    km = float(_ask("   Distance in km", 8, okkm))
+    side = max(20.0, 2 * km + 6)
+    fcells = 9 * math.ceil(side * 10 / 9) + 1
+    ocells = (fcells - 1) // 9 + 30
+    rel = fuel_release(ti.year)
+    print("\n6. A short note for this run (anything; it is saved with the run)")
+    note = _ask("   Note", "first run")
+    c = {k: d for _, items in FIELDS for k, d, _ in items}
+    c.update(name=name, note=note, start=f"{start:%Y-%m-%d %H:%M}", end=f"{end:%Y-%m-%d %H:%M}", ignition_time=f"{ti:%Y-%m-%d %H:%M}",
+             ignition_lat=f"{lat:.6f}", ignition_lon=f"{lon:.6f}", center_lat="", center_lon="",
+             outer_cells=str(ocells), fire_cells=str(fcells), fire_start_i="", fire_start_j="",
+             fuel_layer=f"{ROOT}/static/landfire/{rel}/FBFM40", fuel_key=rel.lower())
+    cc = dict(c); cc["center_lat"], cc["center_lon"] = c["ignition_lat"], c["ignition_lon"]
+    err, notes = check(cc)
+    print(f"""
+Summary
+  fire          {name}
+  ignition      {ti:%Y-%m-%d %H:%M} UTC at {lat:.6f}, {lon:.6f}
+  simulated     {start:%Y-%m-%d %H:%M} to {end:%Y-%m-%d %H:%M} UTC ({(end - start).total_seconds() / 3600:.0f} h)
+  fire area     {(fcells - 1) / 10:.1f} km square at 100 m, inside a {ocells * 0.9:.0f} km area at 900 m
+  fuel map      LANDFIRE {rel[2:]}
+  weather       HRRR, hourly
+  other settings as in Canyon 2025's campaign run""")
+    for e in err:
+        print("  problem:", e)
+    c["_nohelp"] = False
+    open(out_path, "w").write(render(c, title=f"Fire card for {name}, made with wrf-card --new on {_dt.datetime.now():%Y-%m-%d}. Times are UTC."))
+    print(f"\nSaved the card: {out_path}")
+    if err:
+        raise SystemExit(1)
+
+
+HRRR_URL = "https://noaa-hrrr-bdp-pds.s3.amazonaws.com/hrrr.{d:%Y%m%d}/conus/hrrr.t{d:%H}z.wrfprsf00.grib2"
+
+
+def weather(card_path, download=True):
+    """Make sure every hourly HRRR analysis for the card's window is in weather_dir; download the missing ones."""
+    import re as _re
+    import subprocess
+    c = parse(card_path)
+    if c["weather"].upper() != "HRRR":
+        raise SystemExit("automatic download is only for HRRR; put the files in weather_dir yourself")
+    t0, t1, step = parse_time(c["start"]), parse_time(c["end"]), int(c["weather_interval_s"])
+    have = {}
+    for root, _, files in os.walk(c["weather_dir"]):
+        for f in files:
+            m = _re.search(r"(\d{8})\D*?t?(\d\d)z", os.path.join(root, f))
+            if m and c["weather_files"] in f:
+                have[_dt.datetime.strptime(m.group(1) + m.group(2), "%Y%m%d%H")] = os.path.join(root, f)
+    need, t = [], t0
+    while t <= t1:
+        if t not in have:
+            need.append(t)
+        t += _dt.timedelta(seconds=step)
+    total = int((t1 - t0).total_seconds() // step) + 1
+    print(f"{total - len(need)} of {total} weather files already in {c['weather_dir']}")
+    if not need:
+        return
+    print(f"{len(need)} to download from NOAA's HRRR archive (about 400 MB each)")
+    if not download:
+        return
+    bad = 0
+    for i, t in enumerate(need, 1):
+        dest = os.path.join(c["weather_dir"], f"hrrr.{t:%Y%m%d}", "conus", f"hrrr.t{t:%H}z.wrfprsf00.grib2")
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        print(f"  [{i}/{len(need)}] {t:%Y-%m-%d %H}:00 UTC", flush=True)
+        r = subprocess.run(["curl", "-fsS", "--retry", "3", "-o", dest + ".part", HRRR_URL.format(d=t)])
+        if r.returncode == 0 and os.path.getsize(dest + ".part") > 10_000_000:
+            os.replace(dest + ".part", dest)
+        else:
+            bad += 1
+            print(f"     failed: {HRRR_URL.format(d=t)}")
+    if bad:
+        raise SystemExit(f"{bad} files could not be downloaded; run the same command again later")
+    print("all weather files are in place")
+
+
 if __name__ == "__main__":
     a = sys.argv[1:]
-    if not a or a[0] not in ("show", "template", "make"):
+    if not a or a[0] not in ("show", "template", "make", "new", "weather"):
         print(__doc__); raise SystemExit(1)
-    if a[0] == "template":
+    if a[0] == "weather":
+        weather(a[1], "--check" not in a)
+    elif a[0] == "new":
+        new(a[1])
+    elif a[0] == "template":
         print(render({}, title="New fire card: fill the blanks, keep or change the defaults. Times are UTC."), end="")
     elif a[0] == "show":
         sp = a[a.index("--spec") + 1] if "--spec" in a else "campaign"
         print(show(a[1], sp), end="")
     else:
         make(a[1], a[2])
+

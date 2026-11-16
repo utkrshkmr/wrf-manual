@@ -1,14 +1,19 @@
 #!/bin/bash
 # Fire cards: every fire is described by the same short list of settings.
 #   wrf-card FIRE [--spec NAME]          print a registered fire's card, from its record, spec and inputs
+#   wrf-card --new FILE                  build a card by answering a few questions (the easy way)
+#   wrf-card --weather FILE              download the weather files the card needs (run on a login node)
 #   wrf-card --template                  print a blank card with the lab defaults
 #   wrf-card --make CARD [--wps]         from a filled card: record the fire, write namelist.wps, a WPS job and a spec
 #                                        into people/$USER/work/<name>_<time>/; --wps also submits the WPS job, which
 #                                        registers the met_em files (gates A and B) when it succeeds
 source "$(dirname "$(readlink -f "$0")")/../lib/wrfgate.sh"
 case ${1:-} in
-""|-h|--help) sed -n '2,8p' "$0"; exit 0 ;;
+""|-h|--help) sed -n '2,10p' "$0"; exit 0 ;;
 --template) python3 -m wrfgate.card template ;;
+--new) F=${2:?file to save the card in, e.g. bridge.card}; [[ -e $F ]] && wg_die "$F exists; choose another file name"; python3 -m wrfgate.card new "$F" || exit 1
+  echo; echo "Next: get its weather files, then make it:"; echo "  wrf-card --weather $F"; echo "  wrf-card --make $F --wps" ;;
+--weather) python3 -m wrfgate.card weather "${2:?card file}" ;;
 --make)
   CARD=$(readlink -f "${2:?card file}"); SUB=0; [[ ${3:-} == --wps ]] && SUB=1
   wg_need_person

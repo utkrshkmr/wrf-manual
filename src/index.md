@@ -1,58 +1,40 @@
 ---
-title: Run WRF-Fire on CCR
-kicker: WRF 4.6 · WPS 4.6 · UB CCR
-lead: Everything the lab needs to run wildfire simulations on UB's cluster: a quick start, a set of commands that check every step before it costs queue time, an AI-chat helper, and a full manual of how WRF-Fire works.
+title: Run wildfire simulations on CCR
+kicker: WRF-Fire on UB CCR
+lead: Set up once, then run any fire with one command that you repeat after each email. No programming needed.
 toc: no
 ---
 
-## Start here
-
 <div class="cards" markdown="0">
-<a class="card" href="quickstart.html"><span class="k">Start</span><h3>Quick start</h3><p>Set yourself up, describe a fire as a card, and start it.</p></a>
-<a class="card" href="skill.html"><span class="k">Easiest</span><h3>Use it from an AI chat</h3><p>Copy one block of text into any chat assistant; it walks you through the rest.</p></a>
-<a class="card" href="example.html"><span class="k">Example</span><h3>The fires we have run</h3><p>Each on its own page: its card, and how to run it again or make a variant.</p></a>
+<a class="card" href="start.html"><span class="k">Step 1 · once</span><h3>Set up</h3><p>Three lines in your CCR terminal.</p></a>
+<a class="card" href="newfire.html"><span class="k">Step 2</span><h3>Your own fire</h3><p>Answer six questions about the fire, then run it.</p></a>
+<a class="card" href="skill.html"><span class="k">Help</span><h3>AI chat helper</h3><p>Paste one block into any AI chat and it guides you, one command at a time.</p></a>
 </div>
 
-## Running fires
+## Fires we have run
 
-Every run goes through a few `wrf-*` commands. Each does one step, checks it (the "gates"), and refuses to go on if something is wrong, so a typo or a misplaced map is caught in minutes instead of after a day in the queue. Jobs are signed with your name, Slurm emails you, `wrf-watch` shows how every job is doing, and nothing is ever deleted.
-
-<div class="cards" markdown="0">
-<a class="card" href="gates.html"><span class="k">Reference</span><h3>The gating system</h3><p>The commands, what each gate checks, the folders, monitoring and the log.</p></a>
-<a class="card" href="run.html"><span class="k">Sizing</span><h3>Ranks and walltime</h3><p>How many cores to ask for, how long, and what to do past 72 hours.</p></a>
-<a class="card" href="reference.html"><span class="k">Help</span><h3>Failures and fixes</h3><p>Common errors from WPS, real.exe and wrf.exe, and what they mean.</p></a>
-</div>
-
-## Advanced: research inputs
-
-Changing what the fire sees, one theme per page, each with the variables, ready-to-run scripts and the checks that confirm the change took effect.
+Ready to run again, or to use as a starting point.
 
 <div class="cards" markdown="0">
-<a class="card" href="moisture.html"><span class="k">Moisture</span><h3>Fuel moisture</h3><p>From one number to a per-cell map and a moisture model driven by the weather.</p></a>
-<a class="card" href="fuelmap.html"><span class="k">Map</span><h3>The fuel map</h3><p>Other LANDFIRE releases, fuel breaks, treated areas.</p></a>
-<a class="card" href="fuelprops.html"><span class="k">Table</span><h3>How a fuel type burns</h3><p>Load, depth, extinction moisture and the other <code>namelist.fire</code> columns.</p></a>
-<a class="card" href="ignitions.html"><span class="k">Start</span><h3>Ignitions and perimeters</h3><p>Points, lines, staggered ignitions, or an observed perimeter.</p></a>
-<a class="card" href="terrain.html"><span class="k">Ground</span><h3>Terrain and slope</h3><p>Fine 30 m terrain for the fire, and slope sensitivity tests.</p></a>
-<a class="card" href="coupling.html"><span class="k">Air</span><h3>Fire and atmosphere</h3><p>One-way coupling, heat release height, spread wind, prescribed heat.</p></a>
+<a class="card" href="fire-eaton.html"><span class="k">January 2025</span><h3>Eaton</h3><p>Los Angeles County. Large: 24 nodes.</p></a>
+<a class="card" href="fire-canyon.html"><span class="k">August 2025</span><h3>Canyon</h3><p>Ventura and Los Angeles counties. Small: 1 node.</p></a>
+<a class="card" href="fire-cranston.html"><span class="k">July 2018</span><h3>Cranston</h3><p>Riverside County. 1 node, long run.</p></a>
+<a class="card" href="fire-long.html"><span class="k">July 2024</span><h3>Long</h3><p>Kern County. 1 node.</p></a>
 </div>
 
-## WRF mechanics
+## The commands, in one table
 
-How the six programs turn maps and weather into a burning fire: every file, every namelist variable, with Canyon 2025 as the example. Read this when you build a new fire's inputs from scratch, or want to know why a setting matters.
+| To | Type |
+| --- | --- |
+| describe a new fire | `wrf-card --new FILE` |
+| get its weather | `wrf-card --weather FILE` |
+| make it | `wrf-card --make FILE --wps` |
+| run it, step by step | `wrf-next FIRE` (again after each email) |
+| see a fire's settings | `wrf-card FIRE` |
+| see all fires | `wrf-status` |
+| see all my jobs | `wrf-watch --mine` |
+| put something out of the way (never deleted) | `wrf-setaside PATH "why"` |
 
-{{fig:pipeline|**The whole chain.** Grey boxes are programs, dashed boxes are files. The orange numbers mark the four places a research input can enter.}}
+## How it works
 
-<div class="cards" markdown="0">
-<a class="card" href="env.html"><span class="k">Phase 0</span><h3>Environment and data</h3><p>Modules, folders, the static datasets and tables.</p></a>
-<a class="card" href="domain.html"><span class="k">Phase 1</span><h3>Domain design</h3><p><code>namelist.wps</code>: nests, projection, the fire-grid ratio.</p></a>
-<a class="card" href="geogrid.html"><span class="k">Phase 2</span><h3>Static data</h3><p><code>GEOGRID.TBL</code>, fuel and terrain layers, your own maps.</p></a>
-<a class="card" href="ungrib.html"><span class="k">Phase 3</span><h3>Weather</h3><p>GRIB products, Vtables, intermediate files.</p></a>
-<a class="card" href="metgrid.html"><span class="k">Phase 4</span><h3>Merge</h3><p>What a <code>met_em</code> file holds.</p></a>
-<a class="card" href="real.html"><span class="k">Phase 5</span><h3>real.exe</h3><p><code>namelist.input</code>: time, domains, physics, boundaries.</p></a>
-<a class="card" href="fire.html"><span class="k">Phase 6</span><h3>The fire model</h3><p>Every <code>&amp;fire</code> option and <code>namelist.fire</code>.</p></a>
-</div>
-
-## About this site
-
-- Variable names are WRF's and WPS's own, in `code`; defaults are from WRF 4.6.0's source. Paths are CCR's; the lab's shared folder is `/projects/academic/negarkhodoe/wrf/`.
-- The site and the gating code live in [github.com/utkrshkmr/wrf-manual](https://github.com/utkrshkmr/wrf-manual). To rebuild the site after editing a page in `src/`, run `python3 tools/build.py`.
+For those who want the details: [the checks behind each step](gates.html), the [research inputs](extend.html) you can change (fuel moisture, fuel maps, ignitions, terrain, coupling), and [how WRF-Fire works](env.html), program by program. The site and its code are at [github.com/utkrshkmr/wrf-manual](https://github.com/utkrshkmr/wrf-manual).

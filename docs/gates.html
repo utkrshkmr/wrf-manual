@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The gating system · WRF-Fire Manual</title>
-<meta name="description" content="Ten small commands carry a fire from its record to a checked run. Each one does one step, runs the checks for it, and writes what it did to a shared ledger. Nothing reaches the queue until the cheap checks have passed, and nothing is ever deleted.">
+<title>The checks behind each step · WRF-Fire Manual</title>
+<meta name="description" content="A few small commands carry a fire from its record to a checked run. Each one does one step, runs the checks for it, and writes what it did to a shared ledger. Nothing reaches the queue until the cheap checks have passed, and nothing is ever deleted.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -17,51 +17,50 @@
 <nav class="side" aria-label="Site">
 <button type="button" class="close" onclick="this.parentNode.classList.remove('open')">Close</button>
 <a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
-<h4>Start</h4><ol>
+<h4>Start here</h4><ol>
 <li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
-<li><a href="quickstart.html"><span class="n">0</span><span>Quick start</span></a></li>
+<li><a href="start.html"><span class="n">0</span><span>Set up (once)</span></a></li>
+<li><a href="newfire.html"><span class="n">1</span><span>Your own fire</span></a></li>
 </ol>
-<h4>Running fires</h4><ol>
-<li><a href="gates.html" class="on"><span class="n">1</span><span>The gating system</span></a></li>
-<li><a href="skill.html"><span class="n">2</span><span>Skill file for chat assistants</span></a></li>
+<h4>Fires we have run</h4><ol>
+<li><a href="fire-eaton.html"><span class="n">2</span><span>Eaton 2025</span></a></li>
+<li><a href="fire-canyon.html"><span class="n">3</span><span>Canyon 2025</span></a></li>
+<li><a href="fire-cranston.html"><span class="n">4</span><span>Cranston 2018</span></a></li>
+<li><a href="fire-long.html"><span class="n">5</span><span>Long 2024</span></a></li>
 </ol>
-<h4>Examples</h4><ol>
-<li><a href="example.html"><span class="n">3</span><span>All fires at a glance</span></a></li>
-<li><a href="fire-eaton.html"><span class="n">4</span><span>Eaton 2025</span></a></li>
-<li><a href="fire-canyon.html"><span class="n">5</span><span>Canyon 2025</span></a></li>
-<li><a href="fire-cranston.html"><span class="n">6</span><span>Cranston 2018</span></a></li>
-<li><a href="fire-long.html"><span class="n">7</span><span>Long 2024</span></a></li>
-<li><a href="fire-airport.html"><span class="n">8</span><span>Airport</span></a></li>
-<li><a href="fire-bradford.html"><span class="n">9</span><span>Bradford Branch</span></a></li>
-<li><a href="fire-carmel.html"><span class="n">10</span><span>Carmel</span></a></li>
+<h4>Help</h4><ol>
+<li><a href="skill.html"><span class="n">6</span><span>AI chat helper</span></a></li>
+</ol>
+<h4>How it works</h4><ol>
+<li><a href="gates.html" class="on"><span class="n">7</span><span>The checks behind each step</span></a></li>
 </ol>
 <h4>Advanced: research inputs</h4><ol>
-<li><a href="extend.html"><span class="n">11</span><span>Where each change goes</span></a></li>
-<li><a href="moisture.html"><span class="n">12</span><span>Fuel moisture</span></a></li>
-<li><a href="fuelmap.html"><span class="n">13</span><span>The fuel map</span></a></li>
-<li><a href="fuelprops.html"><span class="n">14</span><span>How a fuel type burns</span></a></li>
-<li><a href="ignitions.html"><span class="n">15</span><span>Ignitions and perimeters</span></a></li>
-<li><a href="terrain.html"><span class="n">16</span><span>Terrain and slope</span></a></li>
-<li><a href="coupling.html"><span class="n">17</span><span>Fire and atmosphere</span></a></li>
+<li><a href="extend.html"><span class="n">8</span><span>Where each change goes</span></a></li>
+<li><a href="moisture.html"><span class="n">9</span><span>Fuel moisture</span></a></li>
+<li><a href="fuelmap.html"><span class="n">10</span><span>The fuel map</span></a></li>
+<li><a href="fuelprops.html"><span class="n">11</span><span>How a fuel type burns</span></a></li>
+<li><a href="ignitions.html"><span class="n">12</span><span>Ignitions and perimeters</span></a></li>
+<li><a href="terrain.html"><span class="n">13</span><span>Terrain and slope</span></a></li>
+<li><a href="coupling.html"><span class="n">14</span><span>Fire and atmosphere</span></a></li>
 </ol>
 <h4>WRF mechanics</h4><ol>
-<li><a href="env.html"><span class="n">18</span><span>Environment and data</span></a></li>
-<li><a href="domain.html"><span class="n">19</span><span>Domain design</span></a></li>
-<li><a href="geogrid.html"><span class="n">20</span><span>Static data (geogrid)</span></a></li>
-<li><a href="ungrib.html"><span class="n">21</span><span>Weather (ungrib)</span></a></li>
-<li><a href="metgrid.html"><span class="n">22</span><span>Merge (metgrid)</span></a></li>
-<li><a href="real.html"><span class="n">23</span><span>real.exe and namelist.input</span></a></li>
-<li><a href="fire.html"><span class="n">24</span><span>The fire model</span></a></li>
-<li><a href="run.html"><span class="n">25</span><span>Running it on Slurm</span></a></li>
-<li><a href="reference.html"><span class="n">26</span><span>Reference and failures</span></a></li>
+<li><a href="env.html"><span class="n">15</span><span>Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">16</span><span>Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">17</span><span>Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">18</span><span>Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">19</span><span>Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">20</span><span>real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">21</span><span>The fire model</span></a></li>
+<li><a href="run.html"><span class="n">22</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">23</span><span>Reference and failures</span></a></li>
 </ol>
 <button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
 </nav>
 <main>
 <article class="page">
-<p class="kicker">Running it safely</p>
-<h1>The gating system</h1>
-<p class="lead">Ten small commands carry a fire from its record to a checked run. Each one does one step, runs the checks for it, and writes what it did to a shared ledger. Nothing reaches the queue until the cheap checks have passed, and nothing is ever deleted.</p>
+<p class="kicker">How it works</p>
+<h1>The checks behind each step</h1>
+<p class="lead">A few small commands carry a fire from its record to a checked run. Each one does one step, runs the checks for it, and writes what it did to a shared ledger. Nothing reaches the queue until the cheap checks have passed, and nothing is ever deleted.</p>
 <nav class="toc"><b>On this page</b><ul><li><a href="#why-gates">Why gates</a></li><li><a href="#getting-started">Getting started</a></li><li><a href="#your-profile">Your profile</a></li><li><a href="#the-folders">The folders</a></li><li><a href="#the-commands">The commands</a></li><li><a href="#what-each-gate-checks">What each gate checks</a></li><li><a href="#watching-jobs">Watching jobs</a></li><li><a href="#the-ledger">The ledger</a></li><li><a href="#files">Files</a></li></ul></nav>
 <h2 id="why-gates">Why gates</h2>
 <p>A WRF-Fire run can wait a day in the queue and then fail in its first minute: a namelist typo, a fuel map from the wrong place, an ignition outside the fire domain. Each of those can be caught in seconds or minutes, before the expensive job is submitted. The gating system puts a check after every step of the <a href="index.html">chain</a>, and makes each command refuse to start until the check before it has passed.</p>
@@ -103,12 +102,8 @@
 
 <p>It also answers, for every file in the shared folder, who made it, when, from what, and whether it was checked. That is what the manifests and the ledger are for.</p>
 <h2 id="getting-started">Getting started</h2>
-<p>Once per person:</p>
-<pre><code class="language-bash">echo 'source /projects/academic/negarkhodoe/wrf/pipeline/current/setup.sh' &gt;&gt; ~/.bashrc
-source /projects/academic/negarkhodoe/wrf/pipeline/current/setup.sh
-wrf-me --name &quot;Your Name&quot; --email you@buffalo.edu --mail END,FAIL
-</code></pre>
-<p><code>setup.sh</code> puts the commands on your <code>PATH</code> and adds a shell hook that logs your commands that touch the shared folder. <code>wrf-me</code> writes your profile.</p>
+<p>See <a href="start.html">Set up</a>. This page explains what the commands check and where they keep things; you do not need it to run a fire.</p>
+<p><code>wrf-next FIRE</code> runs the steps below in order for you; the individual commands are listed here for when you want to run one step yourself.</p>
 <h2 id="your-profile">Your profile</h2>
 <p>Every runner has a folder <code>wrf/people/&lt;username&gt;/</code> with a <code>profile.conf</code> in it:</p>
 <pre><code class="language-text"># wrfgate profile for ukumar. Edit with wrf-me, not by hand.
@@ -225,6 +220,11 @@ UPDATED=2026-11-16T10:02:11-05:00
 <tr>
 <td><code>wrf-gate E FIRE RUN_DIR</code></td>
 <td>Reruns gate E, for a run that was killed before its own gate E</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>wrf-next FIRE [--yes] [--retry] [--spec DIR]</code></td>
+<td>Looks at where the fire is and does the next step: waits for WPS, submits gate C, then gate D, then proposes the run size from gate D's measured rate and submits after a yes; afterwards shows progress and how it ended</td>
 <td>—</td>
 </tr>
 <tr>
@@ -409,7 +409,7 @@ EATON_2025      20261117_131500_gateD_camp  gate D     Utkarsh Kumar  26901377  
 </tbody>
 </table></div>
 <p>All of it is in the site's repository under <a href="https://github.com/utkrshkmr/wrf-manual/tree/main/tools/wrfgate"><code>tools/wrfgate/</code></a>.</p>
-<nav class="pager"><a class="prev" href="quickstart.html"><small>Previous</small>Quick start</a><a class="next" href="skill.html"><small>Next</small>Skill file for chat assistants</a></nav>
+<nav class="pager"><a class="prev" href="skill.html"><small>Previous</small>AI chat helper</a><a class="next" href="extend.html"><small>Next</small>Where each change goes</a></nav>
 <footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/gates.md</code>.</footer>
 </article>
 </main>
