@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Your own fire · WRF-Fire Manual</title>
-<meta name="description" content="Answer six questions about the fire, then run the same command after each email until it is done. Nothing else to edit by hand.">
+<meta name="description" content="Answer seven questions about the fire, then run the same command after each email until it is done. Nothing else to edit by hand.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -60,12 +60,12 @@
 <article class="page">
 <p class="kicker">Step 2</p>
 <h1>Your own fire</h1>
-<p class="lead">Answer six questions about the fire, then run the same command after each email until it is done. Nothing else to edit by hand.</p>
+<p class="lead">Answer seven questions about the fire, then run the same command after each email until it is done. Nothing else to edit by hand.</p>
 <nav class="toc"><b>On this page</b><ul><li><a href="#1-describe-the-fire">1. Describe the fire</a></li><li><a href="#2-get-its-weather">2. Get its weather</a></li><li><a href="#3-make-the-fire">3. Make the fire</a></li><li><a href="#4-run-it">4. Run it</a></li><li><a href="#5-changing-settings">5. Changing settings</a></li><li><a href="#where-things-are">Where things are</a></li></ul></nav>
 <h2 id="1-describe-the-fire">1. Describe the fire</h2>
 <pre><code class="language-bash">wrf-card --new /projects/academic/negarkhodoe/wrf/people/$USER/work/bridge.card
 </code></pre>
-<p>It asks six questions. Have these ready:</p>
+<p>It asks seven questions. Have these ready:</p>
 <div class="tbl"><table>
 <thead>
 <tr>
@@ -98,15 +98,19 @@
 <td>How far the fire spread from the ignition point, in km</td>
 <td><code>12</code></td>
 </tr>
+<tr>
+<td>Which fuel map</td>
+<td>press Enter for the LANDFIRE release just before the fire (here <code>lf2023</code>); the full list is in <code>/projects/academic/negarkhodoe/wrf/static/LAYERS.txt</code></td>
+</tr>
 </tbody>
 </table></div>
-<p>It then shows a summary, picks the fuel map for that year and a fire area big enough for the spread you gave, and saves your answers as the fire's <strong>card</strong>, a short text file. A finished session looks like this:</p>
+<p>It then shows a summary, sizes a fire area big enough for the spread you gave, and saves your answers as the fire's <strong>card</strong>, a short text file. A finished session looks like this:</p>
 <pre><code class="language-text">Summary
   fire          BRIDGE_2024
   ignition      2024-09-08 21:30 UTC at 34.299700, -117.775600
   simulated     2024-09-08 19:00 to 2024-09-10 04:00 UTC (33 h)
   fire area     30.6 km square at 100 m, inside a 58 km area at 900 m
-  fuel map      LANDFIRE 2023
+  fuel map      lf2023  (/projects/academic/negarkhodoe/wrf/static/landfire/LF2023/FBFM40)
   weather       HRRR, hourly
 
 Saved the card: /projects/academic/negarkhodoe/wrf/people/ukumar/work/bridge.card

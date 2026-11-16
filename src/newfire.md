@@ -1,7 +1,7 @@
 ---
 title: Your own fire
 kicker: Step 2
-lead: Answer six questions about the fire, then run the same command after each email until it is done. Nothing else to edit by hand.
+lead: Answer seven questions about the fire, then run the same command after each email until it is done. Nothing else to edit by hand.
 ---
 
 ## 1. Describe the fire
@@ -10,7 +10,7 @@ lead: Answer six questions about the fire, then run the same command after each 
 wrf-card --new /projects/academic/negarkhodoe/wrf/people/$USER/work/bridge.card
 ```
 
-It asks six questions. Have these ready:
+It asks seven questions. Have these ready:
 
 | Question | Example answer |
 | --- | --- |
@@ -20,8 +20,9 @@ It asks six questions. Have these ready:
 | Hours of weather before ignition | press Enter for 2 |
 | Hours to simulate after ignition | `30` |
 | How far the fire spread from the ignition point, in km | `12` |
+| Which fuel map | press Enter for the LANDFIRE release just before the fire (here `lf2023`); the full list is in `/projects/academic/negarkhodoe/wrf/static/LAYERS.txt` |
 
-It then shows a summary, picks the fuel map for that year and a fire area big enough for the spread you gave, and saves your answers as the fire's **card**, a short text file. A finished session looks like this:
+It then shows a summary, sizes a fire area big enough for the spread you gave, and saves your answers as the fire's **card**, a short text file. A finished session looks like this:
 
 ```text
 Summary
@@ -29,7 +30,7 @@ Summary
   ignition      2024-09-08 21:30 UTC at 34.299700, -117.775600
   simulated     2024-09-08 19:00 to 2024-09-10 04:00 UTC (33 h)
   fire area     30.6 km square at 100 m, inside a 58 km area at 900 m
-  fuel map      LANDFIRE 2023
+  fuel map      lf2023  (/projects/academic/negarkhodoe/wrf/static/landfire/LF2023/FBFM40)
   weather       HRRR, hourly
 
 Saved the card: /projects/academic/negarkhodoe/wrf/people/ukumar/work/bridge.card

@@ -141,10 +141,12 @@ The lab's fires are `EATON_2025`, `CANYON_2025`, `CRANSTON_2018` and `LONG_2024`
 
 - **The user pasted a card**: read it back as a short table and confirm it before anything else.
 - **The user names a fire that exists**: ask for `wrf-card FIRE` and show its settings. Ask what, if anything, should change.
-- **A new fire**: have the user run `wrf-card --new /projects/academic/negarkhodoe/wrf/people/$USER/work/NAME.card` and answer its six questions (name, local ignition time, latitude and longitude, hours before and after ignition, how far the fire spread in km). Help them find the answers; never invent them. It prints a summary: read it with them.
+- **A new fire**: have the user run `wrf-card --new /projects/academic/negarkhodoe/wrf/people/$USER/work/NAME.card` and answer its seven questions (name, local ignition time, latitude and longitude, hours before and after ignition, how far the fire spread in km, which fuel map). Help them find the answers; never invent them. It prints a summary: read it with them.
 - **A variation of an existing fire**: `wrf-card FIRE &gt; /projects/academic/negarkhodoe/wrf/people/$USER/work/NAME.card`, edit one line with `nano`, save.
 
-Lines a user may change, in plain words: `fuel_moisture` (dead fuel wetness, fraction), `fire_feedback` (1 the fire changes the wind, 0 not), `slope_factor`, `ignition_radius_m`, `ignition_lat/lon/time`, `note`. Changing `start`, `end`, `fire_cells` or `outer_cells` needs new weather and map files (`--wps`).
+Lines a user may change, in plain words: `fuel_moisture` (dead fuel wetness, fraction), `fire_feedback` (1 the fire changes the wind, 0 not), `slope_factor`, `ignition_radius_m`, `ignition_lat/lon/time`, `note`. Changing `start`, `end`, `fire_cells`, `outer_cells`, `fuel_layer` or `terrain_layer` needs new weather and map files (`--wps`).
+
+**Fuel and terrain maps.** Every available layer is listed, with its short name and folder, in `/projects/academic/negarkhodoe/wrf/static/LAYERS.txt` (ask for `cat` of it). Names: `lf2016`, `lf2022`, `lf2023`, `lf2024`, `lf2025` = LANDFIRE FBFM40 (40 Scott &amp; Burgan fuel models) of that year; `lfYYYY_fbfm13` = the 13 Anderson models; `ncar_lfYYYY` = NCAR's copies, to reproduce inputs made with them; `ca_1s` = 1 arc-second California elevation. Use the release just before the fire's date (a 2024 fire uses `lf2023`). The card's `fuel_layer` and `terrain_layer` hold the folder paths; `fuel_key` and `terrain_key` are set from them automatically and must not be edited. The fuel check (gate B) compares the inputs with the same `fuel_layer`.
 
 ## Step 2: weather, make, and run with wrf-next
 
@@ -179,7 +181,7 @@ cat /projects/academic/negarkhodoe/wrf/fires/FIRE/inputs/VERSION.gates/GATES.txt
 | A05 window | weather does not cover the card's start or end: more weather files, or fix the card |
 | A08 finite | NaN/Inf: rerun WPS, check those hours' weather files |
 | A09 nest rule | `fire_cells` in the card, then `--make --wps` again |
-| A11/A12 no fire mesh or fuel | `fire_mesh_ratio` 0, or `fuel_key` not a resolution key in `/projects/academic/negarkhodoe/wrf/tables/fire/GEOGRID.TBL` |
+| A11/A12 no fire mesh or fuel | `fire_mesh_ratio` 0, or `fuel_layer` not one of the fuel layers in `/projects/academic/negarkhodoe/wrf/static/LAYERS.txt` |
 | A14 invalid fuel codes | wrong fuel layer |
 | A16 warning, code 204 | the spec's `namelist.fire` needs `nfuelcats = 54` |
 | A19/A20 ignition outside or near the edge | move the domain (`center_lat/lon`, `fire_start_i/j`) or enlarge `fire_cells` |

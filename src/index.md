@@ -7,7 +7,7 @@ toc: no
 
 <div class="cards" markdown="0">
 <a class="card" href="start.html"><span class="k">Step 1 · once</span><h3>Set up</h3><p>Three lines in your CCR terminal.</p></a>
-<a class="card" href="newfire.html"><span class="k">Step 2</span><h3>Your own fire</h3><p>Answer six questions about the fire, then run it.</p></a>
+<a class="card" href="newfire.html"><span class="k">Step 2</span><h3>Your own fire</h3><p>Answer seven questions about the fire, then run it.</p></a>
 <a class="card" href="skill.html"><span class="k">Help</span><h3>AI chat helper</h3><p>Paste one block into any AI chat and it guides you, one command at a time.</p></a>
 </div>
 

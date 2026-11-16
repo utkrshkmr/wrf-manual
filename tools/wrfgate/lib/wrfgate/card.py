@@ -46,10 +46,10 @@ FIELDS = [
         ("weather_files", "wrfprsf00", "text every weather file name contains"),
         ("weather_interval_s", "3600", "time between weather files: 3600 HRRR, 10800 for 3-hourly products"),
         ("vtable", "Vtable.HRRR.prs", "Vtable in tables/fire/ for this product"),
-        ("fuel_layer", f"{ROOT}/static/landfire/LF2024/FBFM40", "LANDFIRE reference for gate B; pick the release before the fire"),
-        ("fuel_key", "lf2024", "GEOGRID.TBL resolution key for the fuel"),
-        ("terrain_layer", f"{ROOT}/static/elevation/CA_1s", "elevation layer (fire terrain and gate B reference)"),
-        ("terrain_key", "ca_1s", "GEOGRID.TBL resolution key for the fire terrain"),
+        ("fuel_layer", f"{ROOT}/static/landfire/LF2024/FBFM40", f"fuel map; any fuel layer in {ROOT}/static/LAYERS.txt (pick the release before the fire)"),
+        ("fuel_key", "lf2024", "set automatically from fuel_layer"),
+        ("terrain_layer", f"{ROOT}/static/elevation/CA_1s", f"terrain under the fire; any terrain layer in {ROOT}/static/LAYERS.txt"),
+        ("terrain_key", "ca_1s", "set automatically from terrain_layer"),
     ]),
     ("Fire model", [
         ("fuel_moisture", "0.08", "dead fuel moisture, fraction (fuelmc_g); 0.08 = 8%"),
@@ -474,7 +474,7 @@ def fuel_release(year):
 
 
 def new(out_path):
-    print("New fire card. Answer each question; press Enter to keep the value in [brackets].\n")
+    print("New fire card. Answer the seven questions; press Enter to keep the value in [brackets].\n")
     def okname(a):
         return None if a.replace("_", "").isalnum() and a.upper() == a and a[0].isalpha() else "use capital letters, digits and _ only, e.g. BRIDGE_2024"
     name = _ask("1. Short name for the fire, capitals with the year (e.g. BRIDGE_2024)", check=okname)
@@ -522,13 +522,29 @@ def new(out_path):
     fcells = 9 * math.ceil(side * 10 / 9) + 1
     ocells = (fcells - 1) // 9 + 30
     rel = fuel_release(ti.year)
-    print("\n6. A short note for this run (anything; it is saved with the run)")
+    fuels = {}
+    lay = os.path.join(ROOT, "static", "LAYERS.txt")
+    if os.path.exists(lay):
+        for line in open(lay):
+            p_ = line.split()
+            if len(p_) >= 3 and p_[1] == "fuel":
+                fuels[p_[0]] = p_[2]
+    if not fuels:
+        for d in sorted(glob.glob(os.path.join(ROOT, "static", "landfire", "LF20??", "FBFM40"))):
+            fuels[os.path.basename(os.path.dirname(d)).lower()] = d
+    print("\n6. Which fuel map? The LANDFIRE release just before the fire is suggested.")
+    print("   Available: " + ", ".join(sorted(fuels)))
+    print("   (lfYYYY = LANDFIRE YYYY, 40 fuel models; _fbfm13 = the 13-model version; ncar_ = NCAR's copy)")
+    fk = _ask("   Fuel map", rel.lower() if rel.lower() in fuels else next(iter(sorted(fuels)), rel.lower()),
+              lambda a: None if a.lower() in fuels else "choose one of: " + ", ".join(sorted(fuels)))
+    fuel_path = fuels[fk.lower()]
+    print("\n7. A short note for this run (anything; it is saved with the run)")
     note = _ask("   Note", "first run")
     c = {k: d for _, items in FIELDS for k, d, _ in items}
     c.update(name=name, note=note, start=f"{start:%Y-%m-%d %H:%M}", end=f"{end:%Y-%m-%d %H:%M}", ignition_time=f"{ti:%Y-%m-%d %H:%M}",
              ignition_lat=f"{lat:.6f}", ignition_lon=f"{lon:.6f}", center_lat="", center_lon="",
              outer_cells=str(ocells), fire_cells=str(fcells), fire_start_i="", fire_start_j="",
-             fuel_layer=f"{ROOT}/static/landfire/{rel}/FBFM40", fuel_key=rel.lower())
+             fuel_layer=fuel_path, fuel_key=fk.lower())
     cc = dict(c); cc["center_lat"], cc["center_lon"] = c["ignition_lat"], c["ignition_lon"]
     err, notes = check(cc)
     print(f"""
@@ -537,7 +553,7 @@ Summary
   ignition      {ti:%Y-%m-%d %H:%M} UTC at {lat:.6f}, {lon:.6f}
   simulated     {start:%Y-%m-%d %H:%M} to {end:%Y-%m-%d %H:%M} UTC ({(end - start).total_seconds() / 3600:.0f} h)
   fire area     {(fcells - 1) / 10:.1f} km square at 100 m, inside a {ocells * 0.9:.0f} km area at 900 m
-  fuel map      LANDFIRE {rel[2:]}
+  fuel map      {fk.lower()}  ({fuel_path})
   weather       HRRR, hourly
   other settings as in Canyon 2025's campaign run""")
     for e in err:
