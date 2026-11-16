@@ -1,0 +1,25 @@
+<svg viewBox="0 0 900 345" role="img" aria-label="Share of Canyon fire cells whose fuel code matches NCAR, by LANDFIRE release">
+<text x="20" y="28" class="t-title">LF2024 is the closest release to NCAR's Canyon fuel map, but not exact at first</text>
+<text x="20" y="48" class="t-small">share of the 753,424 fire-grid cells with the same NFUEL_CAT as NCAR · our conversion, south-west anchor</text>
+<path d="M120.0 64V290" class="grid"/><text x="120.0" y="306" text-anchor="middle" class="t-small">0%</text>
+<path d="M285.0 64V290" class="grid"/><text x="285.0" y="306" text-anchor="middle" class="t-small">25%</text>
+<path d="M450.0 64V290" class="grid"/><text x="450.0" y="306" text-anchor="middle" class="t-small">50%</text>
+<path d="M615.0 64V290" class="grid"/><text x="615.0" y="306" text-anchor="middle" class="t-small">75%</text>
+<path d="M780.0 64V290" class="grid"/><text x="780.0" y="306" text-anchor="middle" class="t-small">100%</text>
+<text x="108" y="90" text-anchor="end" class="t-name">LF2016</text>
+<rect x="120" y="70" width="379.0" height="30" rx="5" class="box"/>
+<text x="507.0" y="90" class="t-body" style="font-weight:600">57.43%</text>
+<text x="108" y="134" text-anchor="end" class="t-name">LF2022</text>
+<rect x="120" y="114" width="536.4" height="30" rx="5" class="box"/>
+<text x="664.4" y="134" class="t-body" style="font-weight:600">81.28%</text>
+<text x="108" y="178" text-anchor="end" class="t-name">LF2023</text>
+<rect x="120" y="158" width="618.0" height="30" rx="5" class="box"/>
+<text x="746.0" y="178" class="t-body" style="font-weight:600">93.63%</text>
+<text x="108" y="222" text-anchor="end" class="t-name">LF2024</text>
+<rect x="120" y="202" width="642.1" height="30" rx="5" class="box-acc"/>
+<text x="770.1" y="222" class="t-body" style="font-weight:600">97.29%</text>
+<text x="108" y="266" text-anchor="end" class="t-name">LF2025</text>
+<rect x="120" y="246" width="567.0" height="30" rx="5" class="box"/>
+<text x="695.0" y="266" class="t-body" style="font-weight:600">85.91%</text>
+<text x="120" y="334" class="t-small t-acc">With NCAR's anchor pixel, LF2024 reaches 100.00% (7 cells of 753,424 differ).</text>
+</svg>

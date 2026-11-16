@@ -1,0 +1,30 @@
+<svg viewBox="0 0 900 400" role="img" aria-label="The same pixels anchored at two corners of California land a few metres apart at Canyon">
+<defs><marker id="an-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker></defs>
+<text x="20" y="28" class="t-title">Same pixels, different reference point: geogrid places them slightly differently at Canyon</text>
+<path d="M60 70L200 70L250 150L330 230L370 330L240 350L150 260L80 180Z" class="box-blue" style="fill-opacity:.5"/>
+<text x="90" y="110" class="t-small t-blue">California clip</text>
+<circle cx="52" cy="66" r="8" class="fill-acc"/>
+<text x="66" y="58" class="t-name t-acc">NCAR anchor</text>
+<text x="66" y="44" class="t-small">42.06 N, 125.20 W</text>
+<circle cx="64" cy="360" r="8" fill="var(--green)"/>
+<text x="78" y="376" class="t-name t-green">our first anchor</text>
+<text x="78" y="392" class="t-small">32.40 N, 124.60 W</text>
+<circle cx="270" cy="285" r="7" fill="var(--ink)"/>
+<text x="282" y="290" class="t-name">Canyon</text>
+<path d="M58 72L264 280" class="ln-dash"/><text x="120" y="190" class="t-small">≈ 1,020 km</text>
+<path d="M70 356L262 290" class="ln-dash"/><text x="150" y="338" class="t-small">≈ 590 km</text>
+<rect x="430" y="60" width="450" height="300" rx="12" class="box"/>
+<text x="448" y="88" class="t-name">What each layer's index says</text>
+<text x="448" y="114" class="t-mono">projection = albers_nad83, dx = dy = 30 m</text>
+<text x="448" y="132" class="t-mono">known_x, known_y  = one reference pixel</text>
+<text x="448" y="150" class="t-mono">known_lat, known_lon = where it is</text>
+<text x="448" y="182" class="t-body">geogrid places every other pixel by stepping</text>
+<text x="448" y="200" class="t-body">30 m at a time from the reference pixel, using</text>
+<text x="448" y="218" class="t-body">its own Albers formulas. If those differ slightly</text>
+<text x="448" y="236" class="t-body">from the exact projection, the error grows with</text>
+<text x="448" y="254" class="t-body">distance, and two anchors give two placements.</text>
+<text x="448" y="290" class="t-body">A shift of a few metres changes the fuel only in</text>
+<text x="448" y="308" class="t-body">cells near fuel boundaries: 2.7% at Canyon, seen as</text>
+<text x="448" y="326" class="t-body">mirrored swaps (122→145 and 145→122).</text>
+<text x="448" y="348" class="t-small">Hypothesis under test; see the anchor study below.</text>
+</svg>

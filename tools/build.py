@@ -36,6 +36,7 @@ NAV = [
     ]),
     ("Our work on CCR", [
         ("setup", "WPS on CCR: setup so far"),
+        ("fuelmatch", "The fuel-map mismatch"),
         ("campaign", "The scaling campaign"),
         ("scaling", "Scaling and the elbow"),
         ("costmodel", "Cost model and node formula"),
