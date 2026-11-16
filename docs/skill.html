@@ -149,7 +149,7 @@ module purge
 module load gcc/11.2.0 openmpi/4.1.1 wps/4.6.0-dmpar
 cd /projects/academic/negarkhodoe/wrf/people/USER/work/FIRE
 srun -n 1 geogrid.exe &lt; /dev/null
-csh $(find $EBROOTWPS -name link_grib.csh | head -1) /path/to/hrrr/files/*wrfprsf00*
+csh $EBROOTWPS/WPS-4.6.0/link_grib.csh /path/to/hrrr/files/*wrfprsf00*
 ln -sf /projects/academic/negarkhodoe/wrf/tables/fire/Vtable.HRRR.prs Vtable
 srun -n 1 ungrib.exe &lt; /dev/null
 srun -n 1 metgrid.exe &lt; /dev/null
