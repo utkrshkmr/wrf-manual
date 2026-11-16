@@ -18,7 +18,7 @@ source $W/pipeline/current/setup.sh
 source $W/pipeline/current/lib/wrfgate.sh
 wg_person || { echo "no profile for $USER: run wrf-me --name ... --email ... first"; exit 1; }
 wg_log event=arrange_start job=$SLURM_JOB_ID
-FIRES="EATON_2025 CANYON_2025 CRANSTON_2018 LONG_2024"
+FIRES=${FIRES:-"EATON_2025 CANYON_2025 CRANSTON_2018 LONG_2024"}
 declare -A SHORT=([EATON_2025]=EATON [CANYON_2025]=CANYON [CRANSTON_2018]=CRANSTON [LONG_2024]=LONG [AIRPORT]=AIRPORT [BRADFORD_BRANCH]=BRADFORD_BRANCH [CARMEL]=CARMEL)
 declare -A METROOTS=(
   [EATON_2025]="$P/utkarshk/fires/EATON"
