@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>real.exe and namelist.input · WRF-Fire Manual</title>
+<meta name="description" content="real.exe builds the model&#x27;s vertical grid from the met_em files and writes the initial state (wrfinput) and the boundary conditions (wrfbdy). It reads the same namelist.input that wrf.exe will read, so this page covers that file&#x27;s core sections.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</head>
+<body>
+<div class="topbar"><a href="index.html">WRF-Fire Manual</a><button type="button" onclick="document.querySelector('.side').classList.add('open')">Menu</button></div>
+<div class="layout">
+<nav class="side" aria-label="Site">
+<button type="button" class="close" onclick="this.parentNode.classList.remove('open')">Close</button>
+<a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
+<h4>Start</h4><ol>
+<li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
+</ol>
+<h4>The manual: WPS to WRF-Fire</h4><ol>
+<li><a href="env.html"><span class="n">0</span><span>Phase 0 · Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">1</span><span>Phase 1 · Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">2</span><span>Phase 2 · Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">3</span><span>Phase 3 · Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">4</span><span>Phase 4 · Merge (metgrid)</span></a></li>
+<li><a href="real.html" class="on"><span class="n">5</span><span>Phase 5 · real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">6</span><span>Phase 6 · The fire model</span></a></li>
+<li><a href="moisture.html"><span class="n">7</span><span>Fuel moisture in depth</span></a></li>
+<li><a href="extend.html"><span class="n">8</span><span>Other research inputs</span></a></li>
+<li><a href="run.html"><span class="n">9</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">10</span><span>Reference and failures</span></a></li>
+</ol>
+<h4>Our work on CCR</h4><ol>
+<li><a href="setup.html"><span class="n">11</span><span>WPS on CCR: setup so far</span></a></li>
+<li><a href="campaign.html"><span class="n">12</span><span>The scaling campaign</span></a></li>
+<li><a href="scaling.html"><span class="n">13</span><span>Scaling and the elbow</span></a></li>
+<li><a href="costmodel.html"><span class="n">14</span><span>Cost model and node formula</span></a></li>
+<li><a href="queue.html"><span class="n">15</span><span>Queue waits and cost</span></a></li>
+<li><a href="lessons.html"><span class="n">16</span><span>What went wrong, what we learnt</span></a></li>
+<li><a href="design.html"><span class="n">17</span><span>The workflow we designed</span></a></li>
+</ol>
+<button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
+</nav>
+<main>
+<article class="page">
+<p class="kicker">Phase 5</p>
+<h1>real.exe and namelist.input</h1>
+<p class="lead">real.exe builds the model's vertical grid from the met_em files and writes the initial state (wrfinput) and the boundary conditions (wrfbdy). It reads the same namelist.input that wrf.exe will read, so this page covers that file's core sections.</p>
+<nav class="toc"><b>On this page</b><ul><li><a href="#running-it">Running it</a></li><li><a href="#time-control">&amp;time_control</a></li><li><a href="#domains">&amp;domains</a></li><li><a href="#physics-dynamics-and-bdy-control">&amp;physics, &amp;dynamics and &amp;bdy_control</a></li><li><a href="#checking-the-fire-fields">Checking the fire fields</a></li></ul></nav>
+<h2 id="running-it">Running it</h2>
+<p>Link the <code>met_em</code> files and WRF's run-time tables into the run folder, then:</p>
+<pre><code class="language-bash">srun -n 8 real.exe
+tail -1 rsl.error.0000
+ls -la wrfinput_d0* wrfbdy_d01
+</code></pre>
+<p>Success ends with <code>SUCCESS COMPLETE REAL_EM INIT</code>. real.exe takes minutes. It writes <code>wrfinput_d01</code>, <code>wrfinput_d02</code> (initial state; the fire fields are in <code>wrfinput_d02</code>) and <code>wrfbdy_d01</code> (lateral boundaries for d01, one update every <code>interval_seconds</code>). Nests get their boundaries from their parent while WRF runs.</p>
+<figure><div class="fig"><svg viewBox="0 0 900 300" role="img" aria-label="Values that must agree between namelist.wps, met_em and namelist.input">
+<text x="20" y="28" class="t-title">real.exe stops unless these values agree across the three places they appear</text>
+<text x="40" y="62" class="t-small" style="letter-spacing:1.4px">namelist.wps</text>
+<text x="350" y="62" class="t-small" style="letter-spacing:1.4px">met_em ATTRIBUTES</text>
+<text x="660" y="62" class="t-small" style="letter-spacing:1.4px">namelist.input</text>
+<g>
+<rect x="20" y="74" width="250" height="196" rx="10" class="box"/>
+<text x="36" y="102" class="t-mono">max_dom, e_we, e_sn</text>
+<text x="36" y="132" class="t-mono" style="font-size:10.5px">parent_grid_ratio, *_parent_start</text>
+<text x="36" y="162" class="t-mono">dx (d01)</text>
+<text x="36" y="192" class="t-mono">subgrid_ratio_x / _y</text>
+<text x="36" y="222" class="t-mono">start_date, interval_seconds</text>
+<text x="36" y="252" class="t-small">(from the GRIB files)</text>
+</g>
+<g>
+<rect x="330" y="74" width="250" height="196" rx="10" class="box-file"/>
+<text x="346" y="102" class="t-mono">WEST-EAST_GRID_DIMENSION …</text>
+<text x="346" y="132" class="t-mono" style="font-size:10.5px">parent_grid_ratio, *_parent_start</text>
+<text x="346" y="162" class="t-mono">DX, DY (every domain)</text>
+<text x="346" y="192" class="t-mono">sr_x, sr_y</text>
+<text x="346" y="222" class="t-mono">file times</text>
+<text x="346" y="252" class="t-mono" style="font-size:10.5px">NUM_METGRID_LEVELS, …SOIL_LEVELS</text>
+</g>
+<g>
+<rect x="640" y="74" width="250" height="196" rx="10" class="box-acc"/>
+<text x="656" y="102" class="t-mono">max_dom, e_we, e_sn</text>
+<text x="656" y="132" class="t-mono" style="font-size:10.5px">parent_grid_ratio, *_parent_start</text>
+<text x="656" y="162" class="t-mono">dx, dy for every domain</text>
+<text x="656" y="192" class="t-mono">sr_x, sr_y</text>
+<text x="656" y="222" class="t-mono">start_*, interval_seconds</text>
+<text x="656" y="252" class="t-mono">num_metgrid_(soil_)levels</text>
+</g>
+<g class="ln-dash">
+<path d="M270 98H330M270 128H330M270 158H330M270 188H330M270 218H330"/>
+<path d="M580 98H640M580 128H640M580 158H640M580 188H640M580 218H640M580 248H640"/>
+</g>
+<text x="20" y="292" class="t-small">Read the met_em side with ncdump -h, and copy, never retype.</text>
+</svg></div><figcaption><strong>The values that must agree.</strong> Domain geometry, the fire-mesh ratio, dates and level counts appear in all three places. A mismatch stops real.exe with an error in <code>rsl.error.0000</code>.</figcaption></figure>
+
+<h2 id="time-control">&amp;time_control</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Meaning</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>run_days</code>, <code>run_hours</code>, <code>run_minutes</code></td>
+<td>Run length</td>
+<td><code>end_*</code> takes precedence when both are set</td>
+</tr>
+<tr>
+<td><code>start_year</code> … <code>start_second</code>, <code>end_year</code> … <code>end_second</code></td>
+<td>Start and end, per domain</td>
+<td>Inside the <code>met_em</code> period</td>
+</tr>
+<tr>
+<td><code>interval_seconds</code></td>
+<td>Boundary update interval</td>
+<td>Same as <code>namelist.wps</code></td>
+</tr>
+<tr>
+<td><code>input_from_file</code></td>
+<td>Each domain reads its own <code>wrfinput</code></td>
+<td><code>.true.</code> on the fire domain, so it gets fine fuel and terrain</td>
+</tr>
+<tr>
+<td><code>history_interval</code></td>
+<td>Minutes between <code>wrfout</code> times, per domain</td>
+<td>e.g. 60 for d01, 10–15 for the fire domain</td>
+</tr>
+<tr>
+<td><code>frames_per_outfile</code></td>
+<td>Output times per <code>wrfout</code> file</td>
+<td>1 = one file per time</td>
+</tr>
+<tr>
+<td><code>restart</code>, <code>restart_interval</code></td>
+<td>Start from a restart file; minutes between restart files</td>
+<td><code>restart_interval</code> sets how much is lost if a job dies</td>
+</tr>
+<tr>
+<td><code>io_form_history</code>, <code>io_form_restart</code>, <code>io_form_input</code>, <code>io_form_boundary</code></td>
+<td>File formats</td>
+<td>2 = netCDF</td>
+</tr>
+<tr>
+<td><code>iofields_filename</code></td>
+<td>Text file adding or removing output fields, per domain</td>
+<td>e.g. <code>+:h:0:FMC_G,ROS,FGRNHFX</code> adds fire fields to the history output</td>
+</tr>
+<tr>
+<td><code>debug_level</code></td>
+<td>Log detail</td>
+<td>0; higher values make huge <code>rsl</code> files</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="domains">&amp;domains</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Meaning</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>max_dom</code>, <code>e_we</code>, <code>e_sn</code>, <code>parent_id</code>, <code>parent_grid_ratio</code>, <code>i_parent_start</code>, <code>j_parent_start</code></td>
+<td>Domain geometry</td>
+<td>Exactly as in <code>namelist.wps</code></td>
+</tr>
+<tr>
+<td><code>dx</code>, <code>dy</code></td>
+<td>Cell size, listed for every domain</td>
+<td>Canyon: 900, 100</td>
+</tr>
+<tr>
+<td><code>e_vert</code></td>
+<td>Vertical levels</td>
+<td>Same on all domains</td>
+</tr>
+<tr>
+<td><code>p_top_requested</code></td>
+<td>Model top, Pa</td>
+<td>Must lie inside the <code>met_em</code> data; 5000 is common</td>
+</tr>
+<tr>
+<td><code>num_metgrid_levels</code>, <code>num_metgrid_soil_levels</code></td>
+<td>Level counts in <code>met_em</code></td>
+<td>Read them from a <code>met_em</code> file</td>
+</tr>
+<tr>
+<td><code>time_step</code></td>
+<td>d01 time step, s</td>
+<td>At most about 6 × <code>dx</code> in km: 5 s or less for 900 m. the campaign's Cranston runs used 3 s</td>
+</tr>
+<tr>
+<td><code>parent_time_step_ratio</code></td>
+<td>Nest step = parent's ÷ this</td>
+<td>Usually equal to <code>parent_grid_ratio</code></td>
+</tr>
+<tr>
+<td><code>feedback</code></td>
+<td>Nest results fed back to the parent</td>
+<td>0 or 1</td>
+</tr>
+<tr>
+<td><code>sr_x</code>, <code>sr_y</code></td>
+<td>Fire-mesh ratio per domain</td>
+<td>Same as WPS <code>subgrid_ratio_x/_y</code>; Canyon 4 on d02</td>
+</tr>
+<tr>
+<td><code>nproc_x</code>, <code>nproc_y</code></td>
+<td>Force the MPI tiling</td>
+<td>Optional; see <a href="run.html#how-many-ranks">the decomposition cap</a></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="physics-dynamics-and-bdy-control">&amp;physics, &amp;dynamics and &amp;bdy_control</h2>
+<p>These decide how the atmosphere behaves. The fire couples to it through heat and moisture fluxes, so at fire scale the boundary layer and turbulence choices matter most.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Selects</th>
+<th>Fire-scale notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mp_physics</code></td>
+<td>Cloud microphysics</td>
+<td>Thompson (8) pairs well with HRRR input</td>
+</tr>
+<tr>
+<td><code>ra_lw_physics</code>, <code>ra_sw_physics</code>, <code>radt</code></td>
+<td>Radiation and how often it runs</td>
+<td>RRTMG (4)</td>
+</tr>
+<tr>
+<td><code>sf_sfclay_physics</code></td>
+<td>Surface layer</td>
+<td>Must pair with the boundary-layer scheme</td>
+</tr>
+<tr>
+<td><code>sf_surface_physics</code>, <code>num_soil_layers</code></td>
+<td>Land-surface model</td>
+<td>RUC (3) with 9 layers for HRRR input; Noah (2) with 4 for NAM, GFS, ERA5</td>
+</tr>
+<tr>
+<td><code>bl_pbl_physics</code></td>
+<td>Boundary-layer scheme</td>
+<td>Either a PBL scheme on both domains, or on a 100 m fire domain an LES set-up: <code>bl_pbl_physics = 0</code>, <code>km_opt = 2</code>, <code>diff_opt = 2</code></td>
+</tr>
+<tr>
+<td><code>cu_physics</code></td>
+<td>Cumulus</td>
+<td>0 on both domains below about 4 km</td>
+</tr>
+<tr>
+<td><code>diff_opt</code>, <code>km_opt</code>, <code>w_damping</code>, <code>damp_opt</code>, <code>epssm</code></td>
+<td>Turbulence, damping, sound-wave filtering (<code>&amp;dynamics</code>)</td>
+<td><code>w_damping = 1</code> guards against fire-driven updrafts breaking the time step</td>
+</tr>
+<tr>
+<td><code>specified</code>, <code>nested</code>, <code>spec_bdy_width</code>, <code>relax_zone</code></td>
+<td>Boundary treatment (<code>&amp;bdy_control</code>)</td>
+<td><code>specified = .true.</code> on d01, <code>nested = .true.</code> on the nest</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="checking-the-fire-fields">Checking the fire fields</h2>
+<p>real.exe writes these into <code>wrfinput_d02</code>, on the fire mesh: <code>NFUEL_CAT</code>, <code>ZSF</code>, <code>DZDXF</code>, <code>DZDYF</code>, and <code>FMC_G</code> (present, but only filled if you supply it). Check them before submitting a long job:</p>
+<pre><code class="language-bash">python3 - &lt;&lt;'EOF'
+import numpy as np
+from netCDF4 import Dataset
+d = Dataset(&quot;wrfinput_d02&quot;)
+f = d[&quot;NFUEL_CAT&quot;][0].astype(int)
+codes, n = np.unique(f, return_counts=True)
+print(&quot;fire mesh&quot;, f.shape, &quot;codes&quot;, dict(zip(codes.tolist(), n.tolist())))
+print(&quot;ZSF&quot;, float(d[&quot;ZSF&quot;][0].min()), &quot;to&quot;, float(d[&quot;ZSF&quot;][0].max()), &quot;m&quot;)
+print(&quot;FMC_G&quot;, float(d[&quot;FMC_G&quot;][0].min()), &quot;to&quot;, float(d[&quot;FMC_G&quot;][0].max()))
+EOF
+</code></pre>
+<p>Look for: no code 0 or codes above 204 (see <a href="fire.html#how-fuel-codes-become-categories">the fuel code map</a>), terrain in a plausible range, and <code>FMC_G</code> all zero unless you meant to set it.</p>
+<nav class="pager"><a class="prev" href="metgrid.html"><small>Previous</small>Phase 4 · Merge (metgrid)</a><a class="next" href="fire.html"><small>Next</small>Phase 6 · The fire model</a></nav>
+<footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/real.md</code>.</footer>
+</article>
+</main>
+</div>
+<script>
+function toggleTheme(){var d=document.documentElement;var cur=d.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var nx=cur==='dark'?'light':'dark';d.setAttribute('data-theme',nx);try{localStorage.setItem('theme',nx);}catch(e){}}
+</script>
+</body>
+</html>

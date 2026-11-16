@@ -1,0 +1,18 @@
+<svg viewBox="0 0 900 250" role="img" aria-label="Submit one copy per node type; the first to start runs and the others are cancelled">
+<defs><marker id="rc-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker></defs>
+<text x="20" y="28" class="t-title">Finish time = queue wait + run time, so race the node types</text>
+<rect x="20" y="96" width="130" height="50" rx="10" class="box-strong"/><text x="85" y="126" text-anchor="middle" class="t-name">run.sh</text>
+<g>
+<path d="M160 70H860" class="grid"/><path d="M160 121H860" class="grid"/><path d="M160 172H860" class="grid"/>
+<rect x="190" y="58" width="300" height="24" rx="5" fill="var(--c1)" opacity="0.18"/><text x="200" y="75" class="t-small">Cascade Lake: waiting</text>
+<rect x="490" y="58" width="40" height="24" rx="5" fill="none" stroke="var(--c1)" stroke-dasharray="3 3"/><text x="540" y="75" class="t-small">cancelled</text>
+<rect x="190" y="109" width="300" height="24" rx="5" fill="var(--c2)" opacity="0.18"/><text x="200" y="126" class="t-small">Ice Lake: waiting</text>
+<rect x="490" y="109" width="40" height="24" rx="5" fill="none" stroke="var(--c2)" stroke-dasharray="3 3"/><text x="540" y="126" class="t-small">cancelled</text>
+<rect x="190" y="160" width="300" height="24" rx="5" fill="var(--c3)" opacity="0.18"/><text x="200" y="177" class="t-small">Sapphire Rapids: waiting</text>
+<rect x="490" y="160" width="300" height="24" rx="5" class="f3"/><text x="500" y="177" style="fill:var(--bg);font-size:12.5px;font-weight:600">starts first: takes the lock, runs</text>
+<path d="M490 50V196" class="ln-acc" style="stroke-dasharray:5 4"/>
+</g>
+<g class="ln" marker-end="url(#rc-a)"><path d="M150 112C170 112 168 70 186 70"/><path d="M150 121H186"/><path d="M150 130C170 130 168 172 186 172"/></g>
+<text x="20" y="226" class="t-body">The fast type only wins if it starts within the hours it saves: about 26 h for Canyon or Cranston, 4 h for Eaton's short window.</text>
+<text x="20" y="244" class="t-small">The copies share one run folder and one lock; a late starter sees the lock and exits in its first second.</text>
+</svg>

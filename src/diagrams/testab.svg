@@ -1,0 +1,26 @@
+<svg viewBox="0 0 900 300" role="img" aria-label="Two tests separate software differences from data differences">
+<defs><marker id="ab-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker></defs>
+<text x="20" y="28" class="t-title">Two rebuilds of Canyon, each changing one thing, both compared with NCAR's files</text>
+<g>
+<rect x="20" y="52" width="420" height="200" rx="12" class="box-acc"/>
+<text x="38" y="78" class="t-small t-acc" style="letter-spacing:1.4px">TEST A · THE SOFTWARE</text>
+<text x="38" y="104" class="t-body">Same namelist, tables, fuel, terrain, GRIB files</text>
+<text x="38" y="122" class="t-body">as Nisha's Canyon set-up, read in place</text>
+<rect x="38" y="140" width="170" height="40" rx="8" class="box"/><text x="123" y="165" text-anchor="middle" class="t-body">her WPS build</text>
+<rect x="250" y="140" width="170" height="40" rx="8" class="box-strong"/><text x="335" y="165" text-anchor="middle" class="t-name">CCR's WPS module</text>
+<text x="38" y="208" class="t-body">A difference here = the build or the machine</text>
+<text x="38" y="234" class="t-small">status: geogrid and ungrib done; metgrid rerunning on 1 core</text>
+</g>
+<g>
+<rect x="460" y="52" width="420" height="200" rx="12" class="box-blue"/>
+<text x="478" y="78" class="t-small t-blue" style="letter-spacing:1.4px">TEST B · THE DATA</text>
+<text x="478" y="104" class="t-body">CCR's WPS module, everything downloaded</text>
+<text x="478" y="122" class="t-body">from public sources by us</text>
+<rect x="478" y="140" width="170" height="40" rx="8" class="box"/><text x="563" y="165" text-anchor="middle" class="t-body">her data copies</text>
+<rect x="690" y="140" width="170" height="40" rx="8" class="box-strong"/><text x="775" y="165" text-anchor="middle" class="t-name">UCAR, LANDFIRE, NOAA</text>
+<text x="478" y="208" class="t-body">A difference here = a data release or processing</text>
+<text x="478" y="234" class="t-small">status: static geography done; HRRR, fuel, terrain next</text>
+</g>
+<g class="ln" marker-end="url(#ab-a)"><path d="M208 160H248"/><path d="M648 160H688"/></g>
+<text x="20" y="282" class="t-body">Pass for both: static and fire fields identical, NFUEL_CAT ≥ 99.9% equal, weather equal or within rounding.</text>
+</svg>

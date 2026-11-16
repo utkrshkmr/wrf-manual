@@ -1,0 +1,32 @@
+<svg viewBox="0 0 900 330" role="img" aria-label="Five scripts carry an upload through five gates to a classified run">
+<defs><marker id="wf-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker></defs>
+<text x="20" y="28" class="t-title">Five scripts, five gates: nothing reaches the queue without passing the cheap checks first</text>
+<g>
+<rect x="20" y="56" width="150" height="70" rx="10" class="box-strong"/><text x="95" y="84" text-anchor="middle" class="t-mono">add_inputs.sh</text><text x="95" y="104" text-anchor="middle" class="t-small">copy, hash, lock</text>
+<rect x="200" y="56" width="150" height="70" rx="10" class="box-strong"/><text x="275" y="84" text-anchor="middle" class="t-mono">check.sh</text><text x="275" y="104" text-anchor="middle" class="t-small">spec → namelists</text>
+<rect x="380" y="56" width="150" height="70" rx="10" class="box-strong"/><text x="455" y="84" text-anchor="middle" class="t-mono">smoke.sh</text><text x="455" y="104" text-anchor="middle" class="t-small">2 minutes of wrf.exe</text>
+<rect x="560" y="56" width="150" height="70" rx="10" class="box-acc"/><text x="635" y="84" text-anchor="middle" class="t-mono">run.sh</text><text x="635" y="104" text-anchor="middle" class="t-small">size, race, submit</text>
+<rect x="740" y="56" width="140" height="70" rx="10" class="box-strong"/><text x="810" y="84" text-anchor="middle" class="t-mono">status.sh</text><text x="810" y="104" text-anchor="middle" class="t-small">simulated time, ETA</text>
+</g>
+<g class="ln" marker-end="url(#wf-a)"><path d="M170 91H198"/><path d="M350 91H378"/><path d="M530 91H558"/><path d="M710 91H738"/></g>
+<g>
+<rect x="20" y="160" width="150" height="120" rx="10" class="box-blue"/>
+<text x="34" y="182" class="t-name t-blue">Gates A · B · C</text>
+<text x="34" y="204" class="t-small">A structure: variables,</text><text x="34" y="220" class="t-small">NaNs, times, fuel codes</text>
+<text x="34" y="240" class="t-small">B against LANDFIRE</text><text x="34" y="256" class="t-small">C real.exe + its log</text>
+<rect x="200" y="160" width="150" height="120" rx="10" class="box-blue"/>
+<text x="214" y="182" class="t-name t-blue">Registry check</text>
+<text x="214" y="204" class="t-small">every name, type and</text><text x="214" y="220" class="t-small">per-domain count</text><text x="214" y="240" class="t-small">locked keys refused</text><text x="214" y="256" class="t-small">diff vs lab default</text>
+<rect x="380" y="160" width="150" height="120" rx="10" class="box-blue"/>
+<text x="394" y="182" class="t-name t-blue">Gate D</text>
+<text x="394" y="204" class="t-small">decomposition, crashing</text><text x="394" y="220" class="t-small">fuel codes, memory,</text><text x="394" y="240" class="t-small">about 10 minutes</text>
+<rect x="560" y="160" width="150" height="120" rx="10" class="box-blue"/>
+<text x="574" y="182" class="t-name t-blue">Sizing</text>
+<text x="574" y="204" class="t-small">weekly lookup table</text><text x="574" y="220" class="t-small">node formula fallback</text><text x="574" y="240" class="t-small">race node types</text><text x="574" y="256" class="t-small">continuation chain</text>
+<rect x="740" y="160" width="140" height="120" rx="10" class="box-blue"/>
+<text x="754" y="182" class="t-name t-blue">Gate E</text>
+<text x="754" y="204" class="t-small">ignited where and</text><text x="754" y="220" class="t-small">when recorded, no</text><text x="754" y="240" class="t-small">NaNs, inside domain,</text><text x="754" y="256" class="t-small">perimeter match</text>
+</g>
+<g class="ln-dash"><path d="M95 126V158M275 126V158M455 126V158M635 126V158M810 126V158"/></g>
+<text x="20" y="310" class="t-small">Every script writes a ledger line before and after it runs. A failed gate leaves the current version where it was and says why.</text>
+</svg>

@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cost model and node formula · WRF-Fire Manual</title>
+<meta name="description" content="Expressed per unit of work, all our runs collapse onto one curve per machine with a single shared shape. That gives three device constants and a nine-step rule that sizes a run from its grid alone, within 1% for Cranston.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</head>
+<body>
+<div class="topbar"><a href="index.html">WRF-Fire Manual</a><button type="button" onclick="document.querySelector('.side').classList.add('open')">Menu</button></div>
+<div class="layout">
+<nav class="side" aria-label="Site">
+<button type="button" class="close" onclick="this.parentNode.classList.remove('open')">Close</button>
+<a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
+<h4>Start</h4><ol>
+<li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
+</ol>
+<h4>The manual: WPS to WRF-Fire</h4><ol>
+<li><a href="env.html"><span class="n">0</span><span>Phase 0 · Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">1</span><span>Phase 1 · Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">2</span><span>Phase 2 · Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">3</span><span>Phase 3 · Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">4</span><span>Phase 4 · Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">5</span><span>Phase 5 · real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">6</span><span>Phase 6 · The fire model</span></a></li>
+<li><a href="moisture.html"><span class="n">7</span><span>Fuel moisture in depth</span></a></li>
+<li><a href="extend.html"><span class="n">8</span><span>Other research inputs</span></a></li>
+<li><a href="run.html"><span class="n">9</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">10</span><span>Reference and failures</span></a></li>
+</ol>
+<h4>Our work on CCR</h4><ol>
+<li><a href="setup.html"><span class="n">11</span><span>WPS on CCR: setup so far</span></a></li>
+<li><a href="campaign.html"><span class="n">12</span><span>The scaling campaign</span></a></li>
+<li><a href="scaling.html"><span class="n">13</span><span>Scaling and the elbow</span></a></li>
+<li><a href="costmodel.html" class="on"><span class="n">14</span><span>Cost model and node formula</span></a></li>
+<li><a href="queue.html"><span class="n">15</span><span>Queue waits and cost</span></a></li>
+<li><a href="lessons.html"><span class="n">16</span><span>What went wrong, what we learnt</span></a></li>
+<li><a href="design.html"><span class="n">17</span><span>The workflow we designed</span></a></li>
+</ol>
+<button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
+</nav>
+<main>
+<article class="page">
+<p class="kicker">Results</p>
+<h1>Cost model and node formula</h1>
+<p class="lead">Expressed per unit of work, all our runs collapse onto one curve per machine with a single shared shape. That gives three device constants and a nine-step rule that sizes a run from its grid alone, within 1% for Cranston.</p>
+
+<h2 id="the-cost-model">The cost model</h2>
+<p>Seconds per step depend on the fire's size and the rank count. Dividing them out leaves what the machine charges for one column update, as a function of how big each rank's patch is:</p>
+<p class="formula">cost per update = seconds per step × ranks ÷ column updates per step<span>patch side = √(column updates ÷ ranks)</span></p>
+
+<figure><div class="fig"><svg viewBox="0 0 900 420" role="img" aria-label="Cost per column update against patch side for three node types, with the fitted curves">
+<text x="20" y="28" class="t-title">Smaller patches cost more per update on every machine, by the same shape</text>
+<text x="20" y="48" class="t-small">cost per column update (µs) = seconds per step × ranks ÷ column updates · small-fire full-window runs · dashed: a × (1 + 110 ÷ side)</text>
+<path d="M90 350.0H690" class="grid"/><text x="80" y="354.0" text-anchor="end" class="t-small">100 µs</text>
+<path d="M90 292.0H690" class="grid"/><text x="80" y="296.0" text-anchor="end" class="t-small">200 µs</text>
+<path d="M90 234.0H690" class="grid"/><text x="80" y="238.0" text-anchor="end" class="t-small">300 µs</text>
+<path d="M90 176.0H690" class="grid"/><text x="80" y="180.0" text-anchor="end" class="t-small">400 µs</text>
+<path d="M90 118.0H690" class="grid"/><text x="80" y="122.0" text-anchor="end" class="t-small">500 µs</text>
+<path d="M90 60.0H690" class="grid"/><text x="80" y="64.0" text-anchor="end" class="t-small">600 µs</text>
+<text x="142.9" y="370" text-anchor="middle" class="t-small">75</text>
+<text x="231.2" y="370" text-anchor="middle" class="t-small">100</text>
+<text x="319.4" y="370" text-anchor="middle" class="t-small">125</text>
+<text x="407.6" y="370" text-anchor="middle" class="t-small">150</text>
+<text x="495.9" y="370" text-anchor="middle" class="t-small">175</text>
+<text x="584.1" y="370" text-anchor="middle" class="t-small">200</text>
+<text x="672.4" y="370" text-anchor="middle" class="t-small">225</text>
+<text x="390.0" y="392" text-anchor="middle" class="t-small">patch side: grid points per rank (√ of column updates ÷ ranks), larger to the right</text>
+<polyline points="90.0,67.8 97.1,74.9 104.1,81.6 111.2,87.8 118.2,93.7 125.3,99.3 132.4,104.5 139.4,109.5 146.5,114.2 153.5,118.6 160.6,122.9 167.6,126.9 174.7,130.7 181.8,134.4 188.8,137.9 195.9,141.2 202.9,144.4 210.0,147.4 217.1,150.4 224.1,153.2 231.2,155.9 238.2,158.5 245.3,161.0 252.4,163.3 259.4,165.7 266.5,167.9 273.5,170.0 280.6,172.1 287.6,174.1 294.7,176.0 301.8,177.9 308.8,179.7 315.9,181.4 322.9,183.1 330.0,184.8 337.1,186.4 344.1,187.9 351.2,189.4 358.2,190.8 365.3,192.2 372.4,193.6 379.4,194.9 386.5,196.2 393.5,197.5 400.6,198.7 407.6,199.9 414.7,201.1 421.8,202.2 428.8,203.3 435.9,204.4 442.9,205.4 450.0,206.4 457.1,207.4 464.1,208.4 471.2,209.3 478.2,210.3 485.3,211.2 492.4,212.0 499.4,212.9 506.5,213.7 513.5,214.6 520.6,215.4 527.6,216.2 534.7,216.9 541.8,217.7 548.8,218.4 555.9,219.2 562.9,219.9 570.0,220.6 577.1,221.2 584.1,221.9 591.2,222.6 598.2,223.2 605.3,223.8 612.4,224.4 619.4,225.1 626.5,225.6 633.5,226.2 640.6,226.8 647.6,227.4 654.7,227.9 661.8,228.5 668.8,229.0 675.9,229.5 682.9,230.0 690.0,230.5" class="s1" style="stroke-width:1.8;stroke-dasharray:6 4"/>
+<polyline points="90.0,130.3 97.1,136.1 104.1,141.5 111.2,146.6 118.2,151.4 125.3,155.9 132.4,160.2 139.4,164.3 146.5,168.1 153.5,171.7 160.6,175.2 167.6,178.5 174.7,181.6 181.8,184.6 188.8,187.5 195.9,190.2 202.9,192.8 210.0,195.3 217.1,197.7 224.1,200.0 231.2,202.2 238.2,204.3 245.3,206.3 252.4,208.3 259.4,210.1 266.5,212.0 273.5,213.7 280.6,215.4 287.6,217.0 294.7,218.6 301.8,220.1 308.8,221.6 315.9,223.0 322.9,224.4 330.0,225.7 337.1,227.0 344.1,228.3 351.2,229.5 358.2,230.7 365.3,231.8 372.4,233.0 379.4,234.0 386.5,235.1 393.5,236.1 400.6,237.1 407.6,238.1 414.7,239.0 421.8,240.0 428.8,240.9 435.9,241.7 442.9,242.6 450.0,243.4 457.1,244.2 464.1,245.0 471.2,245.8 478.2,246.6 485.3,247.3 492.4,248.0 499.4,248.7 506.5,249.4 513.5,250.1 520.6,250.7 527.6,251.4 534.7,252.0 541.8,252.6 548.8,253.2 555.9,253.8 562.9,254.4 570.0,255.0 577.1,255.5 584.1,256.1 591.2,256.6 598.2,257.1 605.3,257.6 612.4,258.1 619.4,258.6 626.5,259.1 633.5,259.6 640.6,260.1 647.6,260.5 654.7,261.0 661.8,261.4 668.8,261.8 675.9,262.3 682.9,262.7 690.0,263.1" class="s2" style="stroke-width:1.8;stroke-dasharray:6 4"/>
+<polyline points="90.0,220.7 97.1,224.6 104.1,228.2 111.2,231.7 118.2,234.9 125.3,238.0 132.4,240.9 139.4,243.6 146.5,246.2 153.5,248.6 160.6,251.0 167.6,253.2 174.7,255.3 181.8,257.3 188.8,259.2 195.9,261.1 202.9,262.8 210.0,264.5 217.1,266.1 224.1,267.7 231.2,269.1 238.2,270.6 245.3,271.9 252.4,273.3 259.4,274.5 266.5,275.8 273.5,276.9 280.6,278.1 287.6,279.2 294.7,280.2 301.8,281.3 308.8,282.3 315.9,283.2 322.9,284.2 330.0,285.1 337.1,285.9 344.1,286.8 351.2,287.6 358.2,288.4 365.3,289.2 372.4,289.9 379.4,290.7 386.5,291.4 393.5,292.1 400.6,292.7 407.6,293.4 414.7,294.0 421.8,294.7 428.8,295.3 435.9,295.8 442.9,296.4 450.0,297.0 457.1,297.5 464.1,298.1 471.2,298.6 478.2,299.1 485.3,299.6 492.4,300.1 499.4,300.6 506.5,301.0 513.5,301.5 520.6,301.9 527.6,302.4 534.7,302.8 541.8,303.2 548.8,303.6 555.9,304.0 562.9,304.4 570.0,304.8 577.1,305.1 584.1,305.5 591.2,305.9 598.2,306.2 605.3,306.6 612.4,306.9 619.4,307.2 626.5,307.6 633.5,307.9 640.6,308.2 647.6,308.5 654.7,308.8 661.8,309.1 668.8,309.4 675.9,309.7 682.9,310.0 690.0,310.3" class="s3" style="stroke-width:1.8;stroke-dasharray:6 4"/>
+<circle cx="451.9" cy="226.9" r="5.5" class="f1"/>
+<circle cx="451.9" cy="275.0" r="5.5" class="f2"/>
+<circle cx="451.9" cy="321.7" r="5.5" class="f3"/>
+<circle cx="337.2" cy="210.8" r="5.5" class="f1"/>
+<circle cx="337.2" cy="233.7" r="5.5" class="f2"/>
+<circle cx="337.2" cy="296.9" r="5.5" class="f3"/>
+<rect x="586.4" y="224.0" width="10" height="10" class="f1"/>
+<rect x="586.4" y="242.7" width="10" height="10" class="f2"/>
+<rect x="586.4" y="299.7" width="10" height="10" class="f3"/>
+<rect x="467.5" y="199.2" width="10" height="10" class="f1"/>
+<rect x="467.5" y="226.7" width="10" height="10" class="f2"/>
+<rect x="467.5" y="280.5" width="10" height="10" class="f3"/>
+<path d="M379.2 186.5l7 7l-7 7l-7-7z" class="f1"/>
+<path d="M379.2 200.4l7 7l-7 7l-7-7z" class="f2"/>
+<path d="M379.2 259.7l7 7l-7 7l-7-7z" class="f3"/>
+<path d="M714 70h22" class="s1" style="stroke-dasharray:6 4"/><text x="744" y="74" class="t-name">Cascade Lake</text><text x="744" y="92" class="t-small">a = 207 µs</text>
+<path d="M714 120h22" class="s2" style="stroke-dasharray:6 4"/><text x="744" y="124" class="t-name">Ice Lake</text><text x="744" y="142" class="t-small">a = 169 µs</text>
+<path d="M714 170h22" class="s3" style="stroke-dasharray:6 4"/><text x="744" y="174" class="t-name">Sapphire Rapids</text><text x="744" y="192" class="t-small">a = 114 µs</text>
+<circle cx="720" cy="224" r="5" fill="var(--ink-3)"/><text x="734" y="228" class="t-small">Canyon (16, 25 ranks)</text>
+<rect x="715" y="240" width="10" height="10" fill="var(--ink-3)"/><text x="734" y="250" class="t-small">Cranston (25, 36)</text>
+<path d="M720 260l6 6l-6 6l-6-6z" fill="var(--ink-3)"/><text x="734" y="272" class="t-small">Long (36)</text>
+<text x="714" y="304" class="t-small">k = 110 points on all</text><text x="714" y="320" class="t-small">three machines</text>
+</svg></div><figcaption><strong>The weak-scaling view.</strong> Each machine's points rise to the left, toward small patches, by the same shape. Perfect weak scaling would be three flat lines.</figcaption></figure>
+
+<p>The fit, over the 24 full-window runs (plus Eaton's short-window runs):</p>
+<p class="formula">cost = a(type) × (1 + k ÷ side)<span>a = 207 · 169 · 114 µs</span><span>k = 110 points</span></p>
+
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Node type</th>
+<th><code>a</code>, µs per column update</th>
+<th>Relative to Sapphire Rapids</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cascade Lake</td>
+<td>207</td>
+<td>1.82×</td>
+</tr>
+<tr>
+<td>Ice Lake</td>
+<td>169</td>
+<td>1.48×</td>
+</tr>
+<tr>
+<td>Sapphire Rapids</td>
+<td>114</td>
+<td>1</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>How to read it.</strong> The <code>1 + k ÷ side</code> factor is the cost of exchanging patch edges with neighbouring ranks. At a 60-point patch it adds about 180% to the cost; at 200 points, about 55%. One <code>k</code> serves all three machines, so the machines differ only by a constant factor.</p>
+<p><strong>What it misses.</strong> Typical error 11%, worst 28%. Long and Cranston sit above their curves and Canyon below: a fire with a larger active front does more fire-model work per column, which a count of grid cells cannot see. The first 15 minutes of a real run measure it per fire, and the <a href="design.html#the-weekly-lookup-table">lookup table</a> keeps those measurements.</p>
+<h2 id="the-node-formula">The node formula</h2>
+<figure><div class="fig"><svg viewBox="0 0 900 400" role="img" aria-label="Nine steps from a fire's grid to ranks, walltime and cost, worked for Cranston on Sapphire Rapids">
+<text x="20" y="28" class="t-title">Nine steps from a fire's grid to ranks, walltime and cost (Cranston, Sapphire Rapids)</text>
+<text x="20" y="58" class="t-small t-blue" style="letter-spacing:1.4px">FROM THE GRID</text>
+<text x="320" y="58" class="t-small t-acc" style="letter-spacing:1.4px">FROM THE CALIBRATION</text>
+<text x="620" y="58" class="t-small t-green" style="letter-spacing:1.4px">FROM THE WINDOW</text>
+<g>
+<rect x="20" y="68" width="270" height="88" rx="10" class="box-blue"/>
+<text x="34" y="90" class="t-name">1 · Rank cap</text><text x="34" y="110" class="t-mono">⌊nx/10⌋ × ⌊ny/10⌋, tightest domain</text><text x="34" y="138" class="t-name t-blue">6 × 6 = 36</text>
+<rect x="20" y="166" width="270" height="88" rx="10" class="box-blue"/>
+<text x="34" y="188" class="t-name">2 · Ranks</text><text x="34" y="208" class="t-mono">small fire: the cap, one node</text><text x="34" y="236" class="t-name t-blue">n = 36</text>
+<rect x="20" y="264" width="270" height="88" rx="10" class="box-blue"/>
+<text x="34" y="286" class="t-name">3 · Patch side</text><text x="34" y="306" class="t-mono">√(column updates ÷ n)</text><text x="34" y="334" class="t-name t-blue">√(1,020,636 ÷ 36) = 168</text>
+</g>
+<g>
+<rect x="320" y="68" width="270" height="88" rx="10" class="box-acc"/>
+<text x="334" y="90" class="t-name">4 · Cost per update</text><text x="334" y="110" class="t-mono">a(type) × (1 + 110 ÷ side)</text><text x="334" y="138" class="t-name t-acc">114 × (1 + 110/168) = 188 µs</text>
+<rect x="320" y="166" width="270" height="88" rx="10" class="box-acc"/>
+<text x="334" y="188" class="t-name">5 · Seconds per step</text><text x="334" y="208" class="t-mono">updates × cost ÷ n</text><text x="334" y="236" class="t-name t-acc">5.32 s (measured 5.99)</text>
+<rect x="320" y="264" width="270" height="88" rx="10" class="box"/>
+<text x="334" y="286" class="t-name">9 · Charged core-hours</text><text x="334" y="306" class="t-mono">nodes × cores × walltime</text><text x="334" y="334" class="t-name">1 × 64 × 41.8 = 2,675</text>
+</g>
+<g>
+<rect x="620" y="68" width="260" height="88" rx="10" class="box-green"/>
+<text x="634" y="90" class="t-name">6 · Steps</text><text x="634" y="110" class="t-mono">window ÷ coarse time step</text><text x="634" y="138" class="t-name t-green">20 h × 3600 ÷ 3 s = 24,000</text>
+<rect x="620" y="166" width="260" height="88" rx="10" class="box-green"/>
+<text x="634" y="188" class="t-name">7 · Walltime</text><text x="634" y="208" class="t-mono">s/step × steps × 1.15 + 1 h</text><text x="634" y="236" class="t-name t-green">41.8 h (measured 41.6)</text>
+<rect x="620" y="264" width="260" height="88" rx="10" class="box"/>
+<text x="634" y="286" class="t-name">8 · Over 72 hours?</text><text x="634" y="306" class="t-mono">chain jobs via restart files</text><text x="634" y="334" class="t-name">fits in one job</text>
+</g>
+<text x="20" y="384" class="t-small">A fire never run before uses × 1.3 instead of × 1.15. The first 15 minutes of the real run replace step 5's estimate with a measured rate.</text>
+</svg></div><figcaption><strong>The sizing rule, worked.</strong> Steps 1–3 need only the fire's grid, 4–5 the calibration, 6–7 the simulated window. For Cranston it predicts 41.8 h against 41.6 h measured.</figcaption></figure>
+
+<ol>
+<li><strong>Rank cap.</strong> <code>⌊nx/10⌋ × ⌊ny/10⌋</code> on the tightest domain.</li>
+<li><strong>Ranks.</strong> Small fire: the cap, on one whole node. Large fire: <code>min(cap, 24 nodes × cores)</code>, and at most about 1,000 on Cascade Lake (its elbow).</li>
+<li><strong>Patch side.</strong> <code>√(column updates per step ÷ ranks)</code>.</li>
+<li><strong>Cost per update.</strong> <code>a(type) × (1 + 110 ÷ side)</code>.</li>
+<li><strong>Seconds per step.</strong> <code>column updates × cost × 10⁻⁶ ÷ ranks</code>.</li>
+<li><strong>Steps.</strong> Simulated seconds ÷ coarse time step.</li>
+<li><strong>Walltime.</strong> <code>seconds per step × steps × 1.15 + 1 h</code>; × 1.3 for a fire never run before.</li>
+<li><strong>Over 72 hours?</strong> Split into a chain of jobs resuming from restart files. Each link waited 12–24 h in the queue, so fitting in one job is worth a lot.</li>
+<li><strong>Charged core-hours.</strong> <code>nodes × cores per node × walltime</code>, whether the cores are used or not.</li>
+</ol>
+<p>Cranston lands within 1% partly because it is in the calibration set. A new fire gets the 1.3 margin until its own first measured rate replaces step 5.</p>
+<nav class="pager"><a class="prev" href="scaling.html"><small>Previous</small>Scaling and the elbow</a><a class="next" href="queue.html"><small>Next</small>Queue waits and cost</a></nav>
+<footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/costmodel.md</code>.</footer>
+</article>
+</main>
+</div>
+<script>
+function toggleTheme(){var d=document.documentElement;var cur=d.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var nx=cur==='dark'?'light':'dark';d.setAttribute('data-theme',nx);try{localStorage.setItem('theme',nx);}catch(e){}}
+</script>
+</body>
+</html>

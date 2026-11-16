@@ -1,0 +1,57 @@
+<svg viewBox="0 0 900 400" role="img" aria-label="Four public sources supply every input; each lands in one folder and feeds named fields">
+<defs><marker id="ds-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker></defs>
+<text x="20" y="28" class="t-title">Four public sources supply every input, each to one folder and a few fields</text>
+<text x="40" y="62" class="t-small" style="letter-spacing:1.4px">SOURCE</text>
+<text x="330" y="62" class="t-small" style="letter-spacing:1.4px">ON CCR, UNDER wrf/static OR inputs</text>
+<text x="660" y="62" class="t-small" style="letter-spacing:1.4px">BECOMES</text>
+<g>
+<rect x="20" y="76" width="250" height="62" rx="10" class="box"/>
+<text x="36" y="100" class="t-name">UCAR WPS geography</text>
+<text x="36" y="120" class="t-body">geog_high_res_mandatory, 2.6 GB</text>
+<rect x="320" y="76" width="280" height="62" rx="10" class="box-file"/>
+<text x="336" y="100" class="t-mono">WPS_GEOG/  · 29 GB, read-only</text>
+<text x="336" y="120" class="t-body">terrain, land use, soil, albedo, LAI</text>
+<rect x="650" y="76" width="230" height="62" rx="10" class="box-blue"/>
+<text x="666" y="100" class="t-mono">HGT_M  LU_INDEX  SOILCTOP</text>
+<text x="666" y="120" class="t-mono">ALBEDO12M  GREENFRAC …</text>
+</g>
+<g>
+<rect x="20" y="154" width="250" height="62" rx="10" class="box"/>
+<text x="36" y="178" class="t-name">LANDFIRE (USGS)</text>
+<text x="36" y="198" class="t-body">FBFM40 fuel models, 30 m</text>
+<rect x="320" y="154" width="280" height="62" rx="10" class="box-file"/>
+<text x="336" y="178" class="t-mono">LF2024/fbfm40/  · 2.8 GB (CA)</text>
+<text x="336" y="198" class="t-body">WPS tiles + index, Albers</text>
+<rect x="650" y="154" width="230" height="62" rx="10" class="box-acc"/>
+<text x="666" y="178" class="t-mono">NFUEL_CAT</text>
+<text x="666" y="198" class="t-body">fuel code per fire cell</text>
+</g>
+<g>
+<rect x="20" y="232" width="250" height="62" rx="10" class="box"/>
+<text x="36" y="256" class="t-name">USGS elevation (1″)</text>
+<text x="36" y="276" class="t-body">about 30 m, California mosaic</text>
+<rect x="320" y="232" width="280" height="62" rx="10" class="box-file"/>
+<text x="336" y="256" class="t-mono">CA_1s/  · 5.4 GB</text>
+<text x="336" y="276" class="t-body">WPS tiles + index, lat-lon</text>
+<rect x="650" y="232" width="230" height="62" rx="10" class="box-acc"/>
+<text x="666" y="256" class="t-mono">ZSF  DZDXF  DZDYF</text>
+<text x="666" y="276" class="t-body">fire terrain and its slopes</text>
+</g>
+<g>
+<rect x="20" y="310" width="250" height="62" rx="10" class="box"/>
+<text x="36" y="334" class="t-name">NOAA HRRR on AWS</text>
+<text x="36" y="354" class="t-body">hourly 3 km analyses, public</text>
+<rect x="320" y="310" width="280" height="62" rx="10" class="box-file"/>
+<text x="336" y="334" class="t-mono">inputs/weather/hrrr/</text>
+<text x="336" y="354" class="t-body">31 files, 12 GB for Canyon</text>
+<rect x="650" y="310" width="230" height="62" rx="10" class="box-green"/>
+<text x="666" y="334" class="t-mono">TT  UU  VV  RH  PSFC  SOILT…</text>
+<text x="666" y="354" class="t-body">state and boundaries</text>
+</g>
+<g class="ln" marker-end="url(#ds-a)">
+<path d="M270 107H318"/><path d="M600 107H648"/>
+<path d="M270 185H318"/><path d="M600 185H648"/>
+<path d="M270 263H318"/><path d="M600 263H648"/>
+<path d="M270 341H318"/><path d="M600 341H648"/>
+</g>
+</svg>

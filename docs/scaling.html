@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scaling and the elbow · WRF-Fire Manual</title>
+<meta name="description" content="More ranks make each step faster only up to a point. Our runs show where that point is for each machine, and that for our small fires WRF&#x27;s own decomposition rule stops us long before we reach it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</head>
+<body>
+<div class="topbar"><a href="index.html">WRF-Fire Manual</a><button type="button" onclick="document.querySelector('.side').classList.add('open')">Menu</button></div>
+<div class="layout">
+<nav class="side" aria-label="Site">
+<button type="button" class="close" onclick="this.parentNode.classList.remove('open')">Close</button>
+<a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
+<h4>Start</h4><ol>
+<li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
+</ol>
+<h4>The manual: WPS to WRF-Fire</h4><ol>
+<li><a href="env.html"><span class="n">0</span><span>Phase 0 · Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">1</span><span>Phase 1 · Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">2</span><span>Phase 2 · Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">3</span><span>Phase 3 · Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">4</span><span>Phase 4 · Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">5</span><span>Phase 5 · real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">6</span><span>Phase 6 · The fire model</span></a></li>
+<li><a href="moisture.html"><span class="n">7</span><span>Fuel moisture in depth</span></a></li>
+<li><a href="extend.html"><span class="n">8</span><span>Other research inputs</span></a></li>
+<li><a href="run.html"><span class="n">9</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">10</span><span>Reference and failures</span></a></li>
+</ol>
+<h4>Our work on CCR</h4><ol>
+<li><a href="setup.html"><span class="n">11</span><span>WPS on CCR: setup so far</span></a></li>
+<li><a href="campaign.html"><span class="n">12</span><span>The scaling campaign</span></a></li>
+<li><a href="scaling.html" class="on"><span class="n">13</span><span>Scaling and the elbow</span></a></li>
+<li><a href="costmodel.html"><span class="n">14</span><span>Cost model and node formula</span></a></li>
+<li><a href="queue.html"><span class="n">15</span><span>Queue waits and cost</span></a></li>
+<li><a href="lessons.html"><span class="n">16</span><span>What went wrong, what we learnt</span></a></li>
+<li><a href="design.html"><span class="n">17</span><span>The workflow we designed</span></a></li>
+</ol>
+<button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
+</nav>
+<main>
+<article class="page">
+<p class="kicker">Results</p>
+<h1>Scaling and the elbow</h1>
+<p class="lead">More ranks make each step faster only up to a point. Our runs show where that point is for each machine, and that for our small fires WRF's own decomposition rule stops us long before we reach it.</p>
+<nav class="toc"><b>On this page</b><ul><li><a href="#two-kinds-of-scaling">Two kinds of scaling</a></li><li><a href="#the-elbow">The elbow</a></li><li><a href="#eaton-measured">Eaton, measured</a></li><li><a href="#small-fires-never-reach-their-elbow">Small fires never reach their elbow</a></li></ul></nav>
+<h2 id="two-kinds-of-scaling">Two kinds of scaling</h2>
+<figure><div class="fig"><svg viewBox="0 0 900 290" role="img" aria-label="Strong scaling splits one grid finer; weak scaling grows the grid with the ranks">
+<defs><marker id="sw-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker></defs>
+<text x="20" y="28" class="t-title">Strong scaling splits one fire finer; weak scaling grows the fire with the ranks</text>
+<text x="20" y="60" class="t-name">Strong: the same grid on more ranks</text>
+<rect x="30" y="80" width="110" height="110" class="box-blue"/>
+<rect x="190" y="80" width="110" height="110" class="box-blue"/>
+<path d="M245 80V190M190 135H300" class="ln-blue"/>
+<rect x="350" y="80" width="110" height="110" class="box-blue"/>
+<path d="M377.5 80V190M405 80V190M432.5 80V190M350 107.5H460M350 135H460M350 162.5H460" class="ln-blue"/>
+<g class="ln" marker-end="url(#sw-a)"><path d="M146 135H184"/><path d="M306 135H344"/></g>
+<text x="85" y="212" text-anchor="middle" class="t-small">1 rank</text><text x="245" y="212" text-anchor="middle" class="t-small">4 ranks</text><text x="405" y="212" text-anchor="middle" class="t-small">16 ranks</text>
+<text x="30" y="240" class="t-body">Ideal: time per step falls as 1/n. It stops falling</text>
+<text x="30" y="258" class="t-body">when the unsplittable part and neighbour talk dominate.</text>
+<text x="500" y="60" class="t-name">Weak: a bigger grid, the same patch per rank</text>
+<rect x="510" y="160" width="30" height="30" class="box-blue"/>
+<rect x="590" y="130" width="60" height="60" class="box-blue"/>
+<path d="M620 130V190M590 160H650" class="ln-blue"/>
+<rect x="710" y="70" width="120" height="120" class="box-blue"/>
+<path d="M740 70V190M770 70V190M800 70V190M710 100H830M710 130H830M710 160H830" class="ln-blue"/>
+<g class="ln" marker-end="url(#sw-a)"><path d="M546 175H584"/><path d="M656 160H704"/></g>
+<text x="525" y="212" text-anchor="middle" class="t-small">1 rank</text><text x="620" y="212" text-anchor="middle" class="t-small">4 ranks</text><text x="770" y="212" text-anchor="middle" class="t-small">16 ranks</text>
+<text x="510" y="240" class="t-body">Ideal: time per step stays flat. It rises as</text>
+<text x="510" y="258" class="t-body">each rank spends more time on its patch edges.</text>
+<text x="20" y="284" class="t-small">Our sweep was strong-scaling ladders per fire; pooled over four fires of very different size, the same runs give the weak-scaling view.</text>
+</svg></div><figcaption><strong>Two questions.</strong> Strong scaling answers how many ranks a given fire is worth. Weak scaling answers what a patch of a given size costs on a given machine. The <a href="costmodel.html">cost model</a> uses the weak view.</figcaption></figure>
+
+<h2 id="the-elbow">The elbow</h2>
+<p>Time per step behaves like Amdahl's law written in seconds: a serial part <code>s</code> that no extra rank shrinks, plus a parallel part <code>p</code> shared among <code>n</code> ranks.</p>
+<p class="formula">T(n) = s + p ⁄ n<span>elbow: n* = p ⁄ s</span><span>there T(n*) = 2s</span></p>
+
+<figure><div class="fig"><svg viewBox="0 0 900 340" role="img" aria-label="Time per step falls toward a floor; the elbow is where the divisible part equals the floor">
+<text x="20" y="28" class="t-title">T(n) = s + p/n: past the elbow, doubling ranks doubles cost and barely saves time</text>
+<rect x="350.0" y="60" width="270.0" height="230" class="fill-acc-soft"/>
+<path d="M80 290H620M80 60V290" class="axis"/>
+<path d="M80 264.4H620" class="ln-dash"/><text x="610" y="260.4" text-anchor="end" class="t-small">floor s</text>
+<polyline points="80.0,60.0 86.3,69.7 92.7,79.0 99.0,87.8 105.3,96.2 111.7,104.3 118.0,111.9 124.3,119.1 130.7,126.1 137.0,132.7 143.4,138.9 149.7,144.9 156.0,150.6 162.4,156.0 168.7,161.2 175.0,166.1 181.4,170.8 187.7,175.2 194.0,179.5 200.4,183.5 206.7,187.4 213.0,191.1 219.4,194.6 225.7,197.9 232.0,201.1 238.4,204.1 244.7,206.9 251.0,209.7 257.4,212.3 263.7,214.8 270.1,217.1 276.4,219.4 282.7,221.5 289.1,223.6 295.4,225.5 301.7,227.4 308.1,229.1 314.4,230.8 320.7,232.4 327.1,234.0 333.4,235.4 339.7,236.8 346.1,238.1 352.4,239.4 358.7,240.6 365.1,241.7 371.4,242.8 377.7,243.8 384.1,244.8 390.4,245.7 396.8,246.6 403.1,247.5 409.4,248.3 415.8,249.0 422.1,249.8 428.4,250.5 434.8,251.1 441.1,251.8 447.4,252.4 453.8,253.0 460.1,253.5 466.4,254.0 472.8,254.5 479.1,255.0 485.4,255.4 491.8,255.9 498.1,256.3 504.4,256.7 510.8,257.0 517.1,257.4 523.5,257.7 529.8,258.0 536.1,258.3 542.5,258.6 548.8,258.9 555.1,259.2 561.5,259.4 567.8,259.7 574.1,259.9 580.5,260.1 586.8,260.3 593.1,260.5 599.5,260.7 605.8,260.9 612.1,261.1 618.5,261.2" class="ln-blue" style="stroke-width:3"/>
+<path d="M350.0 60V290" class="ln-acc" style="stroke-dasharray:6 4"/>
+<circle cx="350.0" cy="238.9" r="8" class="fill-acc"/>
+<text x="364.0" y="226.9" class="t-name t-acc">elbow n* = p/s, where T = 2s</text>
+<text x="92" y="52" class="t-small">time per step ↑</text>
+<text x="620" y="312" text-anchor="end" class="t-small">ranks n (each tick doubles)</text>
+<path d="M80.0 290v5" class="axis"/>
+<path d="M170.0 290v5" class="axis"/>
+<path d="M260.0 290v5" class="axis"/>
+<path d="M350.0 290v5" class="axis"/>
+<path d="M440.0 290v5" class="axis"/>
+<path d="M530.0 290v5" class="axis"/>
+<path d="M620.0 290v5" class="axis"/>
+<text x="628" y="100" class="t-body">s: the part no extra</text>
+<text x="628" y="118" class="t-body">rank can shrink</text>
+<text x="628" y="146" class="t-body">p: the part that divides</text>
+<text x="628" y="164" class="t-body">among the n ranks</text>
+<text x="628" y="200" class="t-body">Efficiency of a doubling:</text>
+<text x="628" y="218" class="t-body">about 80% before the elbow,</text>
+<text x="628" y="236" class="t-body">about 70% at it, under 60%</text>
+<text x="628" y="254" class="t-body">soon after.</text>
+<text x="80" y="334" class="t-small">Schematic with p/s = 8. Core-hours charged double with every doubling of ranks.</text>
+</svg></div><figcaption><strong>Where to stop adding ranks.</strong> At the elbow <code>n*</code>, the divisible work has shrunk to the size of the floor. Beyond it, each doubling of ranks doubles the charged core-hours for a small gain in time.</figcaption></figure>
+
+<h2 id="eaton-measured">Eaton, measured</h2>
+<p>Eaton is the only fire large enough to reach an elbow. We ran it on 6, 12 and 24 whole nodes of each type, on its 5-hour window.</p>
+<figure><div class="fig"><svg viewBox="0 0 900 420" role="img" aria-label="Eaton seconds per step against ranks on three node types, with Amdahl fits">
+<text x="20" y="28" class="t-title">Eaton: Cascade Lake flattens near 1,000 ranks; the newer chips are still falling at the cap</text>
+<text x="20" y="48" class="t-small">seconds per step (log) against MPI ranks (log) · dots: measured on 6, 12, 24 whole nodes · lines: T(n) = s + p/n</text>
+<path d="M80 303.0H640" class="grid"/><text x="70" y="307.0" text-anchor="end" class="t-small">1 s</text>
+<path d="M80 239.2H640" class="grid"/><text x="70" y="243.2" text-anchor="end" class="t-small">2 s</text>
+<path d="M80 154.8H640" class="grid"/><text x="70" y="158.8" text-anchor="end" class="t-small">5 s</text>
+<path d="M80 91.0H640" class="grid"/><text x="70" y="95.0" text-anchor="end" class="t-small">10 s</text>
+<path d="M175.5 60V350" class="grid"/><text x="175.5" y="370" text-anchor="middle" class="t-small">250</text>
+<path d="M305.1 60V350" class="grid"/><text x="305.1" y="370" text-anchor="middle" class="t-small">500</text>
+<path d="M434.6 60V350" class="grid"/><text x="434.6" y="370" text-anchor="middle" class="t-small">1,000</text>
+<path d="M564.2 60V350" class="grid"/><text x="564.2" y="370" text-anchor="middle" class="t-small">2,000</text>
+<text x="360.0" y="392" text-anchor="middle" class="t-small">MPI ranks</text>
+<path d="M566.5 60V350" class="ln-dash"/><text x="560.5" y="72" text-anchor="end" class="t-small">WRF cap 2,025</text>
+<polyline points="80.0,62.0 85.5,64.4 91.1,66.8 96.6,69.1 102.1,71.5 107.6,73.8 113.2,76.2 118.7,78.5 124.2,80.8 129.7,83.1 135.3,85.4 140.8,87.7 146.3,90.0 151.8,92.2 157.4,94.5 162.9,96.7 168.4,98.9 173.9,101.1 179.5,103.3 185.0,105.5 190.5,107.7 196.0,109.8 201.6,112.0 207.1,114.1 212.6,116.2 218.1,118.4 223.7,120.4 229.2,122.5 234.7,124.6 240.2,126.6 245.8,128.7 251.3,130.7 256.8,132.7 262.3,134.7 267.9,136.6 273.4,138.6 278.9,140.5 284.4,142.4 290.0,144.4 295.5,146.2 301.0,148.1 306.5,150.0 312.1,151.8 317.6,153.6 323.1,155.4 328.6,157.2 334.2,159.0 339.7,160.7 345.2,162.4 350.7,164.1 356.3,165.8 361.8,167.5 367.3,169.1 372.9,170.8 378.4,172.4 383.9,174.0 389.4,175.5 395.0,177.1 400.5,178.6 406.0,180.1 411.5,181.6 417.1,183.1 422.6,184.6 428.1,186.0 433.6,187.4 439.2,188.8 444.7,190.2 450.2,191.5 455.7,192.9 461.3,194.2 466.8,195.5 472.3,196.7 477.8,198.0 483.4,199.2 488.9,200.4 494.4,201.6 499.9,202.8 505.5,203.9 511.0,205.1 516.5,206.2 522.0,207.3 527.6,208.4 533.1,209.4 538.6,210.5 544.1,211.5 549.7,212.5 555.2,213.5 560.7,214.4 566.2,215.4 571.8,216.3 577.3,217.2 582.8,218.1 588.3,219.0 593.9,219.8 599.4,220.7 604.9,221.5 610.4,222.3 616.0,223.1 621.5,223.8 627.0,224.6 632.6,225.3 638.1,226.1" class="s1" style="stroke-width:1.6;opacity:.55"/>
+<circle cx="167.9" cy="97.9" r="5.5" class="f1"/>
+<text x="167.9" y="87.9" text-anchor="middle" class="t-small">9.28</text>
+<circle cx="297.4" cy="151.7" r="5.5" class="f1"/>
+<text x="297.4" y="141.7" text-anchor="middle" class="t-small">5.17</text>
+<circle cx="427.0" cy="181.3" r="5.5" class="f1"/>
+<text x="427.0" y="171.3" text-anchor="middle" class="t-small">3.75</text>
+<polyline points="80.0,70.5 85.5,73.1 91.1,75.7 96.6,78.3 102.1,80.9 107.6,83.5 113.2,86.0 118.7,88.6 124.2,91.2 129.7,93.7 135.3,96.3 140.8,98.8 146.3,101.4 151.8,103.9 157.4,106.5 162.9,109.0 168.4,111.5 173.9,114.0 179.5,116.6 185.0,119.1 190.5,121.6 196.0,124.1 201.6,126.6 207.1,129.1 212.6,131.5 218.1,134.0 223.7,136.5 229.2,138.9 234.7,141.4 240.2,143.8 245.8,146.3 251.3,148.7 256.8,151.1 262.3,153.5 267.9,155.9 273.4,158.3 278.9,160.7 284.4,163.1 290.0,165.5 295.5,167.8 301.0,170.2 306.5,172.5 312.1,174.9 317.6,177.2 323.1,179.5 328.6,181.8 334.2,184.1 339.7,186.4 345.2,188.7 350.7,190.9 356.3,193.2 361.8,195.4 367.3,197.6 372.9,199.8 378.4,202.0 383.9,204.2 389.4,206.4 395.0,208.6 400.5,210.7 406.0,212.8 411.5,215.0 417.1,217.1 422.6,219.2 428.1,221.2 433.6,223.3 439.2,225.4 444.7,227.4 450.2,229.4 455.7,231.4 461.3,233.4 466.8,235.4 472.3,237.3 477.8,239.3 483.4,241.2 488.9,243.1 494.4,245.0 499.9,246.9 505.5,248.7 511.0,250.6 516.5,252.4 522.0,254.2 527.6,256.0 533.1,257.7 538.6,259.5 544.1,261.2 549.7,262.9 555.2,264.6 560.7,266.3 566.2,267.9 571.8,269.6 577.3,271.2 582.8,272.8 588.3,274.3 593.9,275.9 599.4,277.4 604.9,278.9 610.4,280.4 616.0,281.9 621.5,283.4 627.0,284.8 632.6,286.2 638.1,287.6" class="s2" style="stroke-width:1.6;opacity:.55"/>
+<circle cx="230.8" cy="139.9" r="5.5" fill="var(--bg-2)" stroke="var(--c2)" stroke-width="2.4"/>
+<text x="230.8" y="129.9" text-anchor="middle" class="t-small">5.88</text>
+<circle cx="360.3" cy="193.6" r="5.5" class="f2"/>
+<text x="360.3" y="183.6" text-anchor="middle" class="t-small">3.28</text>
+<circle cx="489.9" cy="244.9" r="5.5" class="f2"/>
+<text x="489.9" y="234.9" text-anchor="middle" class="t-small">1.88</text>
+<polyline points="80.0,101.1 85.5,103.7 91.1,106.3 96.6,108.9 102.1,111.6 107.6,114.2 113.2,116.8 118.7,119.4 124.2,122.0 129.7,124.6 135.3,127.2 140.8,129.8 146.3,132.4 151.8,134.9 157.4,137.5 162.9,140.1 168.4,142.7 173.9,145.2 179.5,147.8 185.0,150.3 190.5,152.9 196.0,155.5 201.6,158.0 207.1,160.5 212.6,163.1 218.1,165.6 223.7,168.1 229.2,170.6 234.7,173.1 240.2,175.7 245.8,178.2 251.3,180.6 256.8,183.1 262.3,185.6 267.9,188.1 273.4,190.6 278.9,193.0 284.4,195.5 290.0,197.9 295.5,200.4 301.0,202.8 306.5,205.2 312.1,207.6 317.6,210.0 323.1,212.4 328.6,214.8 334.2,217.2 339.7,219.6 345.2,222.0 350.7,224.3 356.3,226.7 361.8,229.0 367.3,231.3 372.9,233.6 378.4,235.9 383.9,238.2 389.4,240.5 395.0,242.8 400.5,245.1 406.0,247.3 411.5,249.5 417.1,251.8 422.6,254.0 428.1,256.2 433.6,258.4 439.2,260.6 444.7,262.7 450.2,264.9 455.7,267.0 461.3,269.1 466.8,271.3 472.3,273.4 477.8,275.4 483.4,277.5 488.9,279.6 494.4,281.6 499.9,283.6 505.5,285.6 511.0,287.6 516.5,289.6 522.0,291.6 527.6,293.5 533.1,295.4 538.6,297.3 544.1,299.2 549.7,301.1 555.2,303.0 560.7,304.8 566.2,306.6 571.8,308.4 577.3,310.2 582.8,312.0 588.3,313.8 593.9,315.5 599.4,317.2 604.9,318.9 610.4,320.6 616.0,322.2 621.5,323.9 627.0,325.5 632.6,327.1 638.1,328.7" class="s3" style="stroke-width:1.6;opacity:.55"/>
+<circle cx="255.7" cy="182.8" r="5.5" class="f3"/>
+<text x="255.7" y="172.8" text-anchor="middle" class="t-small">3.69</text>
+<circle cx="385.3" cy="238.7" r="5.5" class="f3"/>
+<text x="385.3" y="228.7" text-anchor="middle" class="t-small">2.01</text>
+<circle cx="514.9" cy="289.3" r="5.5" class="f3"/>
+<text x="514.9" y="279.3" text-anchor="middle" class="t-small">1.16</text>
+<circle cx="445.5" cy="190.4" r="9" fill="none" stroke="var(--accent)" stroke-width="2"/>
+<text x="457.5" y="178.4" class="t-small t-acc" style="font-weight:600">Cascade elbow ≈ 1,060</text>
+<circle cx="680" cy="70" r="6" class="f1"/><text x="694" y="74" class="t-name">Cascade Lake</text>
+<text x="694" y="92" class="t-small">s 1.7 · p 1,799</text><text x="694" y="108" class="t-small">elbow ≈ 1,060 ranks</text>
+<circle cx="680" cy="136" r="6" class="f2"/><text x="694" y="140" class="t-name">Ice Lake</text>
+<text x="694" y="158" class="t-small">s 0.58 · p 1,786</text><text x="694" y="174" class="t-small">elbow ≈ 3,100 ranks</text>
+<circle cx="680" cy="202" r="6" class="f3"/><text x="694" y="206" class="t-name">Sapphire Rapids</text>
+<text x="694" y="224" class="t-small">s 0.32 · p 1,296</text><text x="694" y="240" class="t-small">elbow ≈ 4,100 ranks</text>
+<text x="680" y="274" class="t-small">open dot: run still going</text><text x="680" y="290" class="t-small">when the campaign stopped</text>
+</svg></div><figcaption><strong>Eaton's strong scaling.</strong> Cascade Lake's doubling efficiency drops from 90% (6 → 12 nodes) to 69% (12 → 24): that is its elbow. Ice Lake and Sapphire Rapids are still at 87% at 24 nodes; their fitted elbows lie beyond WRF's cap of 2,025 ranks, so for them the cap is the limit.</figcaption></figure>
+
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Node type</th>
+<th>Seconds per step at 6 / 12 / 24 nodes</th>
+<th>Doubling efficiency</th>
+<th><code>s</code></th>
+<th><code>p</code></th>
+<th>Elbow <code>p/s</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cascade Lake</td>
+<td>9.28 / 5.17 / 3.75</td>
+<td>90% · 69%</td>
+<td>1.70</td>
+<td>1,799</td>
+<td>≈ 1,060 ranks</td>
+</tr>
+<tr>
+<td>Ice Lake</td>
+<td>5.88 / 3.28 / 1.88</td>
+<td>90% · 87%</td>
+<td>0.58</td>
+<td>1,786</td>
+<td>≈ 3,100 (beyond the cap)</td>
+</tr>
+<tr>
+<td>Sapphire Rapids</td>
+<td>3.69 / 2.01 / 1.16</td>
+<td>92% · 87%</td>
+<td>0.32</td>
+<td>1,296</td>
+<td>≈ 4,100 (beyond the cap)</td>
+</tr>
+</tbody>
+</table></div>
+<p>The 6-node Ice Lake run was still going when the campaign stopped; its value is from the steps it completed.</p>
+<h2 id="small-fires-never-reach-their-elbow">Small fires never reach their elbow</h2>
+<p>WRF refuses a decomposition that gives any rank fewer than 10 grid points in either direction, on any domain. The small fires' outer domains are 54–60 points a side, which caps them at 25 or 36 ranks (<a href="run.html#how-many-ranks">the rule</a>).</p>
+<p>Seconds per step on one node, full windows:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Fire, ranks</th>
+<th>Cascade Lake</th>
+<th>Ice Lake</th>
+<th>Sapphire Rapids</th>
+<th>Efficiency of the last step to the cap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Canyon, 16</td>
+<td>8.25</td>
+<td>6.06</td>
+<td>3.93</td>
+<td></td>
+</tr>
+<tr>
+<td>Canyon, 25 (cap)</td>
+<td>5.75</td>
+<td>5.08</td>
+<td>3.24</td>
+<td>92% · 76% · 78%</td>
+</tr>
+<tr>
+<td>Cranston, 25</td>
+<td>12.60</td>
+<td>11.28</td>
+<td>7.27</td>
+<td></td>
+</tr>
+<tr>
+<td>Cranston, 36 (cap)</td>
+<td>9.96</td>
+<td>8.62</td>
+<td>5.99</td>
+<td>88% · 91% · 84%</td>
+</tr>
+<tr>
+<td>Long, 36 (cap)</td>
+<td>7.45</td>
+<td>6.97</td>
+<td>4.91</td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<p>Efficiency is speed-up ÷ rank ratio. Every value is above 75%, so the cap sits on the steep part of the curve. The 6-, 9- and 12-rank runs used the short window and are not comparable with these.</p>
+<div class="key">
+<p><span class="callout-title">What we took from it</span></p>
+<ul>
+<li><strong>Small fires: run at the cap on one whole node.</strong> Fewer ranks cost more core-hours, because CCR charges the whole node for longer.</li>
+<li><strong>Sapphire Rapids runs each rank 1.5–2.1× faster than Cascade Lake.</strong> Ice Lake sits between.</li>
+<li><strong>Large fires: the lower of the elbow and the cap,</strong> and at most about 1,000 ranks on Cascade Lake.</li>
+<li><strong>To use more cores on a small fire, enlarge or refine its outer domain.</strong> That is a science decision for whoever designs the run, not a sizing decision.</li>
+</ul>
+</div>
+<nav class="pager"><a class="prev" href="campaign.html"><small>Previous</small>The scaling campaign</a><a class="next" href="costmodel.html"><small>Next</small>Cost model and node formula</a></nav>
+<footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/scaling.md</code>.</footer>
+</article>
+</main>
+</div>
+<script>
+function toggleTheme(){var d=document.documentElement;var cur=d.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var nx=cur==='dark'?'light':'dark';d.setAttribute('data-theme',nx);try{localStorage.setItem('theme',nx);}catch(e){}}
+</script>
+</body>
+</html>

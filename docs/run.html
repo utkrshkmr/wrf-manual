@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Running it on Slurm · WRF-Fire Manual</title>
+<meta name="description" content="The whole chain as batch jobs on CCR, how many ranks a fire can use, how long to ask for, how to survive the 72-hour limit, and what to check after each phase.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</head>
+<body>
+<div class="topbar"><a href="index.html">WRF-Fire Manual</a><button type="button" onclick="document.querySelector('.side').classList.add('open')">Menu</button></div>
+<div class="layout">
+<nav class="side" aria-label="Site">
+<button type="button" class="close" onclick="this.parentNode.classList.remove('open')">Close</button>
+<a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
+<h4>Start</h4><ol>
+<li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
+</ol>
+<h4>The manual: WPS to WRF-Fire</h4><ol>
+<li><a href="env.html"><span class="n">0</span><span>Phase 0 · Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">1</span><span>Phase 1 · Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">2</span><span>Phase 2 · Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">3</span><span>Phase 3 · Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">4</span><span>Phase 4 · Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">5</span><span>Phase 5 · real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">6</span><span>Phase 6 · The fire model</span></a></li>
+<li><a href="moisture.html"><span class="n">7</span><span>Fuel moisture in depth</span></a></li>
+<li><a href="extend.html"><span class="n">8</span><span>Other research inputs</span></a></li>
+<li><a href="run.html" class="on"><span class="n">9</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">10</span><span>Reference and failures</span></a></li>
+</ol>
+<h4>Our work on CCR</h4><ol>
+<li><a href="setup.html"><span class="n">11</span><span>WPS on CCR: setup so far</span></a></li>
+<li><a href="campaign.html"><span class="n">12</span><span>The scaling campaign</span></a></li>
+<li><a href="scaling.html"><span class="n">13</span><span>Scaling and the elbow</span></a></li>
+<li><a href="costmodel.html"><span class="n">14</span><span>Cost model and node formula</span></a></li>
+<li><a href="queue.html"><span class="n">15</span><span>Queue waits and cost</span></a></li>
+<li><a href="lessons.html"><span class="n">16</span><span>What went wrong, what we learnt</span></a></li>
+<li><a href="design.html"><span class="n">17</span><span>The workflow we designed</span></a></li>
+</ol>
+<button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
+</nav>
+<main>
+<article class="page">
+<p class="kicker">Operations</p>
+<h1>Running it on Slurm</h1>
+<p class="lead">The whole chain as batch jobs on CCR, how many ranks a fire can use, how long to ask for, how to survive the 72-hour limit, and what to check after each phase.</p>
+<nav class="toc"><b>On this page</b><ul><li><a href="#the-whole-chain-as-two-jobs">The whole chain as two jobs</a></li><li><a href="#how-many-ranks">How many ranks</a></li><li><a href="#how-long-to-ask-for">How long to ask for</a></li><li><a href="#the-72-hour-limit-and-restarts">The 72-hour limit and restarts</a></li><li><a href="#what-to-check-after-each-phase">What to check after each phase</a></li><li><a href="#ending-classes">Ending classes</a></li></ul></nav>
+<h2 id="the-whole-chain-as-two-jobs">The whole chain as two jobs</h2>
+<p>WPS is serial and short, so it runs as one single-core job. real.exe and wrf.exe run as an MPI job that depends on it.</p>
+<pre><code class="language-bash">cat &gt; wps.sbatch &lt;&lt;'EOF'
+#!/bin/bash
+#SBATCH -p general-compute --qos=general-compute
+#SBATCH -N 1 -n 1 --mem=16G -t 03:00:00
+#SBATCH -o wps_%j.out
+module load gcc/11.2.0 openmpi/4.1.1 wps/4.6.0-dmpar
+cd /path/to/canyon_run
+srun -n 1 geogrid.exe &amp;&amp; tail -1 geogrid.log
+ungrib.exe &amp;&amp; tail -1 ungrib.log
+srun -n 1 metgrid.exe &amp;&amp; tail -1 metgrid.log
+EOF
+
+cat &gt; wrf.sbatch &lt;&lt;'EOF'
+#!/bin/bash
+#SBATCH -p general-compute --qos=general-compute
+#SBATCH -N 1 --ntasks=25 --exclusive -t 40:00:00
+#SBATCH --constraint=SAPPHIRE-RAPIDS-IB
+#SBATCH -o wrf_%j.out
+module load gcc/11.2.0 openmpi/4.1.1 wps/4.6.0-dmpar
+cd /path/to/canyon_run
+srun real.exe &amp;&amp; grep -q &quot;SUCCESS COMPLETE REAL_EM&quot; rsl.error.0000 || exit 1
+srun wrf.exe
+EOF
+
+j=$(sbatch --parsable wps.sbatch); sbatch --dependency=afterok:$j wrf.sbatch
+</code></pre>
+<p>Launch MPI programs with <code>srun</code> inside a batch job. Starting the MPI-built WPS programs bare inside an <code>srun</code> step on CCR loses the step's connection (<code>Connection refused</code>).</p>
+<h2 id="how-many-ranks">How many ranks</h2>
+<figure><div class="fig"><svg viewBox="0 0 900 300" role="img" aria-label="The smallest domain sets the rank cap: at least 10 points per rank in each direction">
+<text x="20" y="28" class="t-title">The tightest domain sets the cap: every rank needs at least 10 × 10 points</text>
+<g>
+<rect x="40" y="56" width="210" height="210" class="box-blue"/>
+<g class="grid" style="stroke:var(--blue);opacity:.6"><path d="M75 56V266M110 56V266M145 56V266M180 56V266M215 56V266M40 91H250M40 126H250M40 161H250M40 196H250M40 231H250"/></g>
+<rect x="145" y="161" width="35" height="35" class="fill-acc" opacity="0.45"/>
+<text x="145" y="286" text-anchor="middle" class="t-body">60 × 60 d01 → 6 × 6 = 36 ranks</text>
+</g>
+<g>
+<rect x="300" y="56" width="210" height="210" class="box-acc"/>
+<text x="405" y="150" text-anchor="middle" class="t-name">d02, 217 × 217</text>
+<text x="405" y="170" text-anchor="middle" class="t-body">alone would allow</text>
+<text x="405" y="188" text-anchor="middle" class="t-body">21 × 21 = 441 ranks</text>
+<text x="405" y="286" text-anchor="middle" class="t-body">but every domain uses the same ranks</text>
+</g>
+<g>
+<rect x="560" y="56" width="320" height="210" rx="12" class="box"/>
+<text x="578" y="84" class="t-name">The rule</text>
+<text x="578" y="110" class="t-mono">cap = ⌊nx/10⌋ × ⌊ny/10⌋</text>
+<text x="578" y="128" class="t-body">on the domain where it is smallest</text>
+<text x="578" y="158" class="t-body">Canyon (54 × 54 d01): 5 × 5 = 25</text>
+<text x="578" y="178" class="t-body">Cranston, Long (60 × 60): 6 × 6 = 36</text>
+<text x="578" y="198" class="t-body">Eaton (450 × 450 d01): 45 × 45 = 2,025</text>
+<text x="578" y="228" class="t-small">More ranks → WRF stops at start-up with a</text>
+<text x="578" y="246" class="t-small">decomposition error in rsl.error.0000</text>
+</g>
+</svg></div><figcaption><strong>The decomposition cap.</strong> WRF splits every domain over the same set of ranks and refuses a split that leaves any rank fewer than 10 points in either direction. Small fires are capped by their small outer domain.</figcaption></figure>
+
+<p>From our campaign (<a href="scaling.html">results</a>):</p>
+<ul>
+<li><strong>Small fires: run at the cap, on one whole node.</strong> Every step up to the cap was still 76–94% efficient, and CCR charges the whole node, so fewer ranks cost more core-hours, not fewer.</li>
+<li><strong>Large fires: up to the elbow or the cap, whichever comes first.</strong> For Eaton, Cascade Lake's elbow is about 1,060 ranks; on Ice Lake and Sapphire Rapids the 2,025-rank cap comes first.</li>
+<li>To raise a small fire's cap, enlarge or refine the outer domain. That is a science decision, so make it deliberately.</li>
+</ul>
+<h2 id="how-long-to-ask-for">How long to ask for</h2>
+<p>Measure, don't guess. A two-minute test run gives the seconds per step; <code>rsl.error.0000</code> prints one timing line per step:</p>
+<pre><code class="language-bash">grep 'Timing for main' rsl.error.0000 | tail -20 | awk '{s+=$(NF-2)} END {print s/NR, &quot;s per step&quot;}'
+</code></pre>
+<p>Then walltime = seconds per step × steps × 1.15 + 1 hour, where steps = simulated seconds ÷ <code>time_step</code>. Steps get slower after ignition, as the fire model's work grows; measure after ignition if you can. For a fire never run before, use × 1.3. <a href="costmodel.html#the-node-formula">The node formula</a> does this from the grid alone.</p>
+<h2 id="the-72-hour-limit-and-restarts">The 72-hour limit and restarts</h2>
+<p>CCR's <code>general-compute</code> jobs end at 72 hours. A longer run is a chain of jobs, each resuming from the last restart file:</p>
+<ol>
+<li>Set <code>restart_interval</code> (minutes) so a restart file is written well before the limit, for example every 6 simulated hours.</li>
+<li>For the next job, set <code>restart = .true.</code> and <code>start_*</code> to the restart file's time, and keep everything else the same.</li>
+<li>Queue it with <code>--dependency=afterany:&lt;job&gt;</code>, and <strong>cancel it if the first job finished the run</strong>. Leftover continuations were one of our campaign's incidents (<a href="lessons.html">what went wrong</a>).</li>
+</ol>
+<p>Each continuation waited 12–24 hours in the queue during our campaign, so a set-up that fits one job is worth a lot.</p>
+<h2 id="what-to-check-after-each-phase">What to check after each phase</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>After</th>
+<th>Check</th>
+<th>Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>geogrid</td>
+<td>success; fire fields present; the folders each field read</td>
+<td><code>tail -1 geogrid.log; grep -i 'NFUEL\|ZSF' geogrid.log</code></td>
+</tr>
+<tr>
+<td>ungrib</td>
+<td>success; every hour in the inventory</td>
+<td><code>grep -c Inventory ungrib.log</code></td>
+</tr>
+<tr>
+<td>metgrid</td>
+<td>success; files = hours × domains; fire flags</td>
+<td><code>ls met_em.d0* \| wc -l; ncdump -h met_em.d02.* \| grep FLAG_</code></td>
+</tr>
+<tr>
+<td>real.exe</td>
+<td>success; fuel codes in range; terrain; <code>FMC_G</code></td>
+<td>the <a href="real.html#checking-the-fire-fields">field check</a></td>
+</tr>
+<tr>
+<td>first minutes of wrf.exe</td>
+<td>ignition at the right time; no CFL warnings; seconds per step</td>
+<td><code>grep -iE 'ignit\|cfl' rsl.error.0000</code></td>
+</tr>
+<tr>
+<td>the end</td>
+<td><code>SUCCESS COMPLETE WRF</code> in rank 0's log; or which ending it was</td>
+<td>see <a href="reference.html#failure-modes">failure modes</a></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="ending-classes">Ending classes</h2>
+<p>A WRF-Fire job ends in one of four ways, and each needs a different response:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Ending</th>
+<th>How to recognize it</th>
+<th>Response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Finished</td>
+<td><code>SUCCESS COMPLETE WRF</code> in <code>rsl.error.0000</code></td>
+<td>Cancel any queued continuation</td>
+</tr>
+<tr>
+<td>Fire reached the domain edge</td>
+<td><code>reached domain boundary</code> in any rank's log; Slurm exit 137 (MPI_Abort)</td>
+<td>Not a crash: the run is over. Enlarge or move the fire domain, or end the window earlier</td>
+</tr>
+<tr>
+<td>WRF crash</td>
+<td><code>cfl</code>, <code>NaN</code> or a segfault in any rank's log</td>
+<td>Look at the time and place; often a smaller <code>time_step</code> or <code>w_damping = 1</code></td>
+</tr>
+<tr>
+<td>Killed with clean logs</td>
+<td>Slurm <code>TIMEOUT</code>, <code>OUT_OF_MEMORY</code>, or a node failure</td>
+<td>Resume from the newest restart; more memory or more time</td>
+</tr>
+</tbody>
+</table></div>
+<p>Always read <strong>all</strong> ranks' logs (<code>grep -l &lt;pattern&gt; rsl.error.*</code>). The rank that hits a problem is often not rank 0.</p>
+<nav class="pager"><a class="prev" href="extend.html"><small>Previous</small>Other research inputs</a><a class="next" href="reference.html"><small>Next</small>Reference and failures</a></nav>
+<footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/run.md</code>.</footer>
+</article>
+</main>
+</div>
+<script>
+function toggleTheme(){var d=document.documentElement;var cur=d.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var nx=cur==='dark'?'light':'dark';d.setAttribute('data-theme',nx);try{localStorage.setItem('theme',nx);}catch(e){}}
+</script>
+</body>
+</html>

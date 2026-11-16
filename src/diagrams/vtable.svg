@@ -1,0 +1,32 @@
+<svg viewBox="0 0 900 290" role="img" aria-label="The Vtable maps each GRIB record to a WPS field name">
+<defs><marker id="vt-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker></defs>
+<text x="20" y="28" class="t-title">The Vtable is the dictionary between GRIB codes and WPS field names</text>
+<rect x="20" y="56" width="250" height="196" rx="10" class="box-file"/>
+<text x="36" y="80" class="t-name">One GRIB2 record</text>
+<text x="36" y="106" class="t-mono">discipline  0  (meteorology)</text>
+<text x="36" y="124" class="t-mono">category    0  (temperature)</text>
+<text x="36" y="142" class="t-mono">parameter   0  (temperature)</text>
+<text x="36" y="160" class="t-mono">level type 100 (isobaric)</text>
+<text x="36" y="178" class="t-mono">level   85000 Pa</text>
+<text x="36" y="206" class="t-body">a 1799 × 1059 array for HRRR</text>
+<text x="36" y="224" class="t-small">list with g2print.exe</text>
+<rect x="320" y="56" width="290" height="196" rx="10" class="box-acc"/>
+<text x="336" y="80" class="t-name">Vtable.HRRR.prs, one row</text>
+<text x="336" y="110" class="t-mono">GRIB1 | Lvl | metgrid | Units</text>
+<text x="336" y="128" class="t-mono">  11  | 100 |   TT    |   K  </text>
+<text x="336" y="152" class="t-mono">GRIB2 Discp Catgy Param Level</text>
+<text x="336" y="170" class="t-mono">        0     0     0    100</text>
+<text x="336" y="206" class="t-body">A record with no matching row is</text>
+<text x="336" y="224" class="t-body">skipped without a warning.</text>
+<rect x="660" y="56" width="220" height="196" rx="10" class="box-file"/>
+<text x="676" y="80" class="t-mono">FILE:2025-08-07_18</text>
+<text x="676" y="106" class="t-body">WPS intermediate format</text>
+<text x="676" y="130" class="t-mono">TT    at each level</text>
+<text x="676" y="148" class="t-mono">UU VV RH GHT PRES</text>
+<text x="676" y="166" class="t-mono">PSFC PMSL SKINTEMP</text>
+<text x="676" y="184" class="t-mono">SOILT000 … SOILM300</text>
+<text x="676" y="208" class="t-body">3.4 GB per hour for HRRR</text>
+<text x="676" y="226" class="t-small">list with rd_intermediate.exe</text>
+<g class="ln" marker-end="url(#vt-a)"><path d="M270 154H318"/><path d="M610 154H658"/></g>
+<text x="20" y="280" class="t-small">ungrib.exe reads every GRIBFILE.* link in time order and writes one intermediate file per interval_seconds.</text>
+</svg>

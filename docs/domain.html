@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Domain design · WRF-Fire Manual</title>
+<meta name="description" content="namelist.wps fixes the geometry for everything that follows. The domains, dates and fire-grid ratio written here are repeated exactly in namelist.input, so decide them once and copy them.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</head>
+<body>
+<div class="topbar"><a href="index.html">WRF-Fire Manual</a><button type="button" onclick="document.querySelector('.side').classList.add('open')">Menu</button></div>
+<div class="layout">
+<nav class="side" aria-label="Site">
+<button type="button" class="close" onclick="this.parentNode.classList.remove('open')">Close</button>
+<a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
+<h4>Start</h4><ol>
+<li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
+</ol>
+<h4>The manual: WPS to WRF-Fire</h4><ol>
+<li><a href="env.html"><span class="n">0</span><span>Phase 0 · Environment and data</span></a></li>
+<li><a href="domain.html" class="on"><span class="n">1</span><span>Phase 1 · Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">2</span><span>Phase 2 · Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">3</span><span>Phase 3 · Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">4</span><span>Phase 4 · Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">5</span><span>Phase 5 · real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">6</span><span>Phase 6 · The fire model</span></a></li>
+<li><a href="moisture.html"><span class="n">7</span><span>Fuel moisture in depth</span></a></li>
+<li><a href="extend.html"><span class="n">8</span><span>Other research inputs</span></a></li>
+<li><a href="run.html"><span class="n">9</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">10</span><span>Reference and failures</span></a></li>
+</ol>
+<h4>Our work on CCR</h4><ol>
+<li><a href="setup.html"><span class="n">11</span><span>WPS on CCR: setup so far</span></a></li>
+<li><a href="campaign.html"><span class="n">12</span><span>The scaling campaign</span></a></li>
+<li><a href="scaling.html"><span class="n">13</span><span>Scaling and the elbow</span></a></li>
+<li><a href="costmodel.html"><span class="n">14</span><span>Cost model and node formula</span></a></li>
+<li><a href="queue.html"><span class="n">15</span><span>Queue waits and cost</span></a></li>
+<li><a href="lessons.html"><span class="n">16</span><span>What went wrong, what we learnt</span></a></li>
+<li><a href="design.html"><span class="n">17</span><span>The workflow we designed</span></a></li>
+</ol>
+<button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
+</nav>
+<main>
+<article class="page">
+<p class="kicker">Phase 1 · namelist.wps</p>
+<h1>Domain design</h1>
+<p class="lead">namelist.wps fixes the geometry for everything that follows. The domains, dates and fire-grid ratio written here are repeated exactly in namelist.input, so decide them once and copy them.</p>
+<nav class="toc"><b>On this page</b><ul><li><a href="#canyon-s-namelist-wps">Canyon's namelist.wps</a></li><li><a href="#share">&amp;share</a></li><li><a href="#geogrid">&amp;geogrid</a></li><li><a href="#ungrib-and-metgrid">&amp;ungrib and &amp;metgrid</a></li><li><a href="#designing-a-fire-domain">Designing a fire domain</a></li></ul></nav>
+<h2 id="canyon-s-namelist-wps">Canyon's namelist.wps</h2>
+<pre><code class="language-fortran">&amp;share
+ wrf_core = 'ARW', max_dom = 2,
+ start_date = '2025-08-07_18:00:00','2025-08-07_18:00:00',
+ end_date   = '2025-08-09_00:00:00','2025-08-09_00:00:00',
+ interval_seconds = 3600, io_form_geogrid = 2,
+ subgrid_ratio_x = 0, 4, subgrid_ratio_y = 0, 4,
+/
+&amp;geogrid
+ parent_id = 1, 1,  parent_grid_ratio = 1, 9,
+ i_parent_start = 1, 15,  j_parent_start = 1, 15,
+ e_we = 54, 217,  e_sn = 54, 217,
+ geog_data_res = 'lf2024+default', 'ca_1s+lf2024+default',
+ dx = 900, dy = 900, map_proj = 'lambert',
+ ref_lat = 34.46681, ref_lon = -118.70165,
+ truelat1 = 34.46681, truelat2 = 34.46681, stand_lon = -118.70165,
+ geog_data_path = '/projects/academic/negarkhodoe/wrf/static/WPS_GEOG/',
+ opt_geogrid_tbl_path = '/projects/academic/negarkhodoe/wrf/tables/fire/'
+/
+&amp;ungrib
+ out_format = 'WPS', prefix = 'FILE',
+/
+&amp;metgrid
+ fg_name = 'FILE', io_form_metgrid = 2,
+/
+</code></pre>
+<p>Values with one entry per domain are comma-separated lists, d01 first.</p>
+<figure><div class="fig"><svg viewBox="0 0 900 400" role="img" aria-label="Canyon's two domains and its 25 m fire mesh">
+<defs><marker id="ns-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker></defs>
+<text x="20" y="28" class="t-title">Canyon: a 48.6 km parent, a 21.6 km fire domain, and a 25 m fire mesh</text>
+<g>
+<rect x="40" y="60" width="300" height="300" class="box-blue" rx="2"/>
+<text x="52" y="82" class="t-name t-blue">d01 · 54 × 54 points · 900 m</text>
+<rect x="119" y="139" width="136" height="136" class="box-acc" rx="2"/>
+<text x="187" y="203" text-anchor="middle" class="t-name">d02</text>
+<text x="187" y="221" text-anchor="middle" class="t-body">217 × 217 · 100 m</text>
+<circle cx="225" cy="250" r="5" class="fill-acc"/>
+<text x="56" y="350" class="t-small">i_parent_start = j_parent_start = 15</text>
+<path d="M119 300V285M119 300H255M255 300V285" class="ln-dash"/>
+<text x="187" y="316" text-anchor="middle" class="t-small">24 parent cells × 9 = 216</text>
+</g>
+<path d="M255 207C320 207 360 150 420 150" class="ln" marker-end="url(#ns-a)"/>
+<g>
+<rect x="430" y="70" width="190" height="190" class="box-acc" rx="2"/>
+<g class="grid">
+<path d="M477.5 70V260M525 70V260M572.5 70V260M430 117.5H620M430 165H620M430 212.5H620"/>
+</g>
+<text x="525" y="285" text-anchor="middle" class="t-name">one 100 m d02 cell</text>
+<text x="525" y="303" text-anchor="middle" class="t-body">split 4 × 4 by sr_x = sr_y = 4</text>
+<text x="525" y="321" text-anchor="middle" class="t-body">→ 16 fire cells of 25 m</text>
+<rect x="430" y="70" width="57" height="57" fill="none" stroke="var(--green)" stroke-width="2" stroke-dasharray="5 3"/>
+<text x="492" y="64" class="t-small t-green">one 30 m LANDFIRE pixel</text>
+</g>
+<g>
+<rect x="660" y="70" width="220" height="250" rx="12" class="box"/>
+<text x="676" y="96" class="t-name">The same three numbers</text>
+<text x="676" y="116" class="t-name">must match everywhere</text>
+<text x="676" y="146" class="t-mono">namelist.wps</text>
+<text x="676" y="164" class="t-body">parent_grid_ratio = 1, 9</text>
+<text x="676" y="182" class="t-body">subgrid_ratio_x = 0, 4</text>
+<text x="676" y="212" class="t-mono">namelist.input</text>
+<text x="676" y="230" class="t-body">parent_grid_ratio = 1, 9</text>
+<text x="676" y="248" class="t-body">dx = 900, 100</text>
+<text x="676" y="266" class="t-body">sr_x = 0, 4 (same for y)</text>
+<text x="676" y="300" class="t-small">A mismatch stops real.exe</text>
+</g>
+</svg></div><figcaption><strong>What those numbers mean on the ground.</strong> d02 sits 14 parent cells in from d01's lower-left corner and covers 24 parent cells, each split 9 × 9. Each 100 m d02 cell is split again 4 × 4 for the fire, so a fire cell (25 m) is about the size of one LANDFIRE pixel (30 m).</figcaption></figure>
+
+<h2 id="share">&amp;share</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Meaning</th>
+<th>Values and rules</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>wrf_core</code></td>
+<td>Dynamical core</td>
+<td><code>'ARW'</code></td>
+</tr>
+<tr>
+<td><code>max_dom</code></td>
+<td>Number of domains</td>
+<td>The fire runs on the innermost</td>
+</tr>
+<tr>
+<td><code>start_date</code>, <code>end_date</code></td>
+<td>First and last weather time, per domain</td>
+<td><code>'YYYY-MM-DD_HH:MM:SS'</code>. Nests may start later than d01</td>
+</tr>
+<tr>
+<td><code>interval_seconds</code></td>
+<td>Spacing of weather times</td>
+<td>Must match the GRIB files: 3600 for hourly HRRR, 10800 for 3-hourly NAM or GFS</td>
+</tr>
+<tr>
+<td><code>io_form_geogrid</code></td>
+<td>geogrid output format</td>
+<td>2 = netCDF</td>
+</tr>
+<tr>
+<td><code>subgrid_ratio_x</code>, <code>subgrid_ratio_y</code></td>
+<td>Fire-mesh refinement per domain</td>
+<td>0 or 1 = no fire mesh. 4 = each atmosphere cell split 4 × 4. Must equal <code>sr_x</code>, <code>sr_y</code> in <code>namelist.input</code>. These go in <code>&amp;share</code>, not <code>&amp;geogrid</code>: in <code>&amp;geogrid</code> they cause <code>Bad data for namelist object e_sn</code></td>
+</tr>
+<tr>
+<td><code>opt_output_from_geogrid_path</code></td>
+<td>Where <code>geo_em</code> files go</td>
+<td>Default <code>./</code></td>
+</tr>
+<tr>
+<td><code>active_grid</code></td>
+<td>Process this domain or not</td>
+<td><code>.true.</code> per domain</td>
+</tr>
+<tr>
+<td><code>debug_level</code></td>
+<td>Log detail</td>
+<td>0</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="geogrid">&amp;geogrid</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Meaning</th>
+<th>Values and rules</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>parent_id</code></td>
+<td>Which domain each nest sits in</td>
+<td>d01's own entry is 1</td>
+</tr>
+<tr>
+<td><code>parent_grid_ratio</code></td>
+<td>Nest cell size = parent's ÷ this</td>
+<td>Odd ratios (3, 5, 9) keep nest and parent cell centres aligned. Canyon: 9</td>
+</tr>
+<tr>
+<td><code>i_parent_start</code>, <code>j_parent_start</code></td>
+<td>Nest's lower-left corner, in parent cell indices</td>
+<td>Counted from 1</td>
+</tr>
+<tr>
+<td><code>e_we</code>, <code>e_sn</code></td>
+<td>Domain size in grid points (staggered, so cells + 1)</td>
+<td>For a nest, <code>e_we − 1</code> must divide by <code>parent_grid_ratio</code>: 216 ÷ 9 = 24</td>
+</tr>
+<tr>
+<td><code>dx</code>, <code>dy</code></td>
+<td>d01 cell size</td>
+<td>Metres for Lambert, Mercator and polar; nests get <code>dx ÷ ratio</code> automatically</td>
+</tr>
+<tr>
+<td><code>map_proj</code></td>
+<td>Projection</td>
+<td><code>'lambert'</code> for mid-latitudes, <code>'mercator'</code> near the equator, <code>'polar'</code>, <code>'lat-lon'</code></td>
+</tr>
+<tr>
+<td><code>ref_lat</code>, <code>ref_lon</code></td>
+<td>Domain centre</td>
+<td>Degrees. <code>ref_x</code>, <code>ref_y</code> can move the reference point off-centre</td>
+</tr>
+<tr>
+<td><code>truelat1</code>, <code>truelat2</code>, <code>stand_lon</code></td>
+<td>Lambert parameters</td>
+<td>For a small domain, setting both true latitudes to the centre minimises distortion</td>
+</tr>
+<tr>
+<td><code>geog_data_res</code></td>
+<td>Which resolution keys to try in <code>GEOGRID.TBL</code></td>
+<td>Keys joined by <code>+</code>, tried left to right: see <a href="geogrid.html#resolution-keys">Phase 2</a></td>
+</tr>
+<tr>
+<td><code>geog_data_path</code></td>
+<td>Root folder for every <code>rel_path</code> in the table</td>
+<td>Ends in <code>/</code>. Keep it short</td>
+</tr>
+<tr>
+<td><code>opt_geogrid_tbl_path</code></td>
+<td>Folder containing <code>GEOGRID.TBL</code></td>
+<td>Default <code>./geogrid/</code></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="ungrib-and-metgrid">&amp;ungrib and &amp;metgrid</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Meaning</th>
+<th>Values and rules</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>out_format</code></td>
+<td>Intermediate file format</td>
+<td><code>'WPS'</code></td>
+</tr>
+<tr>
+<td><code>prefix</code></td>
+<td>Intermediate file name</td>
+<td><code>'FILE'</code> gives <code>FILE:2025-08-07_18</code></td>
+</tr>
+<tr>
+<td><code>fg_name</code></td>
+<td>Which intermediate sets metgrid reads</td>
+<td>A list: <code>'FILE', 'SST'</code> merges two sources; later entries win for the same field</td>
+</tr>
+<tr>
+<td><code>constants_name</code></td>
+<td>Intermediate files with fields that never change in time</td>
+<td>Read once and applied to every time: a route for your own static field</td>
+</tr>
+<tr>
+<td><code>io_form_metgrid</code></td>
+<td>metgrid output format</td>
+<td>2 = netCDF</td>
+</tr>
+<tr>
+<td><code>opt_metgrid_tbl_path</code></td>
+<td>Folder containing <code>METGRID.TBL</code></td>
+<td>Default <code>./metgrid/</code></td>
+</tr>
+<tr>
+<td><code>process_only_bdy</code></td>
+<td>Only process boundary rows after the first time</td>
+<td>Saves time on big outer domains</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="designing-a-fire-domain">Designing a fire domain</h2>
+<ol>
+<li><strong>Start from the fire.</strong> Centre d01 on the fire's centroid and set the true latitudes to it.</li>
+<li><strong>Size the fire domain for the whole run.</strong> When the fire comes within <code>fire_boundary_guard</code> cells (default 8) of the fire domain's edge, WRF stops with a fatal error. The Long fire ended that way at 22:24 on July 16, on every node type.</li>
+<li><strong>Match the fire mesh to the fuel data.</strong> LANDFIRE is 30 m, so a 25–30 m fire cell sees about one fuel pixel. Canyon: 100 m ÷ 4 = 25 m.</li>
+<li><strong>Mind the decomposition cap.</strong> WRF needs at least 10 grid points per MPI rank in each direction on every domain. Canyon's 54-point d01 allows only 5 × 5 = 25 ranks, whatever the size of d02. A larger d01 raises the cap; see <a href="run.html#how-many-ranks">Running it</a>.</li>
+<li><strong>Check the nest rule.</strong> <code>(e_we − 1)</code> and <code>(e_sn − 1)</code> must be multiples of <code>parent_grid_ratio</code>.</li>
+</ol>
+<nav class="pager"><a class="prev" href="env.html"><small>Previous</small>Phase 0 · Environment and data</a><a class="next" href="geogrid.html"><small>Next</small>Phase 2 · Static data (geogrid)</a></nav>
+<footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/domain.md</code>.</footer>
+</article>
+</main>
+</div>
+<script>
+function toggleTheme(){var d=document.documentElement;var cur=d.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var nx=cur==='dark'?'light':'dark';d.setAttribute('data-theme',nx);try{localStorage.setItem('theme',nx);}catch(e){}}
+</script>
+</body>
+</html>

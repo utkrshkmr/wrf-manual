@@ -1,0 +1,31 @@
+<svg viewBox="0 0 900 330" role="img" aria-label="Five probes feed a diag folder in each run, which feeds the campaign report">
+<defs><marker id="pr-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker></defs>
+<text x="20" y="28" class="t-title">Five probes around every run, one diag folder, one report refit after every run</text>
+<g>
+<rect x="20" y="50" width="270" height="46" rx="9" class="box"/><text x="34" y="70" class="t-name">WRF's timing lines</text><text x="34" y="87" class="t-small">seconds per step, every step, both domains</text>
+<rect x="20" y="104" width="270" height="46" rx="9" class="box"/><text x="34" y="124" class="t-name">Node sampler, every 30 s</text><text x="34" y="141" class="t-small">CPU, I/O wait, memory, network, clock</text>
+<rect x="20" y="158" width="270" height="46" rx="9" class="box"/><text x="34" y="178" class="t-name">Slurm accounting at the end</text><text x="34" y="195" class="t-small">peak memory, bytes written, energy, elapsed</text>
+<rect x="20" y="212" width="270" height="46" rx="9" class="box"/><text x="34" y="232" class="t-name">Environment capture</text><text x="34" y="249" class="t-small">modules, libraries, rank-to-core binding</text>
+<rect x="20" y="266" width="270" height="46" rx="9" class="box"/><text x="34" y="286" class="t-name">Job timestamps</text><text x="34" y="303" class="t-small">submitted, eligible, started, ended</text>
+</g>
+<rect x="350" y="110" width="210" height="140" rx="10" class="box-blue"/>
+<text x="366" y="136" class="t-name">diag/ in each run</text>
+<text x="366" y="160" class="t-mono">summary.json</text>
+<text x="366" y="178" class="t-mono">timing_&lt;job&gt;.txt</text>
+<text x="366" y="196" class="t-mono">samples_&lt;node&gt;.csv</text>
+<text x="366" y="214" class="t-mono">sacct_, env_<text x="366" y="214" class="t-mono">sacct_&lt;job&gt;.txt  env_&lt;job&gt;.txt</text>lt;job<text x="366" y="214" class="t-mono">sacct_&lt;job&gt;.txt  env_&lt;job&gt;.txt</text>gt;.txt</text>
+<text x="366" y="238" class="t-small">survives every cleanup</text>
+<rect x="620" y="80" width="260" height="200" rx="10" class="box-acc"/>
+<text x="636" y="106" class="t-name">Campaign report</text>
+<text x="636" y="132" class="t-body">seconds per step, before and</text>
+<text x="636" y="150" class="t-body">after ignition</text>
+<text x="636" y="174" class="t-body">scaling fits and elbows</text>
+<text x="636" y="198" class="t-body">cost model constants</text>
+<text x="636" y="222" class="t-body">memory peaks, output cost</text>
+<text x="636" y="246" class="t-body">queue waits</text>
+<text x="636" y="268" class="t-small">refit from scratch after each run</text>
+<g class="ln"><path d="M290 73H320M290 127H320M290 181H320M290 235H320M290 289H320M320 73V289"/></g>
+<g class="ln" marker-end="url(#pr-a)"><path d="M320 180H348"/><path d="M560 180H618"/></g>
+<text x="350" y="290" class="t-small">Not available on CCR: hardware counters (perf is off</text>
+<text x="350" y="306" class="t-small">on compute nodes) and MPI profilers. Not needed.</text>
+</svg>

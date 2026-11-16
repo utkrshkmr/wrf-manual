@@ -1,0 +1,37 @@
+<svg viewBox="0 0 900 360" role="img" aria-label="A WPS binary layer is a folder of raw tiles plus a text index">
+<defs><marker id="tl-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker></defs>
+<text x="20" y="28" class="t-title">A WPS layer is a folder of raw integer tiles plus one text file, index</text>
+<g>
+<rect x="40" y="60" width="330" height="240" class="fill-bg2" stroke="var(--ink-3)" stroke-width="1.2"/>
+<g class="grid"><path d="M150 60V300M260 60V300M40 140H370M40 220H370"/></g>
+<rect x="40" y="220" width="110" height="80" class="box-acc"/>
+<text x="95" y="256" text-anchor="middle" class="t-mono">00001-00100</text>
+<text x="95" y="272" text-anchor="middle" class="t-mono">.00001-00100</text>
+<rect x="150" y="220" width="110" height="80" fill="none" stroke="var(--ink-3)" stroke-width="1.2"/>
+<text x="205" y="256" text-anchor="middle" class="t-mono">00101-00200</text>
+<text x="205" y="272" text-anchor="middle" class="t-mono">.00001-00100</text>
+<text x="95" y="176" text-anchor="middle" class="t-mono">00001-00100</text>
+<text x="95" y="192" text-anchor="middle" class="t-mono">.00101-00200</text>
+<circle cx="46" cy="66" r="5" class="fill-acc"/>
+<text x="40" y="322" class="t-small" style="font-size:10.5px">Tiles are named by column and row range; rows count from the south (row_order = bottom_top).</text>
+<path d="M386 290V70" class="ln" marker-end="url(#tl-a)"/>
+<text x="396" y="186" class="t-small" transform="rotate(-90 396 186)">rows run north</text>
+<text x="58" y="52" class="t-small t-acc">known point: here the north-west cell (x = 1, y = 43366)</text>
+</g>
+<g>
+<rect x="460" y="60" width="420" height="250" rx="10" class="box-file"/>
+<text x="478" y="84" class="t-name">index</text>
+<text x="478" y="110" class="t-mono">type = categorical       # or continuous</text>
+<text x="478" y="128" class="t-mono">category_min = 1  category_max = 205</text>
+<text x="478" y="146" class="t-mono">projection = albers_nad83</text>
+<text x="478" y="164" class="t-mono">truelat1 = 29.5  truelat2 = 45.5  stdlon = -96</text>
+<text x="478" y="182" class="t-mono">dx = 30.0  dy = 30.0</text>
+<text x="478" y="200" class="t-mono">known_x = 1  known_y = 43366</text>
+<text x="478" y="218" class="t-mono">known_lat = 42.0618221  known_lon = -125.1993245</text>
+<text x="478" y="236" class="t-mono">wordsize = 2  signed = yes  endian = little</text>
+<text x="478" y="254" class="t-mono">tile_x = 100  tile_y = 100  tile_z = 1  tile_bdr = 3</text>
+<text x="478" y="272" class="t-mono">missing_value = 205  scale_factor = 1.0</text>
+<text x="478" y="290" class="t-mono">units = "fuel category"</text>
+</g>
+<text x="460" y="340" class="t-small">Canyon's LANDFIRE 2024 fuel layer. Value = stored integer × scale_factor.</text>
+</svg>

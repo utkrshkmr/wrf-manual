@@ -1,0 +1,26 @@
+<svg viewBox="0 0 900 250" role="img" aria-label="An ignition line is drawn from start to end during a time window, with a radius">
+<defs><marker id="ig-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah-acc"/></marker></defs>
+<text x="20" y="28" class="t-title">An ignition is a line drawn across the fire mesh over a time window</text>
+<rect x="20" y="48" width="470" height="180" rx="10" class="fill-bg2" stroke="var(--rule)"/>
+<path d="M90 170L400 100" stroke="var(--accent)" stroke-width="34" stroke-linecap="round" opacity="0.18"/>
+<path d="M90 170L300 122.6" class="ln-acc" marker-end="url(#ig-a)" style="stroke-width:3"/>
+<path d="M300 122.6L400 100" class="ln-dash"/>
+<circle cx="90" cy="170" r="6" class="fill-acc"/>
+<circle cx="400" cy="100" r="6" fill="none" stroke="var(--accent)" stroke-width="2"/>
+<text x="60" y="200" class="t-mono">start_lat1, start_lon1</text>
+<text x="340" y="82" class="t-mono">end_lat1, end_lon1</text>
+<path d="M232 138.5l7.4 33" class="ln"/>
+<text x="246" y="182" class="t-small">radius1</text>
+<text x="150" y="112" class="t-small t-acc">drawn at ros1 m/s</text>
+<g>
+<text x="530" y="68" class="t-small" style="letter-spacing:1.4px">TIME, SECONDS FROM RUN START</text>
+<path d="M530 130H880" class="axis"/>
+<rect x="640" y="114" width="140" height="32" rx="6" class="box-acc"/>
+<text x="710" y="135" text-anchor="middle" class="t-small">line being drawn</text>
+<text x="640" y="166" text-anchor="middle" class="t-mono">start_time1</text>
+<text x="780" y="166" text-anchor="middle" class="t-mono">end_time1</text>
+<text x="530" y="150" class="t-mono">0</text>
+<text x="530" y="200" class="t-body">Canyon: run starts 18:00 UTC, ignition 20:25 UTC</text>
+<text x="530" y="218" class="t-body">→ fire_ignition_start_time1 = 8700</text>
+</g>
+</svg>

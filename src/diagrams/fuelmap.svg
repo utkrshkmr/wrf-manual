@@ -1,0 +1,24 @@
+<svg viewBox="0 0 900 300" role="img" aria-label="How LANDFIRE fuel codes become WRF fuel categories">
+<defs><marker id="fm-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker></defs>
+<text x="20" y="28" class="t-title">WRF converts each code in NFUEL_CAT into a row of the fuel table</text>
+<text x="20" y="60" class="t-small" style="letter-spacing:1.4px">CODE IN NFUEL_CAT</text>
+<text x="600" y="60" class="t-small" style="letter-spacing:1.4px">CATEGORY IN namelist.fire</text>
+<g>
+<rect x="20" y="70" width="300" height="30" rx="7" class="box"/><text x="32" y="90" class="t-mono">1–13   Anderson 13</text>
+<rect x="20" y="106" width="300" height="30" rx="7" class="box-green"/><text x="32" y="126" class="t-mono">101–109 GR · 121–124 GS</text>
+<rect x="20" y="142" width="300" height="30" rx="7" class="box-green"/><text x="32" y="162" class="t-mono">141–149 SH · 161–165 TU</text>
+<rect x="20" y="178" width="300" height="30" rx="7" class="box-green"/><text x="32" y="198" class="t-mono">181–189 TL · 201–203 SB</text>
+<rect x="20" y="214" width="300" height="30" rx="7" class="box-amber"/><text x="32" y="234" class="t-mono">204    SB4 (high-load blowdown)</text>
+<rect x="20" y="250" width="300" height="30" rx="7" class="box"/><text x="32" y="270" class="t-mono">91–99 and any other code ≤ 204</text>
+</g>
+<g>
+<rect x="600" y="70" width="280" height="30" rx="7" class="box"/><text x="612" y="90" class="t-mono">1–13</text>
+<rect x="600" y="124" width="280" height="66" rx="7" class="box-green"/><text x="612" y="152" class="t-mono">15–53</text><text x="612" y="172" class="t-small">Scott and Burgan, in code order</text>
+<rect x="600" y="214" width="280" height="30" rx="7" class="box-amber"/><text x="612" y="234" class="t-mono">54  needs nfuelcats = 54</text>
+<rect x="600" y="250" width="280" height="30" rx="7" class="box"/><text x="612" y="270" class="t-mono">14  no fuel: no spread</text>
+</g>
+<g class="ln" marker-end="url(#fm-a)">
+<path d="M320 85H598"/><path d="M320 121C460 121 460 150 598 150"/><path d="M320 157H598"/><path d="M320 193C460 193 460 165 598 165"/>
+<path d="M320 229H598"/><path d="M320 265H598"/>
+</g>
+</svg>

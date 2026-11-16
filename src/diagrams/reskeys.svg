@@ -1,0 +1,34 @@
+<svg viewBox="0 0 900 330" role="img" aria-label="geog_data_res keys are tried left to right for each field">
+<defs><marker id="rk-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker></defs>
+<text x="20" y="28" class="t-title">For each field, geogrid takes the first key in geog_data_res that the entry has</text>
+<text x="20" y="62" class="t-small" style="letter-spacing:1.4px">d02 ASKS FOR</text>
+<rect x="20" y="72" width="110" height="34" rx="8" class="box-strong"/><text x="75" y="94" text-anchor="middle" class="t-mono">ca_1s</text>
+<text x="142" y="94" class="t-name">+</text>
+<rect x="160" y="72" width="110" height="34" rx="8" class="box-strong"/><text x="215" y="94" text-anchor="middle" class="t-mono">lf2024</text>
+<text x="282" y="94" class="t-name">+</text>
+<rect x="300" y="72" width="110" height="34" rx="8" class="box-strong"/><text x="355" y="94" text-anchor="middle" class="t-mono">default</text>
+<text x="430" y="94" class="t-body">tried in this order</text>
+<text x="20" y="146" class="t-small" style="letter-spacing:1.4px">FIELD · KEYS ITS ENTRY HAS</text>
+<text x="600" y="146" class="t-small" style="letter-spacing:1.4px">FOLDER READ</text>
+<g>
+<rect x="20" y="158" width="150" height="40" rx="8" class="box-acc"/><text x="34" y="183" class="t-mono">NFUEL_CAT</text>
+<text x="186" y="176" class="t-mono" style="opacity:.5">lf2016 lf2022 lf2023</text>
+<rect x="352" y="163" width="66" height="30" rx="6" class="box-acc"/><text x="385" y="183" text-anchor="middle" class="t-mono">lf2024</text>
+<text x="428" y="183" class="t-mono" style="opacity:.5">default</text>
+<path d="M500 178H596" class="ln" marker-end="url(#rk-a)"/>
+<text x="600" y="183" class="t-mono">LF_2024/fbfm40/</text>
+</g>
+<g>
+<rect x="20" y="212" width="150" height="40" rx="8" class="box-acc"/><text x="34" y="237" class="t-mono">ZSF</text>
+<rect x="186" y="217" width="70" height="30" rx="6" class="box-acc"/><text x="221" y="237" text-anchor="middle" class="t-mono">default</text>
+<path d="M500 232H596" class="ln" marker-end="url(#rk-a)"/>
+<text x="600" y="237" class="t-mono">topography/topo_CA_1s_nisha/</text>
+</g>
+<g>
+<rect x="20" y="266" width="150" height="40" rx="8" class="box-blue"/><text x="34" y="291" class="t-mono">LANDUSEF</text>
+<rect x="186" y="271" width="70" height="30" rx="6" class="box-blue"/><text x="221" y="291" text-anchor="middle" class="t-mono">default</text>
+<path d="M500 286H596" class="ln" marker-end="url(#rk-a)"/>
+<text x="600" y="291" class="t-mono">modis_landuse_20class_30s…/</text>
+</g>
+<text x="186" y="322" class="t-small">Faded keys exist in the entry but lose to an earlier key in geog_data_res.</text>
+</svg>

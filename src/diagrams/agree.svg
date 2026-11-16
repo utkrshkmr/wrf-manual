@@ -1,0 +1,38 @@
+<svg viewBox="0 0 900 300" role="img" aria-label="Values that must agree between namelist.wps, met_em and namelist.input">
+<text x="20" y="28" class="t-title">real.exe stops unless these values agree across the three places they appear</text>
+<text x="40" y="62" class="t-small" style="letter-spacing:1.4px">namelist.wps</text>
+<text x="350" y="62" class="t-small" style="letter-spacing:1.4px">met_em ATTRIBUTES</text>
+<text x="660" y="62" class="t-small" style="letter-spacing:1.4px">namelist.input</text>
+<g>
+<rect x="20" y="74" width="250" height="196" rx="10" class="box"/>
+<text x="36" y="102" class="t-mono">max_dom, e_we, e_sn</text>
+<text x="36" y="132" class="t-mono" style="font-size:10.5px">parent_grid_ratio, *_parent_start</text>
+<text x="36" y="162" class="t-mono">dx (d01)</text>
+<text x="36" y="192" class="t-mono">subgrid_ratio_x / _y</text>
+<text x="36" y="222" class="t-mono">start_date, interval_seconds</text>
+<text x="36" y="252" class="t-small">(from the GRIB files)</text>
+</g>
+<g>
+<rect x="330" y="74" width="250" height="196" rx="10" class="box-file"/>
+<text x="346" y="102" class="t-mono">WEST-EAST_GRID_DIMENSION …</text>
+<text x="346" y="132" class="t-mono" style="font-size:10.5px">parent_grid_ratio, *_parent_start</text>
+<text x="346" y="162" class="t-mono">DX, DY (every domain)</text>
+<text x="346" y="192" class="t-mono">sr_x, sr_y</text>
+<text x="346" y="222" class="t-mono">file times</text>
+<text x="346" y="252" class="t-mono" style="font-size:10.5px">NUM_METGRID_LEVELS, …SOIL_LEVELS</text>
+</g>
+<g>
+<rect x="640" y="74" width="250" height="196" rx="10" class="box-acc"/>
+<text x="656" y="102" class="t-mono">max_dom, e_we, e_sn</text>
+<text x="656" y="132" class="t-mono" style="font-size:10.5px">parent_grid_ratio, *_parent_start</text>
+<text x="656" y="162" class="t-mono">dx, dy for every domain</text>
+<text x="656" y="192" class="t-mono">sr_x, sr_y</text>
+<text x="656" y="222" class="t-mono">start_*, interval_seconds</text>
+<text x="656" y="252" class="t-mono">num_metgrid_(soil_)levels</text>
+</g>
+<g class="ln-dash">
+<path d="M270 98H330M270 128H330M270 158H330M270 188H330M270 218H330"/>
+<path d="M580 98H640M580 128H640M580 158H640M580 188H640M580 218H640M580 248H640"/>
+</g>
+<text x="20" y="292" class="t-small">Read the met_em side with ncdump -h, and copy, never retype.</text>
+</svg>

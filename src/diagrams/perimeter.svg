@@ -1,0 +1,28 @@
+<svg viewBox="0 0 900 280" role="img" aria-label="An observed perimeter becomes a signed distance field, negative inside">
+<text x="20" y="28" class="t-title">A perimeter enters WRF-Fire as a signed distance: negative inside, zero on the edge</text>
+<g>
+<rect x="20" y="48" width="400" height="210" rx="10" class="fill-bg2" stroke="var(--rule)"/>
+<path d="M120 200C90 160 110 110 170 95S290 80 320 120S330 200 270 215S150 230 120 200z" fill="var(--accent)" opacity="0.10"/>
+<path d="M140 190C120 160 135 125 175 115S275 105 295 132S300 190 258 200S160 210 140 190z" fill="var(--accent)" opacity="0.14"/>
+<path d="M165 175C155 158 165 140 190 135S250 130 262 148S262 178 238 184S175 190 165 175z" fill="var(--accent)" opacity="0.22"/>
+<path d="M120 200C90 160 110 110 170 95S290 80 320 120S330 200 270 215S150 230 120 200z" fill="none" stroke="var(--accent)" stroke-width="2.4"/>
+<path d="M95 212C55 160 85 85 165 70S320 60 350 112S360 222 280 240S125 250 95 212z" fill="none" stroke="var(--ink-3)" stroke-width="1" stroke-dasharray="4 4"/>
+<text x="210" y="162" text-anchor="middle" class="t-mono">LFN &lt; 0</text>
+<text x="210" y="178" text-anchor="middle" class="t-small">burnt</text>
+<text x="330" y="80" class="t-mono">LFN &gt; 0</text>
+<text x="300" y="232" class="t-small t-acc">LFN = 0: perimeter</text>
+<text x="36" y="68" class="t-small">dashed: +500 m contour</text>
+</g>
+<g>
+<rect x="460" y="48" width="420" height="210" rx="10" class="box"/>
+<text x="478" y="74" class="t-name">What WRF does with it</text>
+<text x="478" y="100" class="t-body">1. real.exe or your script puts the field in</text>
+<text x="498" y="118" class="t-mono">LFN_HIST (wrfinput_d02, fire mesh)</text>
+<text x="478" y="142" class="t-body">2. With fire_is_real_perim = .true., at</text>
+<text x="498" y="160" class="t-mono">fire_ignition_start_time1</text>
+<text x="498" y="178" class="t-body">the front is replaced by LFN_HIST</text>
+<text x="478" y="202" class="t-body">3. Cells on the edge get that ignition time;</text>
+<text x="498" y="220" class="t-body">the fire spreads outward from there</text>
+<text x="478" y="246" class="t-small">Point and line ignitions are then skipped.</text>
+</g>
+</svg>

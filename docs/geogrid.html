@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Static data · WRF-Fire Manual</title>
+<meta name="description" content="geogrid puts every static map onto every domain. GEOGRID.TBL decides which dataset feeds which field and how it is interpolated, so any GIS layer can enter the simulation as a new entry plus a folder of tiles.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</head>
+<body>
+<div class="topbar"><a href="index.html">WRF-Fire Manual</a><button type="button" onclick="document.querySelector('.side').classList.add('open')">Menu</button></div>
+<div class="layout">
+<nav class="side" aria-label="Site">
+<button type="button" class="close" onclick="this.parentNode.classList.remove('open')">Close</button>
+<a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
+<h4>Start</h4><ol>
+<li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
+</ol>
+<h4>The manual: WPS to WRF-Fire</h4><ol>
+<li><a href="env.html"><span class="n">0</span><span>Phase 0 · Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">1</span><span>Phase 1 · Domain design</span></a></li>
+<li><a href="geogrid.html" class="on"><span class="n">2</span><span>Phase 2 · Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">3</span><span>Phase 3 · Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">4</span><span>Phase 4 · Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">5</span><span>Phase 5 · real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">6</span><span>Phase 6 · The fire model</span></a></li>
+<li><a href="moisture.html"><span class="n">7</span><span>Fuel moisture in depth</span></a></li>
+<li><a href="extend.html"><span class="n">8</span><span>Other research inputs</span></a></li>
+<li><a href="run.html"><span class="n">9</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">10</span><span>Reference and failures</span></a></li>
+</ol>
+<h4>Our work on CCR</h4><ol>
+<li><a href="setup.html"><span class="n">11</span><span>WPS on CCR: setup so far</span></a></li>
+<li><a href="campaign.html"><span class="n">12</span><span>The scaling campaign</span></a></li>
+<li><a href="scaling.html"><span class="n">13</span><span>Scaling and the elbow</span></a></li>
+<li><a href="costmodel.html"><span class="n">14</span><span>Cost model and node formula</span></a></li>
+<li><a href="queue.html"><span class="n">15</span><span>Queue waits and cost</span></a></li>
+<li><a href="lessons.html"><span class="n">16</span><span>What went wrong, what we learnt</span></a></li>
+<li><a href="design.html"><span class="n">17</span><span>The workflow we designed</span></a></li>
+</ol>
+<button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
+</nav>
+<main>
+<article class="page">
+<p class="kicker">Phase 2 · geogrid.exe</p>
+<h1>Static data</h1>
+<p class="lead">geogrid puts every static map onto every domain. GEOGRID.TBL decides which dataset feeds which field and how it is interpolated, so any GIS layer can enter the simulation as a new entry plus a folder of tiles.</p>
+<nav class="toc"><b>On this page</b><ul><li><a href="#running-it">Running it</a></li><li><a href="#resolution-keys">Resolution keys</a></li><li><a href="#the-fire-fields">The fire fields</a></li><li><a href="#geogrid-tbl-keys">GEOGRID.TBL keys</a></li><li><a href="#writing-your-own-layer">Writing your own layer</a></li><li><a href="#fuel-data-for-a-different-area-or-year">Fuel data for a different area or year</a></li></ul></nav>
+<h2 id="running-it">Running it</h2>
+<pre><code class="language-bash">geogrid.exe
+tail -1 geogrid.log
+ncdump -h geo_em.d02.nc | grep -E 'NFUEL_CAT|ZSF|sr_x'
+</code></pre>
+<p>It takes seconds to a minute. Success ends with <code>Successful completion of program geogrid.exe</code>. The log also lists, for each field, the folder it actually read: the first place to look when a field is wrong.</p>
+<h2 id="resolution-keys">Resolution keys</h2>
+<p><code>geog_data_res</code> in <code>namelist.wps</code> lists keys such as <code>'ca_1s+lf2024+default'</code>. Each <code>GEOGRID.TBL</code> entry gives a path for some of those keys. For each field, geogrid walks the list left to right and uses the first key the entry has.</p>
+<figure><div class="fig"><svg viewBox="0 0 900 330" role="img" aria-label="geog_data_res keys are tried left to right for each field">
+<defs><marker id="rk-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker></defs>
+<text x="20" y="28" class="t-title">For each field, geogrid takes the first key in geog_data_res that the entry has</text>
+<text x="20" y="62" class="t-small" style="letter-spacing:1.4px">d02 ASKS FOR</text>
+<rect x="20" y="72" width="110" height="34" rx="8" class="box-strong"/><text x="75" y="94" text-anchor="middle" class="t-mono">ca_1s</text>
+<text x="142" y="94" class="t-name">+</text>
+<rect x="160" y="72" width="110" height="34" rx="8" class="box-strong"/><text x="215" y="94" text-anchor="middle" class="t-mono">lf2024</text>
+<text x="282" y="94" class="t-name">+</text>
+<rect x="300" y="72" width="110" height="34" rx="8" class="box-strong"/><text x="355" y="94" text-anchor="middle" class="t-mono">default</text>
+<text x="430" y="94" class="t-body">tried in this order</text>
+<text x="20" y="146" class="t-small" style="letter-spacing:1.4px">FIELD · KEYS ITS ENTRY HAS</text>
+<text x="600" y="146" class="t-small" style="letter-spacing:1.4px">FOLDER READ</text>
+<g>
+<rect x="20" y="158" width="150" height="40" rx="8" class="box-acc"/><text x="34" y="183" class="t-mono">NFUEL_CAT</text>
+<text x="186" y="176" class="t-mono" style="opacity:.5">lf2016 lf2022 lf2023</text>
+<rect x="352" y="163" width="66" height="30" rx="6" class="box-acc"/><text x="385" y="183" text-anchor="middle" class="t-mono">lf2024</text>
+<text x="428" y="183" class="t-mono" style="opacity:.5">default</text>
+<path d="M500 178H596" class="ln" marker-end="url(#rk-a)"/>
+<text x="600" y="183" class="t-mono">LF_2024/fbfm40/</text>
+</g>
+<g>
+<rect x="20" y="212" width="150" height="40" rx="8" class="box-acc"/><text x="34" y="237" class="t-mono">ZSF</text>
+<rect x="186" y="217" width="70" height="30" rx="6" class="box-acc"/><text x="221" y="237" text-anchor="middle" class="t-mono">default</text>
+<path d="M500 232H596" class="ln" marker-end="url(#rk-a)"/>
+<text x="600" y="237" class="t-mono">topography/topo_CA_1s_nisha/</text>
+</g>
+<g>
+<rect x="20" y="266" width="150" height="40" rx="8" class="box-blue"/><text x="34" y="291" class="t-mono">LANDUSEF</text>
+<rect x="186" y="271" width="70" height="30" rx="6" class="box-blue"/><text x="221" y="291" text-anchor="middle" class="t-mono">default</text>
+<path d="M500 286H596" class="ln" marker-end="url(#rk-a)"/>
+<text x="600" y="291" class="t-mono">modis_landuse_20class_30s…/</text>
+</g>
+<text x="186" y="322" class="t-small">Faded keys exist in the entry but lose to an earlier key in geog_data_res.</text>
+</svg></div><figcaption><strong>Key fallback for Canyon's d02.</strong> <code>NFUEL_CAT</code> has five keys and picks <code>lf2024</code>. <code>ZSF</code> and land use only have <code>default</code>, so they take that. Changing the fuel release for one domain is a one-word change in <code>geog_data_res</code>.</figcaption></figure>
+
+<h2 id="the-fire-fields">The fire fields</h2>
+<p>Two <code>GEOGRID.TBL</code> entries produce the fields WRF-Fire reads. Both are marked <code>subgrid=yes</code>, so geogrid writes them on the fire mesh, <code>subgrid_ratio</code> times finer than the atmosphere grid.</p>
+<pre><code class="language-text">name=NFUEL_CAT
+    priority=1
+    dest_type=categorical
+    dominant_only=NFUEL_CAT
+    z_dim_name=fuel_cat
+    halt_on_missing=no
+    fill_missing=0
+    interp_option = lf2024:nearest_neighbor
+    interp_option = default:nearest_neighbor
+    rel_path = lf2024:LF_2024/fbfm40/
+    rel_path = default:LF2016_CA_WPS/fbfm40/
+    subgrid=yes
+===============================
+name=ZSF
+    priority = 1
+    dest_type = continuous
+    df_dx=DZDXF
+    df_dy=DZDYF
+    smooth_option = smth-desmth_special; smooth_passes=1
+    halt_on_missing=yes
+    interp_option = default:average_gcell(4.0)+four_pt+average_4pt
+    rel_path= default:topography/topo_CA_1s_nisha/
+    subgrid=yes
+===============================
+</code></pre>
+<ul>
+<li><strong><code>NFUEL_CAT</code></strong> is the fuel code in each fire cell: the dominant LANDFIRE code there, picked by nearest neighbour.</li>
+<li><strong><code>ZSF</code></strong> is fire-mesh terrain height. <code>df_dx</code> and <code>df_dy</code> make geogrid also write its slopes, <code>DZDXF</code> and <code>DZDYF</code>, which drive the slope term in the spread rate.</li>
+<li><strong>Without <code>ZSF</code></strong>, WRF interpolates fire terrain from the atmosphere terrain (<code>fire_topo_from_atm = 1</code>, the default), which flattens ridges and canyons. CCR's own <code>GEOGRID.TBL.FIRE</code> has no <code>ZSF</code> entry, so add one.</li>
+</ul>
+<div class="warn">
+<p><span class="callout-title">A silent failure</span></p>
+<p>With <code>halt_on_missing=no</code> and <code>fill_missing=0</code>, a wrong fuel path does not stop geogrid. It writes fuel code 0 in every cell, and the fire cannot spread. In Canyon's table, three of the four fuel keys (<code>lf2016</code>, <code>lf2022</code>, <code>lf2023</code>) point at folders that do not exist; only <code>lf2024</code> is correct. Set <code>halt_on_missing=yes</code> on <code>NFUEL_CAT</code>, and check the folder each field read in <code>geogrid.log</code>.</p>
+</div>
+<h2 id="geogrid-tbl-keys">GEOGRID.TBL keys</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Meaning</th>
+<th>Values</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>Output field name</td>
+<td>Becomes the netCDF variable in <code>geo_em</code></td>
+</tr>
+<tr>
+<td><code>priority</code></td>
+<td>Order when several entries share a name</td>
+<td>1 first; a later priority fills only cells still missing</td>
+</tr>
+<tr>
+<td><code>dest_type</code></td>
+<td>Kind of data</td>
+<td><code>continuous</code> (heights, fractions) or <code>categorical</code> (classes)</td>
+</tr>
+<tr>
+<td><code>interp_option</code></td>
+<td>Interpolation, per key</td>
+<td><code>nearest_neighbor</code>, <code>four_pt</code>, <code>sixteen_pt</code>, <code>average_4pt</code>, <code>average_16pt</code>, <code>average_gcell(r)</code>, <code>search</code>; <code>+</code> joins fallbacks</td>
+</tr>
+<tr>
+<td><code>rel_path</code>, <code>abs_path</code></td>
+<td>Data folder, per key: <code>key:path/</code></td>
+<td><code>rel_path</code> is under <code>geog_data_path</code>; <code>abs_path</code> is a full path</td>
+</tr>
+<tr>
+<td><code>subgrid</code></td>
+<td>Write on the fire mesh</td>
+<td><code>yes</code> for fire fields</td>
+</tr>
+<tr>
+<td><code>fill_missing</code></td>
+<td>Value where no data covers a cell</td>
+<td>A number</td>
+</tr>
+<tr>
+<td><code>halt_on_missing</code></td>
+<td>Stop if the data is missing</td>
+<td><code>yes</code> or <code>no</code></td>
+</tr>
+<tr>
+<td><code>dominant_only</code>, <code>dominant</code></td>
+<td>Categorical data: write only the dominant class, or the fractions plus the dominant class</td>
+<td>Output name</td>
+</tr>
+<tr>
+<td><code>z_dim_name</code></td>
+<td>Name of the category dimension</td>
+<td>e.g. <code>fuel_cat</code></td>
+</tr>
+<tr>
+<td><code>df_dx</code>, <code>df_dy</code></td>
+<td>Also write the x and y derivatives under these names</td>
+<td><code>DZDXF</code>, <code>DZDYF</code></td>
+</tr>
+<tr>
+<td><code>smooth_option</code>, <code>smooth_passes</code></td>
+<td>Smoothing after interpolation</td>
+<td><code>1-2-1</code>, <code>smth-desmth</code>, <code>smth-desmth_special</code></td>
+</tr>
+<tr>
+<td><code>masked</code>, <code>fill_lev</code></td>
+<td>Fill only over land or water; fill extra levels</td>
+<td>Used by soil and albedo fields</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="writing-your-own-layer">Writing your own layer</h2>
+<p>WPS reads raw binary tiles plus a text file called <code>index</code>. Each tile is a plain array of integers, named by the column and row range it covers. Values are stored as integers and multiplied by <code>scale_factor</code> when read, which is how fractions and decimals are stored.</p>
+<figure><div class="fig"><svg viewBox="0 0 900 360" role="img" aria-label="A WPS binary layer is a folder of raw tiles plus a text index">
+<defs><marker id="tl-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker></defs>
+<text x="20" y="28" class="t-title">A WPS layer is a folder of raw integer tiles plus one text file, index</text>
+<g>
+<rect x="40" y="60" width="330" height="240" class="fill-bg2" stroke="var(--ink-3)" stroke-width="1.2"/>
+<g class="grid"><path d="M150 60V300M260 60V300M40 140H370M40 220H370"/></g>
+<rect x="40" y="220" width="110" height="80" class="box-acc"/>
+<text x="95" y="256" text-anchor="middle" class="t-mono">00001-00100</text>
+<text x="95" y="272" text-anchor="middle" class="t-mono">.00001-00100</text>
+<rect x="150" y="220" width="110" height="80" fill="none" stroke="var(--ink-3)" stroke-width="1.2"/>
+<text x="205" y="256" text-anchor="middle" class="t-mono">00101-00200</text>
+<text x="205" y="272" text-anchor="middle" class="t-mono">.00001-00100</text>
+<text x="95" y="176" text-anchor="middle" class="t-mono">00001-00100</text>
+<text x="95" y="192" text-anchor="middle" class="t-mono">.00101-00200</text>
+<circle cx="46" cy="66" r="5" class="fill-acc"/>
+<text x="40" y="322" class="t-small" style="font-size:10.5px">Tiles are named by column and row range; rows count from the south (row_order = bottom_top).</text>
+<path d="M386 290V70" class="ln" marker-end="url(#tl-a)"/>
+<text x="396" y="186" class="t-small" transform="rotate(-90 396 186)">rows run north</text>
+<text x="58" y="52" class="t-small t-acc">known point: here the north-west cell (x = 1, y = 43366)</text>
+</g>
+<g>
+<rect x="460" y="60" width="420" height="250" rx="10" class="box-file"/>
+<text x="478" y="84" class="t-name">index</text>
+<text x="478" y="110" class="t-mono">type = categorical       # or continuous</text>
+<text x="478" y="128" class="t-mono">category_min = 1  category_max = 205</text>
+<text x="478" y="146" class="t-mono">projection = albers_nad83</text>
+<text x="478" y="164" class="t-mono">truelat1 = 29.5  truelat2 = 45.5  stdlon = -96</text>
+<text x="478" y="182" class="t-mono">dx = 30.0  dy = 30.0</text>
+<text x="478" y="200" class="t-mono">known_x = 1  known_y = 43366</text>
+<text x="478" y="218" class="t-mono">known_lat = 42.0618221  known_lon = -125.1993245</text>
+<text x="478" y="236" class="t-mono">wordsize = 2  signed = yes  endian = little</text>
+<text x="478" y="254" class="t-mono">tile_x = 100  tile_y = 100  tile_z = 1  tile_bdr = 3</text>
+<text x="478" y="272" class="t-mono">missing_value = 205  scale_factor = 1.0</text>
+<text x="478" y="290" class="t-mono">units = "fuel category"</text>
+</g>
+<text x="460" y="340" class="t-small">Canyon's LANDFIRE 2024 fuel layer. Value = stored integer × scale_factor.</text>
+</svg></div><figcaption><strong>Anatomy of a layer.</strong> Tiles hold integers; <code>index</code> says how to place and scale them. This is Canyon's LANDFIRE 2024 fuel layer.</figcaption></figure>
+
+<div class="tbl"><table>
+<thead>
+<tr>
+<th><code>index</code> key</th>
+<th>Meaning</th>
+<th>Fuel (<code>LF_2024/fbfm40</code>)</th>
+<th>Terrain (<code>topo_CA_1s_nisha</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td><code>categorical</code> or <code>continuous</code></td>
+<td><code>categorical</code></td>
+<td><code>continuous</code></td>
+</tr>
+<tr>
+<td><code>category_min</code>, <code>category_max</code></td>
+<td>Range of class codes</td>
+<td>1, 205</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>projection</code></td>
+<td>Grid of the data</td>
+<td><code>albers_nad83</code></td>
+<td><code>regular_ll</code></td>
+</tr>
+<tr>
+<td><code>truelat1</code>, <code>truelat2</code>, <code>stdlon</code></td>
+<td>Projection parameters</td>
+<td>29.5, 45.5, −96</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>dx</code>, <code>dy</code></td>
+<td>Cell size: metres if projected, degrees for <code>regular_ll</code></td>
+<td>30, 30</td>
+<td>1/3600°</td>
+</tr>
+<tr>
+<td><code>known_x</code>, <code>known_y</code>, <code>known_lat</code>, <code>known_lon</code></td>
+<td>One cell whose position is given</td>
+<td>(1, 43366) at 42.0618 N, 125.1993 W</td>
+<td>(1, 34200) at 42.0 N, 124.5 W</td>
+</tr>
+<tr>
+<td><code>wordsize</code>, <code>signed</code>, <code>endian</code></td>
+<td>Integer format</td>
+<td>2, yes, little</td>
+<td>4, yes, little</td>
+</tr>
+<tr>
+<td><code>scale_factor</code></td>
+<td>Multiply stored integers by this</td>
+<td>1</td>
+<td>0.001 (stored in mm)</td>
+</tr>
+<tr>
+<td><code>missing_value</code></td>
+<td>Stored value meaning no data</td>
+<td>205</td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>tile_x</code>, <code>tile_y</code>, <code>tile_z</code>, <code>tile_bdr</code></td>
+<td>Tile size and halo</td>
+<td>100, 100, 1, 3</td>
+<td>3600, 3600, 1, 0</td>
+</tr>
+<tr>
+<td><code>row_order</code></td>
+<td>First row is south or north</td>
+<td><code>bottom_top</code></td>
+<td><code>bottom_top</code></td>
+</tr>
+<tr>
+<td><code>units</code>, <code>description</code></td>
+<td>Free text</td>
+<td><code>fuel category</code></td>
+<td><code>meters MSL</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>This Python function writes any 2-D array on a regular latitude–longitude grid as a WPS layer. It was tested by writing and reading back a random field:</p>
+<pre><code class="language-python">import os
+import numpy as np
+
+def write_wps_layer(field, out, lat_south, lon_west, dlat, dlon, scale=0.001,
+                    kind=&quot;continuous&quot;, units=&quot;fraction&quot;, description=&quot;custom layer&quot;,
+                    tile=1000, missing=-9999):
+    &quot;&quot;&quot;field: 2-D array, rows south -&gt; north, columns west -&gt; east, regular lat-lon.
+    lat_south, lon_west: centre of the south-west cell.&quot;&quot;&quot;
+    os.makedirs(out, exist_ok=True)
+    ny, nx = field.shape
+    data = np.where(np.isfinite(field), np.round(field / scale), missing).astype(&quot;&gt;i4&quot;)
+    for j0 in range(0, ny, tile):
+        for i0 in range(0, nx, tile):
+            t = np.full((tile, tile), missing, dtype=&quot;&gt;i4&quot;)
+            blk = data[j0:j0 + tile, i0:i0 + tile]
+            t[:blk.shape[0], :blk.shape[1]] = blk
+            t.tofile(f&quot;{out}/{i0+1:05d}-{i0+tile:05d}.{j0+1:05d}-{j0+tile:05d}&quot;)
+    with open(f&quot;{out}/index&quot;, &quot;w&quot;) as f:
+        f.write(f&quot;type = {kind}\nprojection = regular_ll\n&quot;
+                f&quot;dx = {dlon}\ndy = {dlat}\nknown_x = 1.0\nknown_y = 1.0\n&quot;
+                f&quot;known_lat = {lat_south}\nknown_lon = {lon_west}\n&quot;
+                f&quot;wordsize = 4\nsigned = yes\nendian = big\nrow_order = bottom_top\n&quot;
+                f&quot;tile_x = {tile}\ntile_y = {tile}\ntile_z = 1\n&quot;
+                f&quot;scale_factor = {scale}\nmissing_value = {missing}\n&quot;
+                f'units = &quot;{units}&quot;\ndescription = &quot;{description}&quot;\n')
+</code></pre>
+<p>Then add an entry such as:</p>
+<pre><code class="language-text">name = MY_FIELD
+    priority = 1
+    dest_type = continuous
+    interp_option = default:average_gcell(4.0)+four_pt
+    abs_path = default:/projects/academic/negarkhodoe/wrf/static/my_field/
+    fill_missing = -9999
+    subgrid = yes
+===============================
+</code></pre>
+<p>The field appears in <code>geo_em</code> and is carried through to <code>met_em</code>. Whether <code>real.exe</code> then copies it into <code>wrfinput</code> depends on its name: only fields WRF's Registry declares as input are read. A fire-grid field named <code>FMC_G</code> or <code>LFN_HIST</code> is one WRF knows; see <a href="moisture.html">Fuel moisture</a> and <a href="extend.html">Other research inputs</a>.</p>
+<h2 id="fuel-data-for-a-different-area-or-year">Fuel data for a different area or year</h2>
+<p>LANDFIRE publishes FBFM40 as GeoTIFFs in its CONUS Albers projection. WPS reads that projection directly (<code>albers_nad83</code>), so no resampling is needed: keep the 30 m pixels, write them as tiles, and copy the projection parameters into <code>index</code>. For a fire outside an existing layer, either clip a new layer from LANDFIRE's download service or extend the California one. Keep the release in the folder name (<code>LF2024/</code>) so every run's manifest shows which fuel map it used.</p>
+<nav class="pager"><a class="prev" href="domain.html"><small>Previous</small>Phase 1 · Domain design</a><a class="next" href="ungrib.html"><small>Next</small>Phase 3 · Weather (ungrib)</a></nav>
+<footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/geogrid.md</code>.</footer>
+</article>
+</main>
+</div>
+<script>
+function toggleTheme(){var d=document.documentElement;var cur=d.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var nx=cur==='dark'?'light':'dark';d.setAttribute('data-theme',nx);try{localStorage.setItem('theme',nx);}catch(e){}}
+</script>
+</body>
+</html>

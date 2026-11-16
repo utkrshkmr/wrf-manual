@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Merge · WRF-Fire Manual</title>
+<meta name="description" content="metgrid interpolates each intermediate file onto each domain and adds the static fields from geo_em. The result, one met_em file per domain per time, is everything real.exe needs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</head>
+<body>
+<div class="topbar"><a href="index.html">WRF-Fire Manual</a><button type="button" onclick="document.querySelector('.side').classList.add('open')">Menu</button></div>
+<div class="layout">
+<nav class="side" aria-label="Site">
+<button type="button" class="close" onclick="this.parentNode.classList.remove('open')">Close</button>
+<a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
+<h4>Start</h4><ol>
+<li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
+</ol>
+<h4>The manual: WPS to WRF-Fire</h4><ol>
+<li><a href="env.html"><span class="n">0</span><span>Phase 0 · Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">1</span><span>Phase 1 · Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">2</span><span>Phase 2 · Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">3</span><span>Phase 3 · Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html" class="on"><span class="n">4</span><span>Phase 4 · Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">5</span><span>Phase 5 · real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">6</span><span>Phase 6 · The fire model</span></a></li>
+<li><a href="moisture.html"><span class="n">7</span><span>Fuel moisture in depth</span></a></li>
+<li><a href="extend.html"><span class="n">8</span><span>Other research inputs</span></a></li>
+<li><a href="run.html"><span class="n">9</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">10</span><span>Reference and failures</span></a></li>
+</ol>
+<h4>Our work on CCR</h4><ol>
+<li><a href="setup.html"><span class="n">11</span><span>WPS on CCR: setup so far</span></a></li>
+<li><a href="campaign.html"><span class="n">12</span><span>The scaling campaign</span></a></li>
+<li><a href="scaling.html"><span class="n">13</span><span>Scaling and the elbow</span></a></li>
+<li><a href="costmodel.html"><span class="n">14</span><span>Cost model and node formula</span></a></li>
+<li><a href="queue.html"><span class="n">15</span><span>Queue waits and cost</span></a></li>
+<li><a href="lessons.html"><span class="n">16</span><span>What went wrong, what we learnt</span></a></li>
+<li><a href="design.html"><span class="n">17</span><span>The workflow we designed</span></a></li>
+</ol>
+<button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
+</nav>
+<main>
+<article class="page">
+<p class="kicker">Phase 4 · metgrid.exe</p>
+<h1>Merge</h1>
+<p class="lead">metgrid interpolates each intermediate file onto each domain and adds the static fields from geo_em. The result, one met_em file per domain per time, is everything real.exe needs.</p>
+<nav class="toc"><b>On this page</b><ul><li><a href="#running-it">Running it</a></li><li><a href="#what-a-met-em-file-holds">What a met_em file holds</a></li><li><a href="#metgrid-tbl">METGRID.TBL</a></li><li><a href="#comparing-two-sets-of-met-em-files">Comparing two sets of met_em files</a></li></ul></nav>
+<h2 id="running-it">Running it</h2>
+<pre><code class="language-bash">metgrid.exe
+tail -1 metgrid.log
+ls met_em.d0* | wc -l
+</code></pre>
+<p>Canyon gets 31 times × 2 domains = 62 files. <strong>Run it on one core.</strong> A single-core build took 47 minutes for Canyon (about 90 s per hour of weather, both domains). With 8 MPI ranks on CCR, every rank reads each 3.4 GB HRRR file in full, and the same job was on course for about 4.7 hours before it hit its time limit.</p>
+<figure><div class="fig"><svg viewBox="0 0 900 330" role="img" aria-label="A met_em file holds fields on three kinds of grid">
+<text x="20" y="28" class="t-title">One met_em file per domain per hour, holding fields on three kinds of grid</text>
+<g>
+<text x="40" y="62" class="t-small" style="letter-spacing:1.4px">3-D WEATHER · PRESSURE LEVELS</text>
+<path d="M60 250l90-30h150l-90 30z" class="box-blue"/>
+<path d="M60 220l90-30h150l-90 30z" class="box-blue"/>
+<path d="M60 190l90-30h150l-90 30z" class="box-blue"/>
+<path d="M60 160l90-30h150l-90 30z" class="box-blue"/>
+<path d="M60 130l90-30h150l-90 30z" class="box-blue"/>
+<text x="40" y="282" class="t-mono">TT UU VV RH GHT PRES</text>
+<text x="40" y="300" class="t-mono">QC QR QI QS QG (HRRR)</text>
+<text x="40" y="318" class="t-small">num_metgrid_levels layers</text>
+</g>
+<g>
+<text x="350" y="62" class="t-small" style="letter-spacing:1.4px">2-D, ATMOSPHERE GRID</text>
+<path d="M370 200l90-30h150l-90 30z" class="box-green"/>
+<path d="M370 160l90-30h150l-90 30z" class="box"/>
+<text x="350" y="232" class="t-mono">PSFC PMSL SKINTEMP SNOW</text>
+<text x="350" y="250" class="t-mono">SOILT000…300 SOILM000…300</text>
+<text x="350" y="268" class="t-mono">HGT_M LU_INDEX LANDUSEF …</text>
+<text x="350" y="286" class="t-small">surface and soil weather + static</text>
+<text x="350" y="304" class="t-small">fields copied from geo_em</text>
+</g>
+<g>
+<text x="620" y="62" class="t-small" style="letter-spacing:1.4px">2-D, FIRE MESH (sr × finer)</text>
+<path d="M630 180l90-30h150l-90 30z" class="box-acc"/>
+<path d="M667.5 180l90-30M705 180l90-30M742.5 180l90-30M652.5 172.5h150M675 165h150M697.5 157.5h150" stroke="var(--accent)" stroke-width="0.7" fill="none" opacity="0.6"/>
+<text x="620" y="232" class="t-mono">NFUEL_CAT  ZSF</text>
+<text x="620" y="250" class="t-mono">DZDXF  DZDYF</text>
+<text x="620" y="268" class="t-small">dims west_east_subgrid ×</text>
+<text x="620" y="286" class="t-small">south_north_subgrid</text>
+<text x="620" y="304" class="t-small">+ any subgrid=yes layer</text>
+</g>
+</svg></div><figcaption><strong>Inside a met_em file.</strong> Weather on pressure levels, surface and soil fields, the static fields from geogrid, and the fire fields on the finer fire mesh. The fire fields are copied through unchanged.</figcaption></figure>
+
+<h2 id="what-a-met-em-file-holds">What a met_em file holds</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Fields</th>
+<th>Grid</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Static, from <code>geo_em</code></td>
+<td><code>HGT_M</code>, <code>LU_INDEX</code>, <code>LANDUSEF</code>, <code>SOILCTOP</code>, <code>GREENFRAC</code>, <code>ALBEDO12M</code>, <code>LAI12M</code>, map factors, latitudes and longitudes, any custom geogrid field</td>
+<td>Atmosphere</td>
+</tr>
+<tr>
+<td>Fire, from <code>geo_em</code></td>
+<td><code>NFUEL_CAT</code>, <code>ZSF</code>, <code>DZDXF</code>, <code>DZDYF</code>, any <code>subgrid=yes</code> field</td>
+<td>Fire mesh</td>
+</tr>
+<tr>
+<td>3-D weather</td>
+<td><code>TT</code>, <code>RH</code> or <code>SPECHUMD</code>, <code>UU</code>, <code>VV</code>, <code>GHT</code>, <code>PRES</code>; for HRRR also <code>QC</code>, <code>QR</code>, <code>QI</code>, <code>QS</code>, <code>QG</code></td>
+<td>Atmosphere, pressure levels</td>
+</tr>
+<tr>
+<td>Surface weather</td>
+<td><code>PSFC</code>, <code>PMSL</code>, <code>SKINTEMP</code>, <code>SNOW</code>, <code>SNOWH</code>, <code>SEAICE</code>, <code>LANDSEA</code>, <code>SOILHGT</code></td>
+<td>Atmosphere</td>
+</tr>
+<tr>
+<td>Soil</td>
+<td><code>SOILT000</code> … <code>SOILT300</code>, <code>SOILM000</code> … <code>SOILM300</code> (HRRR: 9 depths, in cm)</td>
+<td>Atmosphere</td>
+</tr>
+</tbody>
+</table></div>
+<p>The global attributes record how the file was made: <code>sr_x</code>, <code>sr_y</code>, <code>FLAG_NFUEL_CAT</code>, <code>FLAG_ZSF</code> (1 when the field was filled), <code>num_metgrid_levels</code>, <code>TITLE</code> (the WPS version) and the whole domain geometry. A <code>namelist.wps</code> can be rebuilt from them, which is how we confirmed NCAR's Canyon set-up:</p>
+<pre><code class="language-bash">ncdump -h met_em.d02.2025-08-07_18:00:00.nc | grep -E ':sr_x|:FLAG_|NUM_METGRID|TITLE|:DX'
+</code></pre>
+<h2 id="metgrid-tbl">METGRID.TBL</h2>
+<p><code>METGRID.TBL</code> controls how each weather field is interpolated horizontally (<code>interp_option</code>), whether it is masked to land or water (<code>interp_mask</code>), and what to do when a field is missing (<code>fill_missing</code>, <code>fill_lev</code>). A field with no entry is interpolated with the default method and a note in the log. The default table works for HRRR; edit it only for a field of your own that needs different handling, for example nearest-neighbour for a categorical field.</p>
+<h2 id="comparing-two-sets-of-met-em-files">Comparing two sets of met_em files</h2>
+<p>When you rebuild a fire's inputs (on another machine, with another data release or another WPS build), compare the outputs field by field before trusting them. Our script prints variables found in only one set, shape mismatches, and the largest absolute difference for each field:</p>
+<pre><code class="language-bash">python3 /projects/academic/negarkhodoe/utkarshk/pipeline/compare_met_em.py &lt;new_dir&gt; &lt;reference_dir&gt;
+</code></pre>
+<p>What to expect: static and fire fields identical (<code>NFUEL_CAT</code> matching in at least 99.9% of cells), and weather fields equal or within rounding when the GRIB files are the same.</p>
+<nav class="pager"><a class="prev" href="ungrib.html"><small>Previous</small>Phase 3 · Weather (ungrib)</a><a class="next" href="real.html"><small>Next</small>Phase 5 · real.exe and namelist.input</a></nav>
+<footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/metgrid.md</code>.</footer>
+</article>
+</main>
+</div>
+<script>
+function toggleTheme(){var d=document.documentElement;var cur=d.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var nx=cur==='dark'?'light':'dark';d.setAttribute('data-theme',nx);try{localStorage.setItem('theme',nx);}catch(e){}}
+</script>
+</body>
+</html>

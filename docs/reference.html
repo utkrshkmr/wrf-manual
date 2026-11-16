@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference and failures · WRF-Fire Manual</title>
+<meta name="description" content="Every file in the chain, the handful of settings that must agree, and every failure we have met so far with its cause and fix.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</head>
+<body>
+<div class="topbar"><a href="index.html">WRF-Fire Manual</a><button type="button" onclick="document.querySelector('.side').classList.add('open')">Menu</button></div>
+<div class="layout">
+<nav class="side" aria-label="Site">
+<button type="button" class="close" onclick="this.parentNode.classList.remove('open')">Close</button>
+<a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
+<h4>Start</h4><ol>
+<li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
+</ol>
+<h4>The manual: WPS to WRF-Fire</h4><ol>
+<li><a href="env.html"><span class="n">0</span><span>Phase 0 · Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">1</span><span>Phase 1 · Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">2</span><span>Phase 2 · Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">3</span><span>Phase 3 · Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">4</span><span>Phase 4 · Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">5</span><span>Phase 5 · real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">6</span><span>Phase 6 · The fire model</span></a></li>
+<li><a href="moisture.html"><span class="n">7</span><span>Fuel moisture in depth</span></a></li>
+<li><a href="extend.html"><span class="n">8</span><span>Other research inputs</span></a></li>
+<li><a href="run.html"><span class="n">9</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html" class="on"><span class="n">10</span><span>Reference and failures</span></a></li>
+</ol>
+<h4>Our work on CCR</h4><ol>
+<li><a href="setup.html"><span class="n">11</span><span>WPS on CCR: setup so far</span></a></li>
+<li><a href="campaign.html"><span class="n">12</span><span>The scaling campaign</span></a></li>
+<li><a href="scaling.html"><span class="n">13</span><span>Scaling and the elbow</span></a></li>
+<li><a href="costmodel.html"><span class="n">14</span><span>Cost model and node formula</span></a></li>
+<li><a href="queue.html"><span class="n">15</span><span>Queue waits and cost</span></a></li>
+<li><a href="lessons.html"><span class="n">16</span><span>What went wrong, what we learnt</span></a></li>
+<li><a href="design.html"><span class="n">17</span><span>The workflow we designed</span></a></li>
+</ol>
+<button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
+</nav>
+<main>
+<article class="page">
+<p class="kicker">Look-up</p>
+<h1>Reference and failures</h1>
+<p class="lead">Every file in the chain, the handful of settings that must agree, and every failure we have met so far with its cause and fix.</p>
+<nav class="toc"><b>On this page</b><ul><li><a href="#files">Files</a></li><li><a href="#settings-that-must-agree">Settings that must agree</a></li><li><a href="#failure-modes">Failure modes</a></li><li><a href="#wrf-source-files-worth-reading">WRF source files worth reading</a></li></ul></nav>
+<h2 id="files">Files</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>File</th>
+<th>Written by</th>
+<th>Read by</th>
+<th>Holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>namelist.wps</code></td>
+<td>you</td>
+<td>geogrid, ungrib, metgrid</td>
+<td>domains, dates, data and table paths</td>
+</tr>
+<tr>
+<td><code>GEOGRID.TBL</code></td>
+<td>you (from WPS)</td>
+<td>geogrid</td>
+<td>which dataset feeds which field</td>
+</tr>
+<tr>
+<td><code>index</code> + tiles</td>
+<td>you or a converter</td>
+<td>geogrid</td>
+<td>one static layer</td>
+</tr>
+<tr>
+<td><code>Vtable</code></td>
+<td>WPS</td>
+<td>ungrib</td>
+<td>GRIB code → field name</td>
+</tr>
+<tr>
+<td><code>geo_em.d0N.nc</code></td>
+<td>geogrid</td>
+<td>metgrid</td>
+<td>static fields, incl. <code>NFUEL_CAT</code>, <code>ZSF</code></td>
+</tr>
+<tr>
+<td><code>FILE:YYYY-MM-DD_HH</code></td>
+<td>ungrib</td>
+<td>metgrid</td>
+<td>weather, one time</td>
+</tr>
+<tr>
+<td><code>METGRID.TBL</code></td>
+<td>WPS</td>
+<td>metgrid</td>
+<td>interpolation per field</td>
+</tr>
+<tr>
+<td><code>met_em.d0N.&lt;time&gt;.nc</code></td>
+<td>metgrid</td>
+<td>real.exe</td>
+<td>everything for one domain and time</td>
+</tr>
+<tr>
+<td><code>namelist.input</code></td>
+<td>you</td>
+<td>real.exe, wrf.exe</td>
+<td>run, domains, physics, <code>&amp;fire</code></td>
+</tr>
+<tr>
+<td><code>namelist.fire</code></td>
+<td>you (from WRF's <code>test/em_fire</code>)</td>
+<td>wrf.exe</td>
+<td>fuel table, scalar moistures, moisture model</td>
+</tr>
+<tr>
+<td><code>wrfinput_d0N</code></td>
+<td>real.exe (you may edit)</td>
+<td>wrf.exe</td>
+<td>initial state, fire fields</td>
+</tr>
+<tr>
+<td><code>wrfbdy_d01</code></td>
+<td>real.exe</td>
+<td>wrf.exe</td>
+<td>lateral boundaries</td>
+</tr>
+<tr>
+<td><code>wrfout_d0N_&lt;time&gt;</code></td>
+<td>wrf.exe</td>
+<td>you</td>
+<td>history output</td>
+</tr>
+<tr>
+<td><code>wrfrst_d0N_&lt;time&gt;</code></td>
+<td>wrf.exe</td>
+<td>wrf.exe (restart)</td>
+<td>full state for resuming</td>
+</tr>
+<tr>
+<td><code>rsl.out.*</code>, <code>rsl.error.*</code></td>
+<td>real.exe, wrf.exe</td>
+<td>you</td>
+<td>one log per MPI rank</td>
+</tr>
+<tr>
+<td><code>namelist.fire.output</code></td>
+<td>wrf.exe</td>
+<td>you</td>
+<td>fuel values actually used</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="settings-that-must-agree">Settings that must agree</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>In <code>namelist.wps</code></th>
+<th>In <code>namelist.input</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Domain count and sizes</td>
+<td><code>max_dom</code>, <code>e_we</code>, <code>e_sn</code></td>
+<td>the same</td>
+</tr>
+<tr>
+<td>Nesting</td>
+<td><code>parent_id</code>, <code>parent_grid_ratio</code>, <code>i_parent_start</code>, <code>j_parent_start</code></td>
+<td>the same</td>
+</tr>
+<tr>
+<td>Grid spacing</td>
+<td><code>dx</code>, <code>dy</code> for d01</td>
+<td><code>dx</code>, <code>dy</code> for every domain</td>
+</tr>
+<tr>
+<td>Fire-mesh ratio</td>
+<td><code>subgrid_ratio_x</code>, <code>subgrid_ratio_y</code> (in <code>&amp;share</code>)</td>
+<td><code>sr_x</code>, <code>sr_y</code></td>
+</tr>
+<tr>
+<td>Weather spacing</td>
+<td><code>interval_seconds</code></td>
+<td><code>interval_seconds</code></td>
+</tr>
+<tr>
+<td>Levels</td>
+<td>(from the data)</td>
+<td><code>num_metgrid_levels</code>, <code>num_metgrid_soil_levels</code></td>
+</tr>
+<tr>
+<td>Soil and land surface</td>
+<td>(HRRR: 9 soil levels)</td>
+<td><code>num_soil_layers</code>, <code>sf_surface_physics</code></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="failure-modes">Failure modes</h2>
+<p>Every one of these happened to us, except where noted.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Cause</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Fortran runtime error: End of record</code> in <code>source_data_module.f90</code>, geogrid</td>
+<td>A data path over about 100 characters, met while composing an error message</td>
+<td>Short <code>geog_data_path</code> (under 60 characters)</td>
+</tr>
+<tr>
+<td><code>Bad data for namelist object e_sn</code>, geogrid</td>
+<td><code>subgrid_ratio_x</code> put in <code>&amp;geogrid</code></td>
+<td>It belongs in <code>&amp;share</code></td>
+</tr>
+<tr>
+<td>geogrid succeeds but no <code>NFUEL_CAT</code></td>
+<td>Default <code>GEOGRID.TBL</code> has no fire entries, or <code>subgrid_ratio</code> is 0</td>
+<td>Use a fire table; set the ratio in <code>&amp;share</code></td>
+</tr>
+<tr>
+<td><code>Could not open …/landfire_data/index</code></td>
+<td><code>GEOGRID.TBL.FIRE</code> expects a fuel folder that isn't there</td>
+<td>Point <code>rel_path</code>/<code>abs_path</code> at your fuel layer</td>
+</tr>
+<tr>
+<td><code>NFUEL_CAT</code> all 0, no spread (risk, not yet hit)</td>
+<td>Wrong fuel path with <code>halt_on_missing=no</code>, <code>fill_missing=0</code></td>
+<td><code>halt_on_missing=yes</code>; read the paths in <code>geogrid.log</code></td>
+</tr>
+<tr>
+<td><code>fuel category out of bounds</code>, wrf.exe</td>
+<td>Code 204 (SB4) with the built-in 53 categories</td>
+<td><code>namelist.fire</code> with <code>nfuelcats = 54</code></td>
+</tr>
+<tr>
+<td><code>Connection refused</code> from <code>srun</code></td>
+<td>MPI-built WPS program started bare in an <code>srun</code> step</td>
+<td>Run it with <code>srun -n 1</code> inside a batch job, or on a login node</td>
+</tr>
+<tr>
+<td>metgrid hits a 2-hour limit</td>
+<td>8 MPI ranks each reading every 3.4 GB HRRR file</td>
+<td>One core: 47 minutes for Canyon</td>
+</tr>
+<tr>
+<td>Job ends with exit 137 mid-run</td>
+<td><code>reached domain boundary</code>: WRF-Fire called MPI_Abort</td>
+<td>Not a crash. Enlarge or move the fire domain</td>
+</tr>
+<tr>
+<td>Two jobs writing the same run folder</td>
+<td>A hand submission next to a scripted one</td>
+<td>One lock file per run folder</td>
+</tr>
+<tr>
+<td>Continuation jobs start after the run finished</td>
+<td>Continuations queued ahead, never cancelled</td>
+<td>Cancel on every ending; a sweeper that checks</td>
+</tr>
+<tr>
+<td><code>Timing for main</code> shows steps getting slower</td>
+<td>The fire front grows, so the fire model does more work</td>
+<td>Expected; size walltime from post-ignition steps</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="wrf-source-files-worth-reading">WRF source files worth reading</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>File</th>
+<th>What it tells you</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Registry/registry.fire</code></td>
+<td>every <code>&amp;fire</code> variable, default and description; fire fields and their I/O streams</td>
+</tr>
+<tr>
+<td><code>phys/module_fr_fire_phys.F</code></td>
+<td><code>namelist.fire</code> groups, the fuel code map, how moisture enters the spread rate</td>
+</tr>
+<tr>
+<td><code>phys/module_fr_fire_driver.F</code></td>
+<td>the moisture model switches and their rules</td>
+</tr>
+<tr>
+<td><code>phys/module_fr_fire_model.F</code></td>
+<td>ignitions and perimeter initialization</td>
+</tr>
+<tr>
+<td><code>test/em_fire/namelist.fire.sb40</code>, <code>namelist.fire_fmc.sb40</code></td>
+<td>complete 54-category fuel tables, with and without the moisture group</td>
+</tr>
+</tbody>
+</table></div>
+<p>Source: <a href="https://github.com/wrf-model/WRF/tree/v4.6.0">WRF v4.6.0 on GitHub</a>.</p>
+<nav class="pager"><a class="prev" href="run.html"><small>Previous</small>Running it on Slurm</a><a class="next" href="setup.html"><small>Next</small>WPS on CCR: setup so far</a></nav>
+<footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/reference.md</code>.</footer>
+</article>
+</main>
+</div>
+<script>
+function toggleTheme(){var d=document.documentElement;var cur=d.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var nx=cur==='dark'?'light':'dark';d.setAttribute('data-theme',nx);try{localStorage.setItem('theme',nx);}catch(e){}}
+</script>
+</body>
+</html>

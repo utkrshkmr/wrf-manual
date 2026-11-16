@@ -1,0 +1,51 @@
+<svg viewBox="0 0 900 380" role="img" aria-label="Every fire time step: wind drives spread, burning fuel releases heat, heat changes the wind">
+<defs>
+<marker id="cp-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker>
+<marker id="cp-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah-acc"/></marker>
+</defs>
+<text x="20" y="28" class="t-title">Each step the wind spreads the fire, and the fire's heat changes the wind</text>
+<rect x="20" y="52" width="860" height="96" rx="12" class="box-blue"/>
+<text x="40" y="78" class="t-name t-blue">Atmosphere (WRF dynamics, fire domain)</text>
+<text x="40" y="100" class="t-body">winds, temperature, humidity on the 100 m grid</text>
+<text x="40" y="118" class="t-body">receives heat and moisture: rthfrten, rqvfrten tendencies</text>
+<text x="40" y="136" class="t-small">fire_ext_grnd, fire_ext_crwn: depth the heat is spread over · fire_atm_feedback scales it</text>
+<g>
+<rect x="40" y="200" width="200" height="110" rx="10" class="box"/>
+<text x="56" y="224" class="t-name">Wind at the fire</text>
+<text x="56" y="246" class="t-body">interpolated to</text>
+<text x="56" y="264" class="t-mono">fire_wind_height</text>
+<text x="56" y="282" class="t-body">(6.1 m) on the fire mesh</text>
+<text x="56" y="300" class="t-mono">UF, VF</text>
+</g>
+<g>
+<rect x="280" y="200" width="250" height="110" rx="10" class="box-acc"/>
+<text x="296" y="224" class="t-name">Rate of spread (Rothermel)</text>
+<text x="296" y="246" class="t-body">fuel category → load, depth,</text>
+<text x="296" y="264" class="t-body">SAVR, extinction moisture</text>
+<text x="296" y="282" class="t-body">+ fuel moisture FMC_G + slope</text>
+<text x="296" y="300" class="t-mono">ROS</text>
+</g>
+<g>
+<rect x="570" y="200" width="150" height="110" rx="10" class="box"/>
+<text x="586" y="224" class="t-name">Front moves</text>
+<text x="586" y="246" class="t-body">level-set function</text>
+<text x="586" y="264" class="t-mono">LFN, TIGN_G</text>
+<text x="586" y="282" class="t-body">fire_upwinding,</text>
+<text x="586" y="300" class="t-body">fire_viscosity</text>
+</g>
+<g>
+<rect x="750" y="200" width="130" height="110" rx="10" class="box"/>
+<text x="766" y="224" class="t-name">Fuel burns</text>
+<text x="766" y="246" class="t-body">fuel fraction falls</text>
+<text x="766" y="264" class="t-body">over weight</text>
+<text x="766" y="282" class="t-mono">FGRNHFX</text>
+<text x="766" y="300" class="t-mono">FGRNQFX</text>
+</g>
+<g class="ln" marker-end="url(#cp-a)">
+<path d="M140 148V198"/><path d="M240 255H278"/><path d="M530 255H568"/><path d="M720 255H748"/>
+</g>
+<path d="M815 200V150" class="ln-acc" marker-end="url(#cp-b)"/>
+<text x="806" y="180" text-anchor="end" class="t-small t-acc">heat, moisture</text>
+<text x="20" y="346" class="t-body">Fixed inputs to the spread rate: <tspan class="t-mono">NFUEL_CAT</tspan> and the fuel table in namelist.fire, terrain slope <tspan class="t-mono">DZDXF, DZDYF</tspan>, and fuel moisture.</text>
+<text x="20" y="366" class="t-body">Set <tspan class="t-mono">fire_atm_feedback = 0</tspan> to break the loop: the fire still follows the wind, but the wind never feels the fire.</text>
+</svg>

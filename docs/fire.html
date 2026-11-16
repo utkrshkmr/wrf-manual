@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The fire model · WRF-Fire Manual</title>
+<meta name="description" content="wrf.exe runs the atmosphere and the fire together. Fire options live in the &amp;fire section of namelist.input; fuel properties and the moisture model live in a second file, namelist.fire. Every variable below was checked against WRF 4.6.0&#x27;s Registry/registry.fire.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</head>
+<body>
+<div class="topbar"><a href="index.html">WRF-Fire Manual</a><button type="button" onclick="document.querySelector('.side').classList.add('open')">Menu</button></div>
+<div class="layout">
+<nav class="side" aria-label="Site">
+<button type="button" class="close" onclick="this.parentNode.classList.remove('open')">Close</button>
+<a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
+<h4>Start</h4><ol>
+<li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
+</ol>
+<h4>The manual: WPS to WRF-Fire</h4><ol>
+<li><a href="env.html"><span class="n">0</span><span>Phase 0 · Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">1</span><span>Phase 1 · Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">2</span><span>Phase 2 · Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">3</span><span>Phase 3 · Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">4</span><span>Phase 4 · Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">5</span><span>Phase 5 · real.exe and namelist.input</span></a></li>
+<li><a href="fire.html" class="on"><span class="n">6</span><span>Phase 6 · The fire model</span></a></li>
+<li><a href="moisture.html"><span class="n">7</span><span>Fuel moisture in depth</span></a></li>
+<li><a href="extend.html"><span class="n">8</span><span>Other research inputs</span></a></li>
+<li><a href="run.html"><span class="n">9</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">10</span><span>Reference and failures</span></a></li>
+</ol>
+<h4>Our work on CCR</h4><ol>
+<li><a href="setup.html"><span class="n">11</span><span>WPS on CCR: setup so far</span></a></li>
+<li><a href="campaign.html"><span class="n">12</span><span>The scaling campaign</span></a></li>
+<li><a href="scaling.html"><span class="n">13</span><span>Scaling and the elbow</span></a></li>
+<li><a href="costmodel.html"><span class="n">14</span><span>Cost model and node formula</span></a></li>
+<li><a href="queue.html"><span class="n">15</span><span>Queue waits and cost</span></a></li>
+<li><a href="lessons.html"><span class="n">16</span><span>What went wrong, what we learnt</span></a></li>
+<li><a href="design.html"><span class="n">17</span><span>The workflow we designed</span></a></li>
+</ol>
+<button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
+</nav>
+<main>
+<article class="page">
+<p class="kicker">Phase 6 · wrf.exe with WRF-Fire</p>
+<h1>The fire model</h1>
+<p class="lead">wrf.exe runs the atmosphere and the fire together. Fire options live in the &amp;fire section of namelist.input; fuel properties and the moisture model live in a second file, namelist.fire. Every variable below was checked against WRF 4.6.0's Registry/registry.fire.</p>
+<nav class="toc"><b>On this page</b><ul><li><a href="#running-it">Running it</a></li><li><a href="#switching-it-on-and-where-fuel-and-terrain-come-from">Switching it on, and where fuel and terrain come from</a></li><li><a href="#ignition">Ignition</a></li><li><a href="#spread-heat-release-and-coupling">Spread, heat release and coupling</a></li><li><a href="#numerics">Numerics</a></li><li><a href="#spotting">Spotting</a></li><li><a href="#namelist-fire">namelist.fire</a></li><li><a href="#how-fuel-codes-become-categories">How fuel codes become categories</a></li><li><a href="#outputs-to-look-at">Outputs to look at</a></li></ul></nav>
+<h2 id="running-it">Running it</h2>
+<pre><code class="language-bash">srun -n &lt;ranks&gt; wrf.exe
+grep -iE 'SUCCESS|error|cfl|boundary' rsl.error.0000 | tail
+</code></pre>
+<p>Every <code>&amp;fire</code> variable takes one value per domain unless noted. Set it on the fire domain and leave the others at 0. The rank count is limited by <a href="run.html#how-many-ranks">the decomposition cap</a>.</p>
+<figure><div class="fig"><svg viewBox="0 0 900 380" role="img" aria-label="Every fire time step: wind drives spread, burning fuel releases heat, heat changes the wind">
+<defs>
+<marker id="cp-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker>
+<marker id="cp-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah-acc"/></marker>
+</defs>
+<text x="20" y="28" class="t-title">Each step the wind spreads the fire, and the fire's heat changes the wind</text>
+<rect x="20" y="52" width="860" height="96" rx="12" class="box-blue"/>
+<text x="40" y="78" class="t-name t-blue">Atmosphere (WRF dynamics, fire domain)</text>
+<text x="40" y="100" class="t-body">winds, temperature, humidity on the 100 m grid</text>
+<text x="40" y="118" class="t-body">receives heat and moisture: rthfrten, rqvfrten tendencies</text>
+<text x="40" y="136" class="t-small">fire_ext_grnd, fire_ext_crwn: depth the heat is spread over · fire_atm_feedback scales it</text>
+<g>
+<rect x="40" y="200" width="200" height="110" rx="10" class="box"/>
+<text x="56" y="224" class="t-name">Wind at the fire</text>
+<text x="56" y="246" class="t-body">interpolated to</text>
+<text x="56" y="264" class="t-mono">fire_wind_height</text>
+<text x="56" y="282" class="t-body">(6.1 m) on the fire mesh</text>
+<text x="56" y="300" class="t-mono">UF, VF</text>
+</g>
+<g>
+<rect x="280" y="200" width="250" height="110" rx="10" class="box-acc"/>
+<text x="296" y="224" class="t-name">Rate of spread (Rothermel)</text>
+<text x="296" y="246" class="t-body">fuel category → load, depth,</text>
+<text x="296" y="264" class="t-body">SAVR, extinction moisture</text>
+<text x="296" y="282" class="t-body">+ fuel moisture FMC_G + slope</text>
+<text x="296" y="300" class="t-mono">ROS</text>
+</g>
+<g>
+<rect x="570" y="200" width="150" height="110" rx="10" class="box"/>
+<text x="586" y="224" class="t-name">Front moves</text>
+<text x="586" y="246" class="t-body">level-set function</text>
+<text x="586" y="264" class="t-mono">LFN, TIGN_G</text>
+<text x="586" y="282" class="t-body">fire_upwinding,</text>
+<text x="586" y="300" class="t-body">fire_viscosity</text>
+</g>
+<g>
+<rect x="750" y="200" width="130" height="110" rx="10" class="box"/>
+<text x="766" y="224" class="t-name">Fuel burns</text>
+<text x="766" y="246" class="t-body">fuel fraction falls</text>
+<text x="766" y="264" class="t-body">over weight</text>
+<text x="766" y="282" class="t-mono">FGRNHFX</text>
+<text x="766" y="300" class="t-mono">FGRNQFX</text>
+</g>
+<g class="ln" marker-end="url(#cp-a)">
+<path d="M140 148V198"/><path d="M240 255H278"/><path d="M530 255H568"/><path d="M720 255H748"/>
+</g>
+<path d="M815 200V150" class="ln-acc" marker-end="url(#cp-b)"/>
+<text x="806" y="180" text-anchor="end" class="t-small t-acc">heat, moisture</text>
+<text x="20" y="346" class="t-body">Fixed inputs to the spread rate: <tspan class="t-mono">NFUEL_CAT</tspan> and the fuel table in namelist.fire, terrain slope <tspan class="t-mono">DZDXF, DZDYF</tspan>, and fuel moisture.</text>
+<text x="20" y="366" class="t-body">Set <tspan class="t-mono">fire_atm_feedback = 0</tspan> to break the loop: the fire still follows the wind, but the wind never feels the fire.</text>
+</svg></div><figcaption><strong>The coupled loop.</strong> WRF-Fire tracks the fire front with a level-set function on the fire mesh. The spread rate comes from Rothermel's model: wind, fuel properties, fuel moisture and slope. The heat released goes back into the atmosphere, which changes the wind.</figcaption></figure>
+
+<h2 id="switching-it-on-and-where-fuel-and-terrain-come-from">Switching it on, and where fuel and terrain come from</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ifire</code></td>
+<td>0</td>
+<td>2 = run the fire model on this domain</td>
+</tr>
+<tr>
+<td><code>fire_fuel_read</code></td>
+<td>−1</td>
+<td>−1 = fuel map from WPS (<code>NFUEL_CAT</code> in <code>wrfinput</code>); 0 = one category everywhere; 1 = by altitude (idealized cases)</td>
+</tr>
+<tr>
+<td><code>fire_fuel_cat</code></td>
+<td>1</td>
+<td>The category used when <code>fire_fuel_read = 0</code></td>
+</tr>
+<tr>
+<td><code>fire_topo_from_atm</code></td>
+<td>1</td>
+<td>1 = interpolate fire terrain from the atmosphere grid; 0 = use <code>ZSF</code> from WPS. <strong>Set 0 when you supply fine terrain, or it is overwritten</strong></td>
+</tr>
+<tr>
+<td><code>fire_fmc_read</code></td>
+<td>1</td>
+<td>Where dead fuel moisture comes from: see <a href="moisture.html">Fuel moisture</a></td>
+</tr>
+<tr>
+<td><code>fire_boundary_guard</code></td>
+<td>8</td>
+<td>Stop when the fire comes this many cells from the domain edge</td>
+</tr>
+<tr>
+<td><code>fire_print_msg</code>, <code>fire_print_file</code></td>
+<td>0, 0</td>
+<td>Fire diagnostics in the <code>rsl</code> logs; debug files</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="ignition">Ignition</h2>
+<p>Up to five ignitions, numbered 1 to 5 in the variable names. Each one is a line drawn from a start to an end point during a time window. A start equal to the end gives a point.</p>
+<figure><div class="fig"><svg viewBox="0 0 900 250" role="img" aria-label="An ignition line is drawn from start to end during a time window, with a radius">
+<defs><marker id="ig-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah-acc"/></marker></defs>
+<text x="20" y="28" class="t-title">An ignition is a line drawn across the fire mesh over a time window</text>
+<rect x="20" y="48" width="470" height="180" rx="10" class="fill-bg2" stroke="var(--rule)"/>
+<path d="M90 170L400 100" stroke="var(--accent)" stroke-width="34" stroke-linecap="round" opacity="0.18"/>
+<path d="M90 170L300 122.6" class="ln-acc" marker-end="url(#ig-a)" style="stroke-width:3"/>
+<path d="M300 122.6L400 100" class="ln-dash"/>
+<circle cx="90" cy="170" r="6" class="fill-acc"/>
+<circle cx="400" cy="100" r="6" fill="none" stroke="var(--accent)" stroke-width="2"/>
+<text x="60" y="200" class="t-mono">start_lat1, start_lon1</text>
+<text x="340" y="82" class="t-mono">end_lat1, end_lon1</text>
+<path d="M232 138.5l7.4 33" class="ln"/>
+<text x="246" y="182" class="t-small">radius1</text>
+<text x="150" y="112" class="t-small t-acc">drawn at ros1 m/s</text>
+<g>
+<text x="530" y="68" class="t-small" style="letter-spacing:1.4px">TIME, SECONDS FROM RUN START</text>
+<path d="M530 130H880" class="axis"/>
+<rect x="640" y="114" width="140" height="32" rx="6" class="box-acc"/>
+<text x="710" y="135" text-anchor="middle" class="t-small">line being drawn</text>
+<text x="640" y="166" text-anchor="middle" class="t-mono">start_time1</text>
+<text x="780" y="166" text-anchor="middle" class="t-mono">end_time1</text>
+<text x="530" y="150" class="t-mono">0</text>
+<text x="530" y="200" class="t-body">Canyon: run starts 18:00 UTC, ignition 20:25 UTC</text>
+<text x="530" y="218" class="t-body">→ fire_ignition_start_time1 = 8700</text>
+</g>
+</svg></div><figcaption><strong>One ignition.</strong> Everything within <code>radius1</code> of the line burns as the line is drawn. Times count from the run start, so the offset is computed from the clock time, never typed by guesswork.</figcaption></figure>
+
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Units</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fire_num_ignitions</code></td>
+<td>—</td>
+<td>How many of the five are used</td>
+</tr>
+<tr>
+<td><code>fire_ignition_start_lat1</code>, <code>fire_ignition_start_lon1</code>, <code>fire_ignition_end_lat1</code>, <code>fire_ignition_end_lon1</code></td>
+<td>degrees</td>
+<td>End points, for real cases</td>
+</tr>
+<tr>
+<td><code>fire_ignition_start_x1</code> … <code>fire_ignition_end_y1</code></td>
+<td>m from the lower-left corner</td>
+<td>End points, for idealized cases</td>
+</tr>
+<tr>
+<td><code>fire_ignition_start_time1</code>, <code>fire_ignition_end_time1</code></td>
+<td>s from run start</td>
+<td>The time window</td>
+</tr>
+<tr>
+<td><code>fire_ignition_radius1</code></td>
+<td>m</td>
+<td>Everything within this distance of the line ignites; at least one fire cell</td>
+</tr>
+<tr>
+<td><code>fire_ignition_ros1</code></td>
+<td>m/s</td>
+<td>How fast the line is drawn</td>
+</tr>
+<tr>
+<td><code>fire_is_real_perim</code></td>
+<td>logical</td>
+<td>Start from an observed perimeter instead: see <a href="extend.html#start-from-an-observed-perimeter">Other research inputs</a></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="spread-heat-release-and-coupling">Spread, heat release and coupling</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fire_sprd_mdl</code></td>
+<td>1</td>
+<td>1 = Rothermel (BEHAVE); 0 = McArthur</td>
+</tr>
+<tr>
+<td><code>fire_wind_height</code></td>
+<td>6.096 m</td>
+<td>Height of the wind used in the spread rate (20 ft)</td>
+</tr>
+<tr>
+<td><code>fire_lsm_zcoupling</code>, <code>fire_lsm_zcoupling_ref</code></td>
+<td><code>.false.</code>, 50 m</td>
+<td>Take the wind at a reference height and bring it down with a log profile</td>
+</tr>
+<tr>
+<td><code>fire_slope_factor</code></td>
+<td>1.0</td>
+<td>Multiplier on the slope effect</td>
+</tr>
+<tr>
+<td><code>fire_atm_feedback</code></td>
+<td>1.0</td>
+<td>Multiplier on heat sent to the atmosphere; 0 = one-way coupling</td>
+</tr>
+<tr>
+<td><code>fire_ext_grnd</code>, <code>fire_ext_crwn</code>, <code>fire_crwn_hgt</code></td>
+<td>50 m, 50 m, 15 m</td>
+<td>Depth over which surface and crown heat is spread vertically; crown release height</td>
+</tr>
+<tr>
+<td><code>fire_sfc_flx</code>, <code>fire_heat_peak</code>, <code>fire_tg_ub</code></td>
+<td>0, 0, 1000 m</td>
+<td>0 = exponential heat profile; 1 = truncated Gaussian with this peak and upper bound</td>
+</tr>
+<tr>
+<td><code>fire_smk_scheme</code>, <code>fire_smk_peak</code>, <code>fire_smk_ext</code>, <code>fire_tracer_smoke</code></td>
+<td>0, 0, 50 m, 0.02</td>
+<td>Smoke tracer release (with <code>tracer_opt = 3</code>)</td>
+</tr>
+<tr>
+<td><code>fire_const_time</code>, <code>fire_const_grnhfx</code>, <code>fire_const_grnqfx</code></td>
+<td>−1, 0, 0</td>
+<td>Freeze the fire at a time and hold a constant heat flux (experiments)</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="numerics">Numerics</h2>
+<p>Change these only with a reason; the defaults are the tested ones.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fire_upwinding</code></td>
+<td>9</td>
+<td>Level-set advection scheme; 9 = hybrid WENO5/ENO1</td>
+</tr>
+<tr>
+<td><code>fire_viscosity</code>, <code>fire_viscosity_bg</code>, <code>fire_viscosity_band</code>, <code>fire_viscosity_ngp</code></td>
+<td>0.4, 0.4, 0.5, 2</td>
+<td>Artificial viscosity away from and near the front</td>
+</tr>
+<tr>
+<td><code>fire_lsm_reinit</code>, <code>fire_lsm_reinit_iter</code>, <code>fire_upwinding_reinit</code>, <code>fire_lsm_band_ngp</code></td>
+<td><code>.true.</code>, 1, 4, 4</td>
+<td>Level-set reinitialization</td>
+</tr>
+<tr>
+<td><code>fire_grows_only</code></td>
+<td>1</td>
+<td>The burnt area can only grow</td>
+</tr>
+<tr>
+<td><code>fire_advection</code></td>
+<td>1</td>
+<td>Spread uses the fire-line particle speed projected on the normal</td>
+</tr>
+<tr>
+<td><code>fire_fuel_left_method</code>, <code>fire_fuel_left_irl</code>, <code>fire_fuel_left_jrl</code></td>
+<td>1, 2, 2</td>
+<td>How remaining fuel is integrated within a cell</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="spotting">Spotting</h2>
+<p>Firebrand spotting is off by default (<code>fs_firebrand_gen_lim = 0</code>). A value above 0 generates firebrands. The other <code>fs_*</code> variables set how often and how many are made, how high (<code>fs_firebrand_gen_maxhgt</code>, 50 m), their size, density and temperature, and how long they live.</p>
+<h2 id="namelist-fire">namelist.fire</h2>
+<p><code>namelist.fire</code> sits in the run folder. Without it, built-in defaults are used; either way, WRF writes the values it used to <code>namelist.fire.output</code>, the first thing to check. It has three groups.</p>
+<p><strong><code>&amp;fuel_scalars</code></strong>, one value each:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cmbcnst</code></td>
+<td>17.433e6 J/kg</td>
+<td>Heat of combustion of dry fuel</td>
+</tr>
+<tr>
+<td><code>hfgl</code></td>
+<td>17e4 W/m²</td>
+<td>Surface heat flux that ignites the canopy</td>
+</tr>
+<tr>
+<td><code>fuelmc_g</code></td>
+<td>0.08</td>
+<td>Dead surface fuel moisture, as a fraction (0.08 = 8%)</td>
+</tr>
+<tr>
+<td><code>fuelmc_g_lh</code></td>
+<td>1.20</td>
+<td>Live herbaceous moisture: ≥ 1.20 uncured, ≤ 0.30 fully cured, in between a share of the live load counts as dead</td>
+</tr>
+<tr>
+<td><code>fuelmc_c</code></td>
+<td>1.00</td>
+<td>Canopy fuel moisture</td>
+</tr>
+<tr>
+<td><code>nfuelcats</code></td>
+<td>53</td>
+<td>Number of categories defined. <strong>Must be 54 for Scott and Burgan SB4 (code 204)</strong></td>
+</tr>
+<tr>
+<td><code>no_fuel_cat</code></td>
+<td>14</td>
+<td>The "no fuel" category</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong><code>&amp;fuel_categories</code></strong>, one value per category, as comma-separated lists:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fuel_name</code></td>
+<td>Label</td>
+</tr>
+<tr>
+<td><code>fgi</code>, <code>fgi_lh</code></td>
+<td>Dead fuel load and live herbaceous load, kg/m²</td>
+</tr>
+<tr>
+<td><code>fueldepthm</code></td>
+<td>Fuel bed depth, m</td>
+</tr>
+<tr>
+<td><code>savr</code></td>
+<td>Surface-area-to-volume ratio, 1/ft</td>
+</tr>
+<tr>
+<td><code>fuelmce</code></td>
+<td>Moisture of extinction: moisture at which this fuel stops burning</td>
+</tr>
+<tr>
+<td><code>fueldens</code></td>
+<td>Particle density, lb/ft³</td>
+</tr>
+<tr>
+<td><code>st</code>, <code>se</code></td>
+<td>Total and effective mineral content</td>
+</tr>
+<tr>
+<td><code>windrf</code></td>
+<td>Wind reduction factor from the wind height to mid-flame</td>
+</tr>
+<tr>
+<td><code>weight</code></td>
+<td>Burn-out time constant: about 7 for grass, 900 for timber litter</td>
+</tr>
+<tr>
+<td><code>ichap</code></td>
+<td>1 = treat as chaparral</td>
+</tr>
+<tr>
+<td><code>fci_d</code>, <code>fct</code></td>
+<td>Canopy load and canopy burn time</td>
+</tr>
+<tr>
+<td><code>fgi_1h</code>, <code>fgi_10h</code>, <code>fgi_100h</code>, <code>fgi_1000h</code>, <code>fgi_live</code></td>
+<td>Load per moisture class, used as weights by the moisture model</td>
+</tr>
+</tbody>
+</table></div>
+<p>Editing a column changes that fuel type everywhere it occurs. The third group, <code>&amp;fuel_moisture</code>, is covered on the <a href="moisture.html#the-moisture-model">fuel-moisture page</a>.</p>
+<h2 id="how-fuel-codes-become-categories">How fuel codes become categories</h2>
+<figure><div class="fig"><svg viewBox="0 0 900 300" role="img" aria-label="How LANDFIRE fuel codes become WRF fuel categories">
+<defs><marker id="fm-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker></defs>
+<text x="20" y="28" class="t-title">WRF converts each code in NFUEL_CAT into a row of the fuel table</text>
+<text x="20" y="60" class="t-small" style="letter-spacing:1.4px">CODE IN NFUEL_CAT</text>
+<text x="600" y="60" class="t-small" style="letter-spacing:1.4px">CATEGORY IN namelist.fire</text>
+<g>
+<rect x="20" y="70" width="300" height="30" rx="7" class="box"/><text x="32" y="90" class="t-mono">1–13   Anderson 13</text>
+<rect x="20" y="106" width="300" height="30" rx="7" class="box-green"/><text x="32" y="126" class="t-mono">101–109 GR · 121–124 GS</text>
+<rect x="20" y="142" width="300" height="30" rx="7" class="box-green"/><text x="32" y="162" class="t-mono">141–149 SH · 161–165 TU</text>
+<rect x="20" y="178" width="300" height="30" rx="7" class="box-green"/><text x="32" y="198" class="t-mono">181–189 TL · 201–203 SB</text>
+<rect x="20" y="214" width="300" height="30" rx="7" class="box-amber"/><text x="32" y="234" class="t-mono">204    SB4 (high-load blowdown)</text>
+<rect x="20" y="250" width="300" height="30" rx="7" class="box"/><text x="32" y="270" class="t-mono">91–99 and any other code ≤ 204</text>
+</g>
+<g>
+<rect x="600" y="70" width="280" height="30" rx="7" class="box"/><text x="612" y="90" class="t-mono">1–13</text>
+<rect x="600" y="124" width="280" height="66" rx="7" class="box-green"/><text x="612" y="152" class="t-mono">15–53</text><text x="612" y="172" class="t-small">Scott and Burgan, in code order</text>
+<rect x="600" y="214" width="280" height="30" rx="7" class="box-amber"/><text x="612" y="234" class="t-mono">54  needs nfuelcats = 54</text>
+<rect x="600" y="250" width="280" height="30" rx="7" class="box"/><text x="612" y="270" class="t-mono">14  no fuel: no spread</text>
+</g>
+<g class="ln" marker-end="url(#fm-a)">
+<path d="M320 85H598"/><path d="M320 121C460 121 460 150 598 150"/><path d="M320 157H598"/><path d="M320 193C460 193 460 165 598 165"/>
+<path d="M320 229H598"/><path d="M320 265H598"/>
+</g>
+</svg></div><figcaption><strong>The code map in <code>set_fire_params</code>.</strong> Anderson codes keep their numbers. Scott and Burgan codes become categories 15–54 in order. Every other code up to 204, including the non-burnable 91–99, becomes 14, no fuel.</figcaption></figure>
+
+<p>Two consequences:</p>
+<ul>
+<li><strong>Code 204 crashes a default run.</strong> It maps to category 54, but the built-in table stops at 53, so WRF stops with <code>fuel category out of bounds</code>. This is the code-204 crash we hit. The fix is a <code>namelist.fire</code> with <code>nfuelcats = 54</code> and 54 columns, such as <code>test/em_fire/namelist.fire.sb40</code> in the WRF source.</li>
+<li><strong>The lookup ends at 204.</strong> A code of 0, or above 204 (LANDFIRE's missing value is 205), is outside the table. Check <code>NFUEL_CAT</code> for stray values before running.</li>
+</ul>
+<h2 id="outputs-to-look-at">Outputs to look at</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>FIRE_AREA</code></td>
+<td>Burnt fraction of each fire cell</td>
+</tr>
+<tr>
+<td><code>TIGN_G</code></td>
+<td>Ignition time of each fire cell, seconds from run start</td>
+</tr>
+<tr>
+<td><code>ROS</code></td>
+<td>Rate of spread, m/s</td>
+</tr>
+<tr>
+<td><code>FGRNHFX</code>, <code>FGRNQFX</code></td>
+<td>Ground heat and moisture flux, W/m²</td>
+</tr>
+<tr>
+<td><code>FLAME_LENGTH</code>, <code>ROS_FRONT</code></td>
+<td>At the front</td>
+</tr>
+<tr>
+<td><code>FMC_G</code></td>
+<td>Fuel moisture used</td>
+</tr>
+<tr>
+<td><code>UF</code>, <code>VF</code></td>
+<td>Wind at the fire</td>
+</tr>
+<tr>
+<td><code>LFN</code></td>
+<td>The level-set function; the front is where it is 0</td>
+</tr>
+</tbody>
+</table></div>
+<p>Not all of these are in <code>wrfout</code> by default; add them with <code>iofields_filename</code>.</p>
+<nav class="pager"><a class="prev" href="real.html"><small>Previous</small>Phase 5 · real.exe and namelist.input</a><a class="next" href="moisture.html"><small>Next</small>Fuel moisture in depth</a></nav>
+<footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/fire.md</code>.</footer>
+</article>
+</main>
+</div>
+<script>
+function toggleTheme(){var d=document.documentElement;var cur=d.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var nx=cur==='dark'?'light':'dark';d.setAttribute('data-theme',nx);try{localStorage.setItem('theme',nx);}catch(e){}}
+</script>
+</body>
+</html>

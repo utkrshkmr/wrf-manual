@@ -1,0 +1,25 @@
+<svg viewBox="0 0 900 290" role="img" aria-label="Strong scaling splits one grid finer; weak scaling grows the grid with the ranks">
+<defs><marker id="sw-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker></defs>
+<text x="20" y="28" class="t-title">Strong scaling splits one fire finer; weak scaling grows the fire with the ranks</text>
+<text x="20" y="60" class="t-name">Strong: the same grid on more ranks</text>
+<rect x="30" y="80" width="110" height="110" class="box-blue"/>
+<rect x="190" y="80" width="110" height="110" class="box-blue"/>
+<path d="M245 80V190M190 135H300" class="ln-blue"/>
+<rect x="350" y="80" width="110" height="110" class="box-blue"/>
+<path d="M377.5 80V190M405 80V190M432.5 80V190M350 107.5H460M350 135H460M350 162.5H460" class="ln-blue"/>
+<g class="ln" marker-end="url(#sw-a)"><path d="M146 135H184"/><path d="M306 135H344"/></g>
+<text x="85" y="212" text-anchor="middle" class="t-small">1 rank</text><text x="245" y="212" text-anchor="middle" class="t-small">4 ranks</text><text x="405" y="212" text-anchor="middle" class="t-small">16 ranks</text>
+<text x="30" y="240" class="t-body">Ideal: time per step falls as 1/n. It stops falling</text>
+<text x="30" y="258" class="t-body">when the unsplittable part and neighbour talk dominate.</text>
+<text x="500" y="60" class="t-name">Weak: a bigger grid, the same patch per rank</text>
+<rect x="510" y="160" width="30" height="30" class="box-blue"/>
+<rect x="590" y="130" width="60" height="60" class="box-blue"/>
+<path d="M620 130V190M590 160H650" class="ln-blue"/>
+<rect x="710" y="70" width="120" height="120" class="box-blue"/>
+<path d="M740 70V190M770 70V190M800 70V190M710 100H830M710 130H830M710 160H830" class="ln-blue"/>
+<g class="ln" marker-end="url(#sw-a)"><path d="M546 175H584"/><path d="M656 160H704"/></g>
+<text x="525" y="212" text-anchor="middle" class="t-small">1 rank</text><text x="620" y="212" text-anchor="middle" class="t-small">4 ranks</text><text x="770" y="212" text-anchor="middle" class="t-small">16 ranks</text>
+<text x="510" y="240" class="t-body">Ideal: time per step stays flat. It rises as</text>
+<text x="510" y="258" class="t-body">each rank spends more time on its patch edges.</text>
+<text x="20" y="284" class="t-small">Our sweep was strong-scaling ladders per fire; pooled over four fires of very different size, the same runs give the weak-scaling view.</text>
+</svg>

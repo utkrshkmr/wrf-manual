@@ -1,0 +1,27 @@
+<svg viewBox="0 0 900 300" role="img" aria-label="The smallest domain sets the rank cap: at least 10 points per rank in each direction">
+<text x="20" y="28" class="t-title">The tightest domain sets the cap: every rank needs at least 10 × 10 points</text>
+<g>
+<rect x="40" y="56" width="210" height="210" class="box-blue"/>
+<g class="grid" style="stroke:var(--blue);opacity:.6"><path d="M75 56V266M110 56V266M145 56V266M180 56V266M215 56V266M40 91H250M40 126H250M40 161H250M40 196H250M40 231H250"/></g>
+<rect x="145" y="161" width="35" height="35" class="fill-acc" opacity="0.45"/>
+<text x="145" y="286" text-anchor="middle" class="t-body">60 × 60 d01 → 6 × 6 = 36 ranks</text>
+</g>
+<g>
+<rect x="300" y="56" width="210" height="210" class="box-acc"/>
+<text x="405" y="150" text-anchor="middle" class="t-name">d02, 217 × 217</text>
+<text x="405" y="170" text-anchor="middle" class="t-body">alone would allow</text>
+<text x="405" y="188" text-anchor="middle" class="t-body">21 × 21 = 441 ranks</text>
+<text x="405" y="286" text-anchor="middle" class="t-body">but every domain uses the same ranks</text>
+</g>
+<g>
+<rect x="560" y="56" width="320" height="210" rx="12" class="box"/>
+<text x="578" y="84" class="t-name">The rule</text>
+<text x="578" y="110" class="t-mono">cap = ⌊nx/10⌋ × ⌊ny/10⌋</text>
+<text x="578" y="128" class="t-body">on the domain where it is smallest</text>
+<text x="578" y="158" class="t-body">Canyon (54 × 54 d01): 5 × 5 = 25</text>
+<text x="578" y="178" class="t-body">Cranston, Long (60 × 60): 6 × 6 = 36</text>
+<text x="578" y="198" class="t-body">Eaton (450 × 450 d01): 45 × 45 = 2,025</text>
+<text x="578" y="228" class="t-small">More ranks → WRF stops at start-up with a</text>
+<text x="578" y="246" class="t-small">decomposition error in rsl.error.0000</text>
+</g>
+</svg>

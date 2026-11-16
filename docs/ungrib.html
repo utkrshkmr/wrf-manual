@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weather · WRF-Fire Manual</title>
+<meta name="description" content="ungrib turns one weather model&#x27;s GRIB files into WPS intermediate files, one per time. The weather product you choose sets the initial state, the boundaries, and even which land-surface model WRF can run.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</head>
+<body>
+<div class="topbar"><a href="index.html">WRF-Fire Manual</a><button type="button" onclick="document.querySelector('.side').classList.add('open')">Menu</button></div>
+<div class="layout">
+<nav class="side" aria-label="Site">
+<button type="button" class="close" onclick="this.parentNode.classList.remove('open')">Close</button>
+<a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
+<h4>Start</h4><ol>
+<li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
+</ol>
+<h4>The manual: WPS to WRF-Fire</h4><ol>
+<li><a href="env.html"><span class="n">0</span><span>Phase 0 · Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">1</span><span>Phase 1 · Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">2</span><span>Phase 2 · Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html" class="on"><span class="n">3</span><span>Phase 3 · Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">4</span><span>Phase 4 · Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">5</span><span>Phase 5 · real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">6</span><span>Phase 6 · The fire model</span></a></li>
+<li><a href="moisture.html"><span class="n">7</span><span>Fuel moisture in depth</span></a></li>
+<li><a href="extend.html"><span class="n">8</span><span>Other research inputs</span></a></li>
+<li><a href="run.html"><span class="n">9</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">10</span><span>Reference and failures</span></a></li>
+</ol>
+<h4>Our work on CCR</h4><ol>
+<li><a href="setup.html"><span class="n">11</span><span>WPS on CCR: setup so far</span></a></li>
+<li><a href="campaign.html"><span class="n">12</span><span>The scaling campaign</span></a></li>
+<li><a href="scaling.html"><span class="n">13</span><span>Scaling and the elbow</span></a></li>
+<li><a href="costmodel.html"><span class="n">14</span><span>Cost model and node formula</span></a></li>
+<li><a href="queue.html"><span class="n">15</span><span>Queue waits and cost</span></a></li>
+<li><a href="lessons.html"><span class="n">16</span><span>What went wrong, what we learnt</span></a></li>
+<li><a href="design.html"><span class="n">17</span><span>The workflow we designed</span></a></li>
+</ol>
+<button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
+</nav>
+<main>
+<article class="page">
+<p class="kicker">Phase 3 · ungrib.exe</p>
+<h1>Weather</h1>
+<p class="lead">ungrib turns one weather model's GRIB files into WPS intermediate files, one per time. The weather product you choose sets the initial state, the boundaries, and even which land-surface model WRF can run.</p>
+
+<h2 id="running-it">Running it</h2>
+<pre><code class="language-bash">ln -sf /projects/academic/negarkhodoe/wrf/tables/fire/Vtable.HRRR.prs Vtable
+i=0; for f in /path/to/grib/hrrr.*.wrfprsf00.grib2; do
+  L=ABCDEFGHIJKLMNOPQRSTUVWXYZ
+  ln -sf $f GRIBFILE.${L:i/676%26:1}${L:i/26%26:1}${L:i%26:1}; i=$((i+1))
+done
+ungrib.exe
+tail -1 ungrib.log
+</code></pre>
+<p>The loop does what WPS's <code>link_grib.csh</code> does: <code>GRIBFILE.AAA</code>, <code>GRIBFILE.AAB</code> and so on, in time order. ungrib is serial. For HRRR it takes about 45 s per hour of weather (22.5 minutes for Canyon's 31 files) and writes <code>FILE:2025-08-07_18</code> and so on. <code>ungrib.log</code> has an <code>Inventory</code> table showing which fields it found at each time.</p>
+<figure><div class="fig"><svg viewBox="0 0 900 290" role="img" aria-label="The Vtable maps each GRIB record to a WPS field name">
+<defs><marker id="vt-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker></defs>
+<text x="20" y="28" class="t-title">The Vtable is the dictionary between GRIB codes and WPS field names</text>
+<rect x="20" y="56" width="250" height="196" rx="10" class="box-file"/>
+<text x="36" y="80" class="t-name">One GRIB2 record</text>
+<text x="36" y="106" class="t-mono">discipline  0  (meteorology)</text>
+<text x="36" y="124" class="t-mono">category    0  (temperature)</text>
+<text x="36" y="142" class="t-mono">parameter   0  (temperature)</text>
+<text x="36" y="160" class="t-mono">level type 100 (isobaric)</text>
+<text x="36" y="178" class="t-mono">level   85000 Pa</text>
+<text x="36" y="206" class="t-body">a 1799 × 1059 array for HRRR</text>
+<text x="36" y="224" class="t-small">list with g2print.exe</text>
+<rect x="320" y="56" width="290" height="196" rx="10" class="box-acc"/>
+<text x="336" y="80" class="t-name">Vtable.HRRR.prs, one row</text>
+<text x="336" y="110" class="t-mono">GRIB1 | Lvl | metgrid | Units</text>
+<text x="336" y="128" class="t-mono">  11  | 100 |   TT    |   K  </text>
+<text x="336" y="152" class="t-mono">GRIB2 Discp Catgy Param Level</text>
+<text x="336" y="170" class="t-mono">        0     0     0    100</text>
+<text x="336" y="206" class="t-body">A record with no matching row is</text>
+<text x="336" y="224" class="t-body">skipped without a warning.</text>
+<rect x="660" y="56" width="220" height="196" rx="10" class="box-file"/>
+<text x="676" y="80" class="t-mono">FILE:2025-08-07_18</text>
+<text x="676" y="106" class="t-body">WPS intermediate format</text>
+<text x="676" y="130" class="t-mono">TT    at each level</text>
+<text x="676" y="148" class="t-mono">UU VV RH GHT PRES</text>
+<text x="676" y="166" class="t-mono">PSFC PMSL SKINTEMP</text>
+<text x="676" y="184" class="t-mono">SOILT000 … SOILM300</text>
+<text x="676" y="208" class="t-body">3.4 GB per hour for HRRR</text>
+<text x="676" y="226" class="t-small">list with rd_intermediate.exe</text>
+<g class="ln" marker-end="url(#vt-a)"><path d="M270 154H318"/><path d="M610 154H658"/></g>
+<text x="20" y="280" class="t-small">ungrib.exe reads every GRIBFILE.* link in time order and writes one intermediate file per interval_seconds.</text>
+</svg></div><figcaption><strong>What ungrib does with each GRIB record.</strong> It looks the record up in the Vtable by its GRIB codes and level, and stores it under the WPS name. Fields the Vtable doesn't list never reach WRF.</figcaption></figure>
+
+<h2 id="choosing-a-weather-product">Choosing a weather product</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Product</th>
+<th>Grid</th>
+<th>Interval</th>
+<th>Source</th>
+<th>Vtable</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HRRR <code>wrfprsf00</code></td>
+<td>3 km, CONUS</td>
+<td>hourly</td>
+<td>NOAA archive on AWS (<code>noaa-hrrr-bdp-pds/hrrr.YYYYMMDD/conus/</code>)</td>
+<td><code>Vtable.HRRR.prs</code> or <code>Vtable.raphrrr</code></td>
+<td>9 soil levels; cloud and rain fields (<code>QC</code>, <code>QR</code>, <code>QI</code>, <code>QS</code>, <code>QG</code>). Canyon uses hourly analyses (<code>f00</code>)</td>
+</tr>
+<tr>
+<td>RAP</td>
+<td>13 km, North America</td>
+<td>hourly</td>
+<td>NOAA archives</td>
+<td><code>Vtable.raphrrr</code></td>
+<td>Same soil levels as HRRR</td>
+</tr>
+<tr>
+<td>NAM</td>
+<td>12 km</td>
+<td>3-hourly analyses</td>
+<td>NCEI, NCAR RDA</td>
+<td><code>Vtable.NAM</code></td>
+<td>4 soil levels</td>
+</tr>
+<tr>
+<td>GFS</td>
+<td>0.25°</td>
+<td>3-hourly</td>
+<td>NCEI, NCAR RDA, AWS</td>
+<td><code>Vtable.GFS</code></td>
+<td>Global; coarse for a fire</td>
+</tr>
+<tr>
+<td>ERA5</td>
+<td>0.25°</td>
+<td>hourly</td>
+<td>Copernicus CDS, NCAR RDA</td>
+<td><code>Vtable.ECMWF</code></td>
+<td>Reanalysis; consistent over decades</td>
+</tr>
+</tbody>
+</table></div>
+<p>Downloading Canyon's 31 HRRR hours on CCR:</p>
+<pre><code class="language-bash">mkdir -p /projects/academic/negarkhodoe/wrf/inputs/weather/hrrr &amp;&amp; cd /projects/academic/negarkhodoe/wrf/inputs/weather/hrrr
+for h in $(seq 0 30); do
+  t=$(date -u -d &quot;2025-08-07 18:00 + $h hour&quot; +%Y%m%d/%H)
+  wget -nc -q -O hrrr.${t%/*}.t${t#*/}z.wrfprsf00.grib2 \
+    https://noaa-hrrr-bdp-pds.s3.amazonaws.com/hrrr.${t%/*}/conus/hrrr.t${t#*/}z.wrfprsf00.grib2
+done
+</code></pre>
+<p><strong>What the choice controls downstream.</strong></p>
+<ul>
+<li><strong>Soil layers.</strong> HRRR and RAP give 9 soil levels, the others 4. In <code>namelist.input</code> this sets <code>num_metgrid_soil_levels</code>, and it pairs with the land-surface model: RUC (<code>sf_surface_physics = 3</code>, <code>num_soil_layers = 9</code>) for HRRR, Noah (<code>= 2</code>, 4 layers) for the others.</li>
+<li><strong>Vertical levels.</strong> <code>num_metgrid_levels</code> in <code>namelist.input</code> must equal the level count in <code>met_em</code>; read it with <code>ncdump -h met_em.d01.* | grep -i num_metgrid_levels</code>.</li>
+<li><strong>Analysis or forecast.</strong> Hourly <code>f00</code> analyses (Canyon) restart from observations every hour. One forecast cycle (<code>f01</code>, <code>f02</code> …) is smoother in time but drifts. Choose one and state it.</li>
+</ul>
+<h2 id="adding-your-own-gridded-field">Adding your own gridded field</h2>
+<p>A field that isn't in any GRIB file, such as a gridded fuel-moisture analysis, observed winds or a smoke field, can be written straight into WPS intermediate format. Then list it in <code>fg_name</code> if it changes in time, or <code>constants_name</code> if it doesn't:</p>
+<pre><code class="language-fortran">&amp;metgrid
+ fg_name = 'FILE', 'MYFIELD',
+ constants_name = 'FMC_STATIC:2025-08-07_18',
+/
+</code></pre>
+<p>The format is a short sequence of Fortran unformatted records per field: version, header, projection, a description, then the 2-D array. The Python package <code>pywinter</code> writes it from NumPy arrays; <code>rd_intermediate.exe</code> lists what a file holds. metgrid then interpolates the field onto every domain like any other weather field. It reaches the atmosphere grid of <code>met_em</code>, not the fire mesh; for fire-mesh fields use a geogrid layer instead (<a href="geogrid.html#writing-your-own-layer">Phase 2</a>).</p>
+<nav class="pager"><a class="prev" href="geogrid.html"><small>Previous</small>Phase 2 · Static data (geogrid)</a><a class="next" href="metgrid.html"><small>Next</small>Phase 4 · Merge (metgrid)</a></nav>
+<footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/ungrib.md</code>.</footer>
+</article>
+</main>
+</div>
+<script>
+function toggleTheme(){var d=document.documentElement;var cur=d.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var nx=cur==='dark'?'light':'dark';d.setAttribute('data-theme',nx);try{localStorage.setItem('theme',nx);}catch(e){}}
+</script>
+</body>
+</html>

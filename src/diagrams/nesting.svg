@@ -1,0 +1,40 @@
+<svg viewBox="0 0 900 400" role="img" aria-label="Canyon's two domains and its 25 m fire mesh">
+<defs><marker id="ns-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker></defs>
+<text x="20" y="28" class="t-title">Canyon: a 48.6 km parent, a 21.6 km fire domain, and a 25 m fire mesh</text>
+<g>
+<rect x="40" y="60" width="300" height="300" class="box-blue" rx="2"/>
+<text x="52" y="82" class="t-name t-blue">d01 · 54 × 54 points · 900 m</text>
+<rect x="119" y="139" width="136" height="136" class="box-acc" rx="2"/>
+<text x="187" y="203" text-anchor="middle" class="t-name">d02</text>
+<text x="187" y="221" text-anchor="middle" class="t-body">217 × 217 · 100 m</text>
+<circle cx="225" cy="250" r="5" class="fill-acc"/>
+<text x="56" y="350" class="t-small">i_parent_start = j_parent_start = 15</text>
+<path d="M119 300V285M119 300H255M255 300V285" class="ln-dash"/>
+<text x="187" y="316" text-anchor="middle" class="t-small">24 parent cells × 9 = 216</text>
+</g>
+<path d="M255 207C320 207 360 150 420 150" class="ln" marker-end="url(#ns-a)"/>
+<g>
+<rect x="430" y="70" width="190" height="190" class="box-acc" rx="2"/>
+<g class="grid">
+<path d="M477.5 70V260M525 70V260M572.5 70V260M430 117.5H620M430 165H620M430 212.5H620"/>
+</g>
+<text x="525" y="285" text-anchor="middle" class="t-name">one 100 m d02 cell</text>
+<text x="525" y="303" text-anchor="middle" class="t-body">split 4 × 4 by sr_x = sr_y = 4</text>
+<text x="525" y="321" text-anchor="middle" class="t-body">→ 16 fire cells of 25 m</text>
+<rect x="430" y="70" width="57" height="57" fill="none" stroke="var(--green)" stroke-width="2" stroke-dasharray="5 3"/>
+<text x="492" y="64" class="t-small t-green">one 30 m LANDFIRE pixel</text>
+</g>
+<g>
+<rect x="660" y="70" width="220" height="250" rx="12" class="box"/>
+<text x="676" y="96" class="t-name">The same three numbers</text>
+<text x="676" y="116" class="t-name">must match everywhere</text>
+<text x="676" y="146" class="t-mono">namelist.wps</text>
+<text x="676" y="164" class="t-body">parent_grid_ratio = 1, 9</text>
+<text x="676" y="182" class="t-body">subgrid_ratio_x = 0, 4</text>
+<text x="676" y="212" class="t-mono">namelist.input</text>
+<text x="676" y="230" class="t-body">parent_grid_ratio = 1, 9</text>
+<text x="676" y="248" class="t-body">dx = 900, 100</text>
+<text x="676" y="266" class="t-body">sr_x = 0, 4 (same for y)</text>
+<text x="676" y="300" class="t-small">A mismatch stops real.exe</text>
+</g>
+</svg>
