@@ -223,7 +223,7 @@ How to look:
 curl -fsSL https://raw.githubusercontent.com/utkrshkmr/wrf-manual/main/PATH | grep -n -i -B3 -A15 "SEARCH WORDS"
 ```
 
-  For example, for `End of record` from geogrid: `PATH` = `src/geogrid.md`, search `End of record`; for gate C's `C07_boundaries`: `PATH` = `tools/wrfgate/lib/wrfgate/gate_c.py`, search `C07_`.
+  For example, for `End of record` from geogrid: `PATH` = `src/reference.md`, search `End of record`; for gate C's `C07_boundaries`: `PATH` = `tools/wrfgate/lib/wrfgate/gate_c.py`, search `C07_`.
 - **Searching every page at once** for a message:
 
 ```bash
