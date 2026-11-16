@@ -1,0 +1,35 @@
+<svg viewBox="0 0 900 400" role="img" aria-label="Six commands carry a fire from its record to a checked run; each passes through a gate">
+<defs><marker id="gf-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker>
+<marker id="gf-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah-blue"/></marker></defs>
+<text x="20" y="28" class="t-title">Each command does one step and runs the gate for it; the next command refuses until that gate passes</text>
+<g>
+<rect x="20" y="52" width="150" height="62" rx="10" class="box-strong"/><text x="95" y="78" text-anchor="middle" class="t-mono">wrf-new-fire</text><text x="95" y="98" text-anchor="middle" class="t-small">the fire's fixed facts</text>
+<rect x="196" y="52" width="150" height="62" rx="10" class="box-strong"/><text x="271" y="78" text-anchor="middle" class="t-mono">wrf-add-inputs</text><text x="271" y="98" text-anchor="middle" class="t-small">copy, hash, lock</text>
+<rect x="372" y="52" width="150" height="62" rx="10" class="box-strong"/><text x="447" y="78" text-anchor="middle" class="t-mono">wrf-gate C</text><text x="447" y="98" text-anchor="middle" class="t-small">real.exe job</text>
+<rect x="548" y="52" width="150" height="62" rx="10" class="box-strong"/><text x="623" y="78" text-anchor="middle" class="t-mono">wrf-gate D</text><text x="623" y="98" text-anchor="middle" class="t-small">2-minute wrf.exe job</text>
+<rect x="724" y="52" width="156" height="62" rx="10" class="box-acc"/><text x="802" y="78" text-anchor="middle" class="t-mono">wrf-submit</text><text x="802" y="98" text-anchor="middle" class="t-small">the real run</text>
+</g>
+<g class="ln" marker-end="url(#gf-a)"><path d="M170 83H194"/><path d="M346 83H370"/><path d="M522 83H546"/><path d="M698 83H722"/></g>
+<g class="ln-dash"><path d="M95 114V150"/><path d="M271 114V150"/><path d="M447 114V150"/><path d="M623 114V150"/><path d="M802 114V150"/></g>
+<g>
+<rect x="20" y="150" width="150" height="150" rx="10" class="box-file"/>
+<text x="34" y="174" class="t-name">fire.yaml</text>
+<text x="34" y="196" class="t-small">window start and end</text><text x="34" y="214" class="t-small">ignition time and place</text><text x="34" y="232" class="t-small">fire domain</text><text x="34" y="250" class="t-small">fuel reference layer</text><text x="34" y="276" class="t-small">read-only; replaced only</text><text x="34" y="292" class="t-small">with --replace</text>
+<rect x="196" y="150" width="150" height="150" rx="10" class="box-blue"/>
+<text x="210" y="174" class="t-name t-blue">Gate A · Gate B</text>
+<text x="210" y="196" class="t-small">A: times, grid, NaN,</text><text x="210" y="212" class="t-small">fuel codes, terrain,</text><text x="210" y="228" class="t-small">ignition, rank cap</text>
+<text x="210" y="252" class="t-small">B: fuel vs LANDFIRE</text><text x="210" y="268" class="t-small">by exact geometry,</text><text x="210" y="284" class="t-small">release scan, terrain</text>
+<rect x="372" y="150" width="150" height="150" rx="10" class="box-blue"/>
+<text x="386" y="174" class="t-name t-blue">Gate C</text>
+<text x="386" y="196" class="t-small">real.exe SUCCESS</text><text x="386" y="212" class="t-small">geometry = inputs</text><text x="386" y="228" class="t-small">boundaries to the end</text><text x="386" y="244" class="t-small">ifire, fuel, terrain</text><text x="386" y="260" class="t-small">ignition = record</text><text x="386" y="276" class="t-small">code 204 → 54 cats</text><text x="386" y="292" class="t-small">FMC_G if fmc_read 0</text>
+<rect x="548" y="150" width="150" height="150" rx="10" class="box-blue"/>
+<text x="562" y="174" class="t-name t-blue">Gate D</text>
+<text x="562" y="196" class="t-small">wrf.exe SUCCESS</text><text x="562" y="212" class="t-small">no CFL, NaN or crash</text><text x="562" y="228" class="t-small">in any rank's log</text><text x="562" y="252" class="t-small">seconds per step,</text><text x="562" y="268" class="t-small">for sizing the run</text>
+<rect x="724" y="150" width="156" height="150" rx="10" class="box-green"/>
+<text x="738" y="174" class="t-name t-green">Gate E (at the end)</text>
+<text x="738" y="196" class="t-small">ending: finished,</text><text x="738" y="212" class="t-small">edge, crash, killed</text><text x="738" y="228" class="t-small">outputs finite</text><text x="738" y="244" class="t-small">ignition time ±10 min</text><text x="738" y="260" class="t-small">ignition place ±1 km</text><text x="738" y="276" class="t-small">burnt area, end</text>
+</g>
+<rect x="20" y="326" width="860" height="56" rx="10" class="band"/>
+<text x="36" y="350" class="t-name">ledger/commands.jsonl</text>
+<text x="36" y="370" class="t-small">every command writes a line before and after; every gate and job writes its result; each line holds the hash of the line before, so an edit breaks the chain</text>
+</svg>

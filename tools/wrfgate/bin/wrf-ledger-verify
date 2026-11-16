@@ -1,0 +1,4 @@
+#!/bin/bash
+# Check that no line of the ledger was edited or removed (each line carries the hash of the one before).
+source "$(dirname "$(readlink -f "$0")")/../lib/wrfgate.sh"
+python3 -m wrfgate.ledger verify

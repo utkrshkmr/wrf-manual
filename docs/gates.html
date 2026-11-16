@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The gating system · WRF-Fire Manual</title>
+<meta name="description" content="Eight small commands carry a fire from its record to a checked run. Each one does one step, runs the checks for it, and writes what it did to a shared ledger. Nothing reaches the queue until the cheap checks have passed, and nothing is ever deleted.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</head>
+<body>
+<div class="topbar"><a href="index.html">WRF-Fire Manual</a><button type="button" onclick="document.querySelector('.side').classList.add('open')">Menu</button></div>
+<div class="layout">
+<nav class="side" aria-label="Site">
+<button type="button" class="close" onclick="this.parentNode.classList.remove('open')">Close</button>
+<a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
+<h4>Start</h4><ol>
+<li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
+</ol>
+<h4>The manual: WPS to WRF-Fire</h4><ol>
+<li><a href="env.html"><span class="n">0</span><span>Phase 0 · Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">1</span><span>Phase 1 · Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">2</span><span>Phase 2 · Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">3</span><span>Phase 3 · Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">4</span><span>Phase 4 · Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">5</span><span>Phase 5 · real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">6</span><span>Phase 6 · The fire model</span></a></li>
+<li><a href="moisture.html"><span class="n">7</span><span>Fuel moisture in depth</span></a></li>
+<li><a href="extend.html"><span class="n">8</span><span>Other research inputs</span></a></li>
+<li><a href="run.html"><span class="n">9</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">10</span><span>Reference and failures</span></a></li>
+</ol>
+<h4>Running it safely</h4><ol>
+<li><a href="gates.html" class="on"><span class="n">11</span><span>The gating system</span></a></li>
+<li><a href="example.html"><span class="n">12</span><span>Worked example: every fire</span></a></li>
+</ol>
+<button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
+</nav>
+<main>
+<article class="page">
+<p class="kicker">Running it safely</p>
+<h1>The gating system</h1>
+<p class="lead">Eight small commands carry a fire from its record to a checked run. Each one does one step, runs the checks for it, and writes what it did to a shared ledger. Nothing reaches the queue until the cheap checks have passed, and nothing is ever deleted.</p>
+<nav class="toc"><b>On this page</b><ul><li><a href="#why-gates">Why gates</a></li><li><a href="#setting-it-up">Setting it up</a></li><li><a href="#your-profile">Your profile</a></li><li><a href="#the-folders">The folders</a></li><li><a href="#the-commands">The commands</a></li><li><a href="#what-each-gate-checks">What each gate checks</a></li><li><a href="#the-ledger">The ledger</a></li><li><a href="#files">Files</a></li></ul></nav>
+<h2 id="why-gates">Why gates</h2>
+<p>A WRF-Fire run can wait a day in the queue and then fail in its first minute: a namelist typo, a fuel map from the wrong place, an ignition outside the fire domain. Each of those can be caught in seconds or minutes, before the expensive job is submitted. The gating system puts a check after every step of the <a href="index.html">chain</a>, and makes each command refuse to start until the check before it has passed.</p>
+<figure><div class="fig"><svg viewBox="0 0 900 400" role="img" aria-label="Six commands carry a fire from its record to a checked run; each passes through a gate">
+<defs><marker id="gf-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker>
+<marker id="gf-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah-blue"/></marker></defs>
+<text x="20" y="28" class="t-title">Each command does one step and runs the gate for it; the next command refuses until that gate passes</text>
+<g>
+<rect x="20" y="52" width="150" height="62" rx="10" class="box-strong"/><text x="95" y="78" text-anchor="middle" class="t-mono">wrf-new-fire</text><text x="95" y="98" text-anchor="middle" class="t-small">the fire's fixed facts</text>
+<rect x="196" y="52" width="150" height="62" rx="10" class="box-strong"/><text x="271" y="78" text-anchor="middle" class="t-mono">wrf-add-inputs</text><text x="271" y="98" text-anchor="middle" class="t-small">copy, hash, lock</text>
+<rect x="372" y="52" width="150" height="62" rx="10" class="box-strong"/><text x="447" y="78" text-anchor="middle" class="t-mono">wrf-gate C</text><text x="447" y="98" text-anchor="middle" class="t-small">real.exe job</text>
+<rect x="548" y="52" width="150" height="62" rx="10" class="box-strong"/><text x="623" y="78" text-anchor="middle" class="t-mono">wrf-gate D</text><text x="623" y="98" text-anchor="middle" class="t-small">2-minute wrf.exe job</text>
+<rect x="724" y="52" width="156" height="62" rx="10" class="box-acc"/><text x="802" y="78" text-anchor="middle" class="t-mono">wrf-submit</text><text x="802" y="98" text-anchor="middle" class="t-small">the real run</text>
+</g>
+<g class="ln" marker-end="url(#gf-a)"><path d="M170 83H194"/><path d="M346 83H370"/><path d="M522 83H546"/><path d="M698 83H722"/></g>
+<g class="ln-dash"><path d="M95 114V150"/><path d="M271 114V150"/><path d="M447 114V150"/><path d="M623 114V150"/><path d="M802 114V150"/></g>
+<g>
+<rect x="20" y="150" width="150" height="150" rx="10" class="box-file"/>
+<text x="34" y="174" class="t-name">fire.yaml</text>
+<text x="34" y="196" class="t-small">window start and end</text><text x="34" y="214" class="t-small">ignition time and place</text><text x="34" y="232" class="t-small">fire domain</text><text x="34" y="250" class="t-small">fuel reference layer</text><text x="34" y="276" class="t-small">read-only; replaced only</text><text x="34" y="292" class="t-small">with --replace</text>
+<rect x="196" y="150" width="150" height="150" rx="10" class="box-blue"/>
+<text x="210" y="174" class="t-name t-blue">Gate A · Gate B</text>
+<text x="210" y="196" class="t-small">A: times, grid, NaN,</text><text x="210" y="212" class="t-small">fuel codes, terrain,</text><text x="210" y="228" class="t-small">ignition, rank cap</text>
+<text x="210" y="252" class="t-small">B: fuel vs LANDFIRE</text><text x="210" y="268" class="t-small">by exact geometry,</text><text x="210" y="284" class="t-small">release scan, terrain</text>
+<rect x="372" y="150" width="150" height="150" rx="10" class="box-blue"/>
+<text x="386" y="174" class="t-name t-blue">Gate C</text>
+<text x="386" y="196" class="t-small">real.exe SUCCESS</text><text x="386" y="212" class="t-small">geometry = inputs</text><text x="386" y="228" class="t-small">boundaries to the end</text><text x="386" y="244" class="t-small">ifire, fuel, terrain</text><text x="386" y="260" class="t-small">ignition = record</text><text x="386" y="276" class="t-small">code 204 → 54 cats</text><text x="386" y="292" class="t-small">FMC_G if fmc_read 0</text>
+<rect x="548" y="150" width="150" height="150" rx="10" class="box-blue"/>
+<text x="562" y="174" class="t-name t-blue">Gate D</text>
+<text x="562" y="196" class="t-small">wrf.exe SUCCESS</text><text x="562" y="212" class="t-small">no CFL, NaN or crash</text><text x="562" y="228" class="t-small">in any rank's log</text><text x="562" y="252" class="t-small">seconds per step,</text><text x="562" y="268" class="t-small">for sizing the run</text>
+<rect x="724" y="150" width="156" height="150" rx="10" class="box-green"/>
+<text x="738" y="174" class="t-name t-green">Gate E (at the end)</text>
+<text x="738" y="196" class="t-small">ending: finished,</text><text x="738" y="212" class="t-small">edge, crash, killed</text><text x="738" y="228" class="t-small">outputs finite</text><text x="738" y="244" class="t-small">ignition time ±10 min</text><text x="738" y="260" class="t-small">ignition place ±1 km</text><text x="738" y="276" class="t-small">burnt area, end</text>
+</g>
+<rect x="20" y="326" width="860" height="56" rx="10" class="band"/>
+<text x="36" y="350" class="t-name">ledger/commands.jsonl</text>
+<text x="36" y="370" class="t-small">every command writes a line before and after; every gate and job writes its result; each line holds the hash of the line before, so an edit breaks the chain</text>
+</svg></div><figcaption><strong>The six steps of one run.</strong> The record and the input version are made once per fire; gates C and D are run once per set of namelists; <code>wrf-submit</code> refuses unless gate D passed for exactly those namelists on exactly that input version.</figcaption></figure>
+
+<p>It also answers, for every file in the shared folder, who made it, when, from what, and whether it was checked. That is what the manifests and the ledger are for.</p>
+<h2 id="setting-it-up">Setting it up</h2>
+<p>Once, by whoever installs a release (from a clone of this site's repository):</p>
+<pre><code class="language-bash">git clone https://github.com/utkrshkmr/wrf-manual.git /projects/academic/negarkhodoe/utkarshk/wrf-manual
+bash /projects/academic/negarkhodoe/utkarshk/wrf-manual/tools/wrfgate/install.sh
+</code></pre>
+<p><code>install.sh</code> copies the code to <code>wrf/pipeline/releases/&lt;version&gt;/</code>, makes it read-only, and points <code>wrf/pipeline/current</code> at it. A newer release is installed the same way; the old one stays, so jobs already in the queue keep the code they were submitted with.</p>
+<p>Once per person:</p>
+<pre><code class="language-bash">echo 'source /projects/academic/negarkhodoe/wrf/pipeline/current/setup.sh' &gt;&gt; ~/.bashrc
+source /projects/academic/negarkhodoe/wrf/pipeline/current/setup.sh
+wrf-me --name &quot;Utkarsh Kumar&quot; --email ukumar@buffalo.edu --mail END,FAIL
+</code></pre>
+<p><code>setup.sh</code> puts the commands on your <code>PATH</code> and adds a shell hook that logs your commands that touch the shared folder. <code>wrf-me</code> writes your profile.</p>
+<h2 id="your-profile">Your profile</h2>
+<p>Every runner has a folder <code>wrf/people/&lt;username&gt;/</code> with a <code>profile.conf</code> in it:</p>
+<pre><code class="language-text"># wrfgate profile for ukumar. Edit with wrf-me, not by hand.
+NAME=Utkarsh Kumar
+EMAIL=ukumar@buffalo.edu
+MAIL_TYPE=END,FAIL
+UPDATED=2026-11-16T10:02:11-05:00
+</code></pre>
+<ul>
+<li><strong>Every record, input version and run is signed with it.</strong> Manifests carry a <code>by:</code> line (<code>Utkarsh Kumar &lt;ukumar@buffalo.edu&gt; (ukumar)</code>), the ledger carries your name on every line, and <code>wrf-status</code> shows who started each run.</li>
+<li><strong>Slurm emails you.</strong> Every job the commands submit gets <code>--mail-user</code> and <code>--mail-type</code> from your profile. <code>MAIL_TYPE</code> takes Slurm's own types joined by commas (<code>BEGIN</code>, <code>END</code>, <code>FAIL</code>, <code>TIME_LIMIT_80</code>, <code>ALL</code>), or <code>NONE</code> to switch emails off.</li>
+<li><strong>No profile, no work.</strong> Every command that creates something refuses until you have run <code>wrf-me</code>. Reading (<code>wrf-status</code>, <code>wrf-me</code> with no options) works without one.</li>
+<li><strong>Changing it</strong> is <code>wrf-me</code> again with the new values; the old file is kept beside it with a timestamp.</li>
+<li><strong><code>people/&lt;username&gt;/work/</code></strong> is yours for drafts: namelists you are still editing, notes, test scripts. Nothing in the gating system reads it until you point a command at it.</li>
+</ul>
+<h2 id="the-folders">The folders</h2>
+<pre><code class="language-text">/projects/academic/negarkhodoe/wrf/
+  pipeline/
+    current -&gt; releases/2026.11.16-a1b2c3d     the code everyone runs
+    releases/&lt;version&gt;/                        read-only: bin/, lib/, setup.sh, MANIFEST.txt
+  people/&lt;username&gt;/                           profile.conf, work/
+  static/                                      LANDFIRE, elevation, geography; read-only
+  tables/                                      GEOGRID.TBL, METGRID.TBL, Vtables
+  fires/&lt;FIRE&gt;/
+    fire.yaml                                  the record; read-only
+    inputs/&lt;YYYYmmdd&gt;_&lt;hash8&gt;/                 one locked folder per input upload
+    inputs/&lt;YYYYmmdd&gt;_&lt;hash8&gt;.gates/           gate A and B results for it
+    inputs/current -&gt; &lt;version&gt;                the version runs use by default
+    specs/&lt;name&gt;/                              namelist.input, namelist.fire
+    runs/&lt;stamp&gt;_gateC_&lt;spec&gt;/                 real.exe and gate C
+    runs/&lt;stamp&gt;_gateD_&lt;spec&gt;/                 the smoke run and gate D
+    runs/&lt;stamp&gt;_&lt;spec&gt;/                       production runs and gate E
+  setaside/&lt;YYYY-MM&gt;/                          anything moved out of the way, with a NOTE.txt
+  ledger/
+    commands.jsonl                             hash-chained command and event log
+    shell/&lt;username&gt;.log                       shell history from setup.sh's hook
+</code></pre>
+<figure><div class="fig"><svg viewBox="0 0 900 420" role="img" aria-label="One fire's folder: record, locked input versions with their gate results, specs, and runs that link back to what they used">
+<defs><marker id="gl-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah-blue"/></marker></defs>
+<text x="20" y="28" class="t-title">Inside fires/CANYON_2025: every run points back at the exact inputs and namelists it used</text>
+<rect x="20" y="50" width="230" height="52" rx="8" class="box-file"/><text x="34" y="72" class="t-mono">fire.yaml</text><text x="34" y="90" class="t-small">the record, read-only</text>
+<rect x="20" y="120" width="230" height="150" rx="8" class="box-strong"/><text x="34" y="142" class="t-mono">inputs/</text>
+<rect x="34" y="154" width="202" height="46" rx="6" class="box-blue"/><text x="46" y="174" class="t-mono">20261116_7f3e19a2/</text><text x="46" y="190" class="t-small">met_em*, MANIFEST.txt, locked</text>
+<rect x="34" y="208" width="202" height="26" rx="6" class="box"/><text x="46" y="226" class="t-mono">20261116_7f3e19a2.gates/</text>
+<text x="46" y="256" class="t-mono">current → 20261116_7f3e19a2</text>
+<rect x="20" y="290" width="230" height="110" rx="8" class="box-strong"/><text x="34" y="312" class="t-mono">specs/</text>
+<rect x="34" y="324" width="202" height="62" rx="6" class="box"/><text x="46" y="344" class="t-mono">campaign/</text><text x="46" y="362" class="t-small">namelist.input</text><text x="46" y="378" class="t-small">namelist.fire</text>
+<rect x="330" y="50" width="550" height="350" rx="8" class="box-strong"/><text x="344" y="72" class="t-mono">runs/</text>
+<rect x="344" y="86" width="520" height="80" rx="6" class="box-blue"/><text x="358" y="108" class="t-mono">20261117_101500_gateC_campaign/</text>
+<text x="358" y="128" class="t-small">met_em links → the input version · namelists copied from the spec</text><text x="358" y="146" class="t-small">wrfinput_d0*, wrfbdy_d01 written by real.exe · gate_C.json · MANIFEST.txt (spec_hash)</text>
+<rect x="344" y="184" width="520" height="80" rx="6" class="box-blue"/><text x="358" y="206" class="t-mono">20261117_113000_gateD_campaign/</text>
+<text x="358" y="226" class="t-small">links to gate C's wrfinput and wrfbdy · namelist cut to 2 minutes, no output</text><text x="358" y="244" class="t-small">rsl.* logs · gate_D.json · MANIFEST.txt (same spec_hash, from_gate_c)</text>
+<rect x="344" y="282" width="520" height="104" rx="6" class="box-acc"/><text x="358" y="304" class="t-mono">20261117_120200_campaign/</text>
+<text x="358" y="324" class="t-small">links to gate C's wrfinput and wrfbdy · the spec's own namelists</text><text x="358" y="342" class="t-small">run.sbatch · JOBID · wrfout_* · rsl.* · gate_E.json</text><text x="358" y="360" class="t-small">MANIFEST.txt: inputs, spec_hash, gate C and D folders, nodes, ranks, time, release</text>
+<g class="ln-blue" marker-end="url(#gl-a)"><path d="M344 126C300 126 280 170 238 176"/><path d="M604 184V168"/><path d="M864 330C892 330 892 126 866 126"/></g>
+<text x="270" y="118" class="t-small t-blue">links</text>
+</svg></div><figcaption><strong>One fire's folder.</strong> Input versions are locked and named by the hash of their files. Gate D and production runs link to the <code>wrfinput</code> and <code>wrfbdy</code> files gate C checked, so what runs is exactly what was checked.</figcaption></figure>
+
+<p>Rules the commands keep:</p>
+<ul>
+<li><strong>Group-owned, group-writable folders</strong> (set-group-ID on <code>fires/</code>, <code>people/</code>, <code>ledger/</code>, <code>setaside/</code>), so a second person can add a run to a fire the first one created.</li>
+<li><strong>Locked means locked.</strong> Records, input versions, specs copied by the arrange job and releases are read-only. Changing one means making a new one: <code>wrf-new-fire --replace</code>, a new <code>wrf-add-inputs</code>, a new spec folder, a new release.</li>
+<li><strong>Nothing is deleted.</strong> <code>wrf-setaside PATH "reason"</code> moves a run, an input version or a spec into <code>setaside/&lt;month&gt;/</code> with a <code>NOTE.txt</code> saying where it came from, who moved it, why, and the command that moves it back. It refuses anything still in use: the current input version, an input version a run used, a gate C folder that a later run links to, and runs whose job is still queued or running. The pipeline, the ledger and <code>setaside/</code> itself are never moved.</li>
+</ul>
+<h2 id="the-commands">The commands</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Command</th>
+<th>What it does</th>
+<th>Refuses when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>wrf-me [--name --email --mail]</code></td>
+<td>Shows or writes your profile</td>
+<td>the email is not an address</td>
+</tr>
+<tr>
+<td><code>wrf-new-fire FIRE --from-namelist NL</code></td>
+<td>Writes <code>fires/FIRE/fire.yaml</code> from a namelist that was used for the fire (or from <code>--start --end --ignition --lat --lon</code>)</td>
+<td>a record exists (use <code>--replace</code>, which keeps the old one)</td>
+</tr>
+<tr>
+<td><code>wrf-add-inputs FIRE DIR [--note]</code></td>
+<td>Copies <code>met_em*</code> (and <code>namelist.wps</code>, <code>geo_em*</code>, logs) into a new version folder, writes <code>MANIFEST.txt</code> with a SHA-256 per file, runs gates A and B, locks it; moves <code>current</code> only if neither gate failed</td>
+<td>no record; identical files already registered</td>
+</tr>
+<tr>
+<td><code>wrf-gate A\|B FIRE [VERSION]</code></td>
+<td>Reruns gate A or B on a version</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>wrf-gate C FIRE SPEC_DIR [--inputs V]</code></td>
+<td>New run folder, links the inputs and WRF's tables, submits real.exe on one node, then gate C</td>
+<td>gate A failed on that version</td>
+</tr>
+<tr>
+<td><code>wrf-gate D FIRE GATE_C_DIR [--minutes 2] [--ranks N]</code></td>
+<td>Two simulated minutes of wrf.exe on one node, no output, then gate D</td>
+<td>gate C did not pass</td>
+</tr>
+<tr>
+<td><code>wrf-submit FIRE SPEC_DIR --nodes --ranks --time [--constraint] [--name]</code></td>
+<td>The production run: links gate C's files, submits wrf.exe, runs gate E when the job ends</td>
+<td>no passed gate D for the same namelists and inputs; ranks over the cap; walltime over 72 h; the same namelists already queued</td>
+</tr>
+<tr>
+<td><code>wrf-gate E FIRE RUN_DIR</code></td>
+<td>Reruns gate E, for a run that was killed before its own gate E</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>wrf-status [FIRE]</code></td>
+<td>All fires, or one fire's record, versions, gates and runs with who started them and the job state</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>wrf-setaside PATH "reason"</code></td>
+<td>Moves something into <code>setaside/</code> instead of deleting it</td>
+<td>it is in use (see above)</td>
+</tr>
+<tr>
+<td><code>wrf-ledger-verify</code></td>
+<td>Checks that no ledger line was edited or removed</td>
+<td>—</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Same namelists</strong> means the same SHA-256 of <code>namelist.input</code> plus <code>namelist.fire</code> (<code>spec_hash</code> in each manifest). Edit one character and gates C and D have to be run again; that is the point.</p>
+<h2 id="what-each-gate-checks">What each gate checks</h2>
+<p>Each check ends <code>PASS</code>, <code>WARN</code>, <code>FAIL</code> or <code>INFO</code>. A gate's result is its worst check. <code>FAIL</code> blocks the next command; <code>WARN</code> is printed, logged and lets you go on. Every gate writes <code>gate_X.json</code> (with the facts it measured) and appends to a readable <code>GATES.txt</code> beside it.</p>
+<h3 id="gate-a-the-inputs-make-sense-on-their-own">Gate A: the inputs make sense on their own</h3>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Fails when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A01–A05 files, domains, times</td>
+<td>missing domains, uneven intervals, domains with different times, or a window that does not cover the record's start to end</td>
+</tr>
+<tr>
+<td>A06–A09 geometry</td>
+<td>grid changes between files, required fields missing, any NaN or Inf, a nest that breaks the parent-ratio rule</td>
+</tr>
+<tr>
+<td>A10 rank cap</td>
+<td>(info) <code>⌊nx/10⌋ × ⌊ny/10⌋</code> on the tightest domain; later steps refuse more ranks</td>
+</tr>
+<tr>
+<td>A11–A13 fire fields</td>
+<td>no domain with a fire mesh, <code>NFUEL_CAT</code> not filled; <code>ZSF</code> not filled is a warning</td>
+</tr>
+<tr>
+<td>A14–A16 fuel codes</td>
+<td>any code that is not Anderson 1–13 or one of the 40 Scott &amp; Burgan codes plus 91–99; under 5% burnable warns; code 204 warns (it needs <code>nfuelcats = 54</code>)</td>
+</tr>
+<tr>
+<td>A17–A18 terrain</td>
+<td><code>ZSF</code> outside −100 to 4,500 m; averaged to the atmosphere grid, more than 50 m from <code>HGT_M</code> on average warns</td>
+</tr>
+<tr>
+<td>A19–A21 ignition</td>
+<td>ignition outside the fire domain, closer than <code>min_edge_km</code> (default 2 km) to its edge, or on an unburnable cell</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="gate-b-the-inputs-match-the-reference-maps">Gate B: the inputs match the reference maps</h3>
+<p>Gate B finds the LANDFIRE pixel under every fire-mesh cell by exact NAD83 Albers geometry (no geogrid involved) and compares codes.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B02 fuel agreement</td>
+<td><code>PASS</code> ≥ 98% of cells, <code>WARN</code> 90–98%, <code>FAIL</code> &lt; 90%</td>
+</tr>
+<tr>
+<td>B03–B04</td>
+<td>the commonest mismatches, and how many come in mirrored pairs (a→b and b→a): many mirrored pairs mean a small shift, few mean different data</td>
+</tr>
+<tr>
+<td>B05–B06</td>
+<td>reference coverage, burnable share against the reference</td>
+</tr>
+<tr>
+<td>B07 release scan</td>
+<td>agreement with every release in <code>static/landfire/</code>: which LANDFIRE year the inputs were made from</td>
+</tr>
+<tr>
+<td>B08</td>
+<td>reference fuel at the ignition point is burnable</td>
+</tr>
+<tr>
+<td>B09 terrain</td>
+<td><code>ZSF</code> against the elevation layer; RMSE over 15 m warns</td>
+</tr>
+</tbody>
+</table></div>
+<p>The record's <code>fuel_layer</code> picks the reference (default <code>static/landfire/LF2024/FBFM40</code>). The thresholds are options (<code>--pass-pct</code>, <code>--fail-pct</code>) and every value goes into the JSON, so they can be tightened later without losing what was measured.</p>
+<h3 id="gate-c-real-exe-and-the-namelists">Gate C: real.exe and the namelists</h3>
+<p>real.exe must print <code>SUCCESS</code>; <code>max_dom</code>, grid sizes, <code>dx</code>, the fire ratio and the vertical levels must match the inputs; the initial time must be the record's start and the boundaries must reach its end; the fire domain must have <code>ifire = 2</code>, <code>fire_fuel_read = -1</code> and a terrain source; the ignition time and place must be the record's; code 204 needs <code>nfuelcats ≥ 54</code>; <code>fire_fmc_read = 0</code> needs a non-zero <code>FMC_G</code>.</p>
+<h3 id="gate-d-wrf-exe-starts-cleanly">Gate D: wrf.exe starts cleanly</h3>
+<p>wrf.exe must print <code>SUCCESS COMPLETE WRF</code> after two simulated minutes, and no rank's <code>rsl.error</code> may mention CFL, NaN, a segmentation fault or a fatal error. It also measures seconds per coarse step. The fire usually has not ignited in two minutes, so this rate is a floor; <code>--minutes</code> can run it past ignition.</p>
+<h3 id="gate-e-how-the-run-ended">Gate E: how the run ended</h3>
+<p>The ending is classed as <strong>finished</strong>, <strong>domain edge</strong> (the fire reached the fire domain's boundary, which WRF reports as a stop), <strong>crash</strong> or <strong>killed / still running</strong>. Then: history files for every domain, finite values, the first ignited cell within 10 minutes and 1 km of the record, the burnt area at the last output, whether the burnt area reaches within 8 cells of the edge, and whether the output reaches the record's end.</p>
+<h2 id="the-ledger">The ledger</h2>
+<p>Every command writes one JSON line when it starts and one when it ends (exit code, seconds), and gates and jobs add their own events: <code>inputs_added</code>, <code>gate_C</code>, <code>submitted</code>, <code>run_start</code>, <code>run_end</code>. Each line holds the user, the profile name, host, Slurm job ID, release, time, and the SHA-256 of the line before it, so editing or removing any line breaks the chain and <code>wrf-ledger-verify</code> reports where.</p>
+<pre><code class="language-text">{&quot;t&quot;: &quot;2026-11-17T12:02:00-05:00&quot;, &quot;user&quot;: &quot;ukumar&quot;, &quot;person&quot;: &quot;Utkarsh Kumar&quot;, &quot;event&quot;: &quot;submitted&quot;,
+ &quot;fire&quot;: &quot;CANYON_2025&quot;, &quot;job&quot;: &quot;26901234&quot;, &quot;spec_hash&quot;: &quot;e387ec79aa12&quot;, &quot;inputs&quot;: &quot;20261117_7f3e19a2&quot;,
+ &quot;nodes&quot;: &quot;1&quot;, &quot;ranks&quot;: &quot;25&quot;, &quot;time&quot;: &quot;48:00:00&quot;, &quot;release&quot;: &quot;2026.11.16-a1b2c3d&quot;, &quot;prev&quot;: &quot;…&quot;, &quot;hash&quot;: &quot;…&quot;}
+</code></pre>
+<p>The honest limit: anyone can still call <code>sbatch</code> by hand. Such a run has no manifest, so <code>wrf-status</code> does not list it and <code>wrf-submit</code> will not build on it; the shell hook still records the command.</p>
+<h2 id="files">Files</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>File</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>install.sh</code></td>
+<td>installs a read-only release and points <code>current</code> at it</td>
+</tr>
+<tr>
+<td><code>setup.sh</code></td>
+<td><code>PATH</code>, <code>WRF_ROOT</code>, the shell-history hook</td>
+</tr>
+<tr>
+<td><code>arrange_ccr.sbatch</code></td>
+<td>one-off job that copies every fire we have into this layout (see the <a href="example.html">worked example</a>)</td>
+</tr>
+<tr>
+<td><code>bin/wrf-*</code></td>
+<td>the commands above</td>
+</tr>
+<tr>
+<td><code>lib/wrfgate.sh</code></td>
+<td>shared shell functions: modules, profile, ledger, Slurm mail lines</td>
+</tr>
+<tr>
+<td><code>lib/wrfgate/common.py</code></td>
+<td>records, namelist reading and editing, the ledger, the gate result format</td>
+</tr>
+<tr>
+<td><code>lib/wrfgate/geo.py</code></td>
+<td>exact Albers projection and reading WPS tiles</td>
+</tr>
+<tr>
+<td><code>lib/wrfgate/metem.py</code></td>
+<td>reading <code>met_em</code> files and building the fire mesh's coordinates</td>
+</tr>
+<tr>
+<td><code>lib/wrfgate/gate_a.py</code> … <code>gate_e.py</code></td>
+<td>the five gates; each also runs on its own with <code>python3 -m wrfgate.gate_X --help</code></td>
+</tr>
+<tr>
+<td><code>lib/wrfgate/record.py</code>, <code>ledger.py</code></td>
+<td>the record and the ledger from the command line</td>
+</tr>
+</tbody>
+</table></div>
+<p>All of it is in the site's repository under <a href="https://github.com/utkrshkmr/wrf-manual/tree/main/tools/wrfgate"><code>tools/wrfgate/</code></a>.</p>
+<nav class="pager"><a class="prev" href="reference.html"><small>Previous</small>Reference and failures</a><a class="next" href="example.html"><small>Next</small>Worked example: every fire</a></nav>
+<footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/gates.md</code>.</footer>
+</article>
+</main>
+</div>
+<script>
+function toggleTheme(){var d=document.documentElement;var cur=d.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var nx=cur==='dark'?'light':'dark';d.setAttribute('data-theme',nx);try{localStorage.setItem('theme',nx);}catch(e){}}
+</script>
+</body>
+</html>

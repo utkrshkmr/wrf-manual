@@ -305,3 +305,4 @@ footer.foot { margin-top: 36px; font-size: 13px; color: var(--ink-3); }
 }
 .formula span { margin-left: 34px; color: var(--ink-2); }
 @media (max-width: 960px) { .formula span { display: block; margin: 6px 0 0; } }
+:not(pre) > code { overflow-wrap: anywhere; }

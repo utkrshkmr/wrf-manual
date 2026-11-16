@@ -34,6 +34,10 @@ NAV = [
         ("run", "Running it on Slurm"),
         ("reference", "Reference and failures"),
     ]),
+    ("Running it safely", [
+        ("gates", "The gating system"),
+        ("example", "Worked example: every fire"),
+    ]),
     ("Our work on CCR", [
         ("setup", "WPS on CCR: setup so far"),
         ("fuelmatch", "The fuel-map mismatch"),
@@ -45,6 +49,11 @@ NAV = [
         ("design", "The workflow we designed"),
     ]),
 ]
+
+# Pages kept in src/ but not published for now (the "Our work on CCR" section).
+HIDDEN = {"setup", "fuelmatch", "campaign", "scaling", "costmodel", "queue", "lessons", "design"}
+NAV = [(g, [(s, t) for s, t in items if s not in HIDDEN]) for g, items in NAV]
+NAV = [(g, items) for g, items in NAV if items]
 
 FLAT = [slug for _, items in NAV for slug, _ in items]
 TITLES = {slug: t for _, items in NAV for slug, t in items}
@@ -142,10 +151,13 @@ def build():
     OUT.mkdir(exist_ok=True)
     shutil.copy(ROOT / "static" / "style.css", OUT / "style.css")
     (OUT / ".nojekyll").write_text("")
+    for h in HIDDEN:
+        (OUT / f"{h}.html").unlink(missing_ok=True)
     for slug in FLAT:
         meta, text = parse(SRC / f"{slug}.md")
         text = figures(text)
         body = markdown.markdown(text, extensions=["tables", "fenced_code", "md_in_html", "attr_list"])
+        body = re.sub(r'<a href="(%s)\.html[^"]*">(.*?)</a>' % "|".join(sorted(HIDDEN)), r"\2", body)
         body = re.sub(r"<table>", '<div class="tbl"><table>', body)
         body = body.replace("</table>", "</table></div>")
         heads = []

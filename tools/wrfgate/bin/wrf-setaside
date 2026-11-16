@@ -1,0 +1,27 @@
+#!/bin/bash
+# Move something out of the way without deleting it:  wrf-setaside PATH "reason"
+# It goes to $WRF_ROOT/setaside/<YYYY-MM>/<stamp>_<name>/ with a NOTE.txt; restore it by moving it back.
+# Refuses input versions that are 'current' or used by a run, and runs whose job is still queued or running.
+source "$(dirname "$(readlink -f "$0")")/../lib/wrfgate.sh"
+[[ $# -eq 2 ]] || wg_die 'usage: wrf-setaside PATH "reason"'
+X=$(readlink -f "$1"); WHY=$2
+[[ -e $X ]] || wg_die "$1 does not exist"
+[[ $X == "$WRF_ROOT"/* ]] || wg_die "only things under $WRF_ROOT can be set aside"
+[[ $X == "$WRF_ROOT"/pipeline* || $X == "$WRF_ROOT"/ledger* || $X == "$WRF_ROOT"/setaside* ]] && wg_die "the pipeline, the ledger and setaside/ are never moved"
+wg_need_person; wg_start "$X" "$WHY"
+if [[ $X == */inputs/* ]]; then
+  I=$(dirname "$X"); [[ $(readlink -f "$I/current") == "$X" ]] && wg_die "$(basename "$X") is current; point current elsewhere first"
+  grep -l "^inputs: $(basename "$X")$" "$(dirname "$I")"/runs/*/MANIFEST.txt 2>/dev/null | head -1 | grep -q . && wg_die "runs still use $(basename "$X"); set those runs aside first"
+fi
+if [[ $X == */runs/* ]]; then
+  U=$(grep -l -e "^from_gate_c: $X$" -e "^gate_c: $X$" -e "^gate_d: $X$" "$(dirname "$X")"/*/MANIFEST.txt 2>/dev/null | head -1)
+  [[ -n $U ]] && wg_die "$(basename "$(dirname "$U")") links to this folder; set that one aside first"
+fi
+if [[ -f $X/JOBID ]]; then J=$(cat "$X/JOBID"); squeue -h -j "$J" 2>/dev/null | grep -q . && wg_die "job $J is still queued or running"; fi
+D=$WRF_ROOT/setaside/$(date +%Y-%m)/$(wg_stamp)_$(basename "$X"); mkdir -p "$D"
+chmod u+w "$(dirname "$X")" 2>/dev/null
+mv "$X" "$D/" || wg_die "move failed"
+[[ -d ${X}.gates ]] && mv "${X}.gates" "$D/"
+{ echo "from: $X"; echo "by: $(wg_by)"; echo "when: $(date -Is)"; echo "why: $WHY"; echo "restore: mv $D/$(basename "$X") $(dirname "$X")/"; } > "$D/NOTE.txt"
+wg_log event=setaside from="$X" to="$D" why="$WHY"
+echo "set aside in $D"

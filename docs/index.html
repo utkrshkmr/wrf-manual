@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>WRF-Fire, from raw data to a burning fire · WRF-Fire Manual</title>
-<meta name="description" content="A hands-on manual for building and running a WRF-Fire simulation entirely by hand, every input explained, plus a record of what our lab has set up, measured and learnt on UB&#x27;s CCR cluster.">
+<meta name="description" content="A hands-on manual for building, checking and running a WRF-Fire simulation on UB&#x27;s CCR cluster, with every input explained and a gating system that checks each step before it costs queue time.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -33,15 +33,9 @@
 <li><a href="run.html"><span class="n">9</span><span>Running it on Slurm</span></a></li>
 <li><a href="reference.html"><span class="n">10</span><span>Reference and failures</span></a></li>
 </ol>
-<h4>Our work on CCR</h4><ol>
-<li><a href="setup.html"><span class="n">11</span><span>WPS on CCR: setup so far</span></a></li>
-<li><a href="fuelmatch.html"><span class="n">12</span><span>The fuel-map mismatch</span></a></li>
-<li><a href="campaign.html"><span class="n">13</span><span>The scaling campaign</span></a></li>
-<li><a href="scaling.html"><span class="n">14</span><span>Scaling and the elbow</span></a></li>
-<li><a href="costmodel.html"><span class="n">15</span><span>Cost model and node formula</span></a></li>
-<li><a href="queue.html"><span class="n">16</span><span>Queue waits and cost</span></a></li>
-<li><a href="lessons.html"><span class="n">17</span><span>What went wrong, what we learnt</span></a></li>
-<li><a href="design.html"><span class="n">18</span><span>The workflow we designed</span></a></li>
+<h4>Running it safely</h4><ol>
+<li><a href="gates.html"><span class="n">11</span><span>The gating system</span></a></li>
+<li><a href="example.html"><span class="n">12</span><span>Worked example: every fire</span></a></li>
 </ol>
 <button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
 </nav>
@@ -49,9 +43,9 @@
 <article class="page">
 <p class="kicker">WRF 4.6 · WPS 4.6 · UB CCR</p>
 <h1>WRF-Fire, from raw data to a burning fire</h1>
-<p class="lead">A hands-on manual for building and running a WRF-Fire simulation entirely by hand, every input explained, plus a record of what our lab has set up, measured and learnt on UB's CCR cluster.</p>
+<p class="lead">A hands-on manual for building, checking and running a WRF-Fire simulation on UB's CCR cluster, with every input explained and a gating system that checks each step before it costs queue time.</p>
 
-<p>A WRF-Fire run is six programs in a row. Each one reads a namelist and a few files, and writes the files the next one reads. Once you know what each file holds and which variable controls it, every research change becomes one of a few kinds of edit: a new map, a new field in an input file, or a new value in a namelist. The manual half of this site walks the chain from start to finish, with Canyon 2025 as the worked example. The second half records our own work on CCR: the setup, a week-long scaling campaign, and the workflow we designed from it.</p>
+<p>A WRF-Fire run is six programs in a row. Each one reads a namelist and a few files, and writes the files the next one reads. Once you know what each file holds and which variable controls it, every research change becomes one of a few kinds of edit: a new map, a new field in an input file, or a new value in a namelist. The manual walks the chain from start to finish, with Canyon 2025 as the worked example, and the gating pages show how each input and run is checked before and after it uses the cluster.</p>
 <figure><div class="fig"><svg viewBox="0 0 960 560" role="img" aria-label="Six programs turn static maps and weather into a coupled fire run">
 <defs><marker id="pl-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah"/></marker></defs>
 <text x="20" y="28" class="t-title">Six programs turn static maps and weather into a coupled fire run</text>
@@ -129,31 +123,16 @@
 <a class="card" href="extend.html"><span class="k">Deep dive</span><h3 id="other-research-inputs">Other research inputs</h3><p>Fuel edits, custom fuel types, observed perimeters, terrain, heat-flux experiments.</p></a>
 </div>
 
-<h2 id="our-work-on-ccr">Our work on CCR</h2>
+<h2 id="running-it-safely">Running it safely</h2>
 <div class="cards" markdown="0">
-<a class="card" href="setup.html"><span class="k">November 2026</span><h3 id="wps-on-ccr">WPS on CCR</h3><p>Verifying CCR's WPS module, staging data, and rebuilding Canyon's inputs ourselves.</p></a>
-<a class="card" href="campaign.html"><span class="k">October 2026</span><h3 id="the-scaling-campaign">The scaling campaign</h3><p>Four fires × three node types, instrumented end to end.</p></a>
-<a class="card" href="scaling.html"><span class="k">Results</span><h3 id="scaling-and-the-elbow">Scaling and the elbow</h3><p>Strong and weak scaling, Amdahl's elbow, why small fires never reach it.</p></a>
-<a class="card" href="costmodel.html"><span class="k">Results</span><h3 id="cost-model-and-node-formula">Cost model and node formula</h3><p>One equation for every machine, and a nine-step sizing rule.</p></a>
-<a class="card" href="queue.html"><span class="k">Results</span><h3 id="queue-waits-and-cost">Queue waits and cost</h3><p>Why the fastest node stopped starting for us, and what a run really costs.</p></a>
-<a class="card" href="lessons.html"><span class="k">Lessons</span><h3 id="what-went-wrong">What went wrong</h3><p>Every incident of the campaign and the rule it produced.</p></a>
-<a class="card" href="design.html"><span class="k">Design</span><h3 id="the-workflow">The workflow</h3><p>A shared folder, five scripts, gates, a ledger and a weekly lookup table.</p></a>
-</div>
-
-<h2 id="key-numbers-so-far">Key numbers so far</h2>
-<div class="stats" markdown="0">
-<div class="stat"><b>25</b><span>usable instrumented runs from 48 planned, Oct 18–25</span></div>
-<div class="stat"><b>1.5–2.1×</b><span>Sapphire Rapids speed per rank over Cascade Lake</span></div>
-<div class="stat"><b>41.8 h</b><span>node formula's walltime for Cranston, against 41.6 h measured</span></div>
-<div class="stat"><b>96 / 97</b><span>fields identical when CCR's WPS rebuilt NCAR's Canyon inputs</span></div>
-<div class="stat"><b>23 h</b><span>median queue wait on Cascade Lake after day two</span></div>
+<a class="card" href="gates.html"><span class="k">Gates</span><h3 id="the-gating-system">The gating system</h3><p>Eight commands, five gates, your profile, the folders and the ledger.</p></a>
+<a class="card" href="example.html"><span class="k">Example</span><h3 id="every-fire-we-have-run">Every fire we have run</h3><p>Eaton first, then Canyon, Cranston, Long and the NCAR fires, command by command.</p></a>
 </div>
 
 <h2 id="how-to-read-this-site">How to read this site</h2>
 <ul>
 <li>Variable names are WRF's and WPS's own, in <code>code</code>. Defaults come from WRF 4.6.0's <code>Registry/registry.fire</code> and the <code>test/em_fire</code> examples.</li>
 <li>Paths are CCR's. The lab's shared folder is <code>/projects/academic/negarkhodoe/wrf/</code>.</li>
-<li>Numbers in the second half are measurements from our runs, with the conditions stated beside them. Where a run did not finish, it is said so.</li>
 <li>To rebuild the site after editing a page in <code>src/</code>, run <code>python3 tools/build.py</code>.</li>
 </ul>
 <nav class="pager"><span></span><a class="next" href="env.html"><small>Next</small>Phase 0 · Environment and data</a></nav>

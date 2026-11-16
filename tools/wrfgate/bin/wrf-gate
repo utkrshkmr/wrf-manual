@@ -1,0 +1,101 @@
+#!/bin/bash
+# Run one gate.
+#   wrf-gate A FIRE [VERSION]                       structure of an input version
+#   wrf-gate B FIRE [VERSION]                       input version against the LANDFIRE / elevation reference
+#   wrf-gate C FIRE SPEC_DIR [--inputs V]           submits real.exe, then checks its output and the namelists
+#   wrf-gate D FIRE GATE_C_RUN_DIR [--minutes 2] [--ranks N] [--constraint X]   submits a smoke run of wrf.exe
+#   wrf-gate E FIRE RUN_DIR                         a finished or stopped run
+source "$(dirname "$(readlink -f "$0")")/../lib/wrfgate.sh"
+[[ $# -ge 2 ]] || { sed -n '2,8p' "$0"; exit 1; }
+GATE=$1; FIRE=$2; shift 2
+REC=$(wg_record "$FIRE") || exit 1; wg_need_person; wg_start "$GATE" "$FIRE" "$@"
+F=$WRF_ROOT/fires/$FIRE
+case $GATE in
+A|B)
+  wg_modules || exit 1
+  V=$(wg_version_dir "$FIRE" "${1:-current}") || exit 1; G=$V.gates; mkdir -p "$G"
+  if [[ $GATE == A ]]; then python3 -m wrfgate.gate_a "$V" --record "$REC" --out "$G"
+  else FUEL=$(wg_rec "$FIRE" fuel_layer); FUEL=${FUEL:-$WRF_ROOT/static/landfire/LF2024/FBFM40}; DEM=$(wg_rec "$FIRE" terrain_layer); DEM=${DEM:-$WRF_ROOT/static/CA_1s}
+    A=(--fuel "$FUEL" --scan "$WRF_ROOT/static/landfire" --record "$REC" --out "$G"); [[ -f $DEM/index ]] && A+=(--dem "$DEM")
+    python3 -m wrfgate.gate_b "$V" "${A[@]}"; fi ;;
+C)
+  SPEC=$(readlink -f "${1:?spec folder with namelist.input}"); shift; VER=current
+  while [[ $# -gt 0 ]]; do case $1 in --inputs) VER=$2; shift 2;; *) wg_die "unknown option $1";; esac; done
+  [[ -f $SPEC/namelist.input ]] || wg_die "$SPEC has no namelist.input"
+  V=$(wg_version_dir "$FIRE" "$VER") || exit 1
+  st=$(wg_gate_status "$V.gates/gate_A.json"); [[ $st == FAIL || $st == NONE ]] && wg_die "gate A is $st for $(basename "$V"); fix the inputs first"
+  R=$F/runs/$(wg_stamp)_gateC_$(basename "$SPEC"); mkdir -p "$R"
+  cp "$SPEC"/namelist.input "$R"/; for f in namelist.fire iofields*.txt; do ls "$SPEC"/$f >/dev/null 2>&1 && cp "$SPEC"/$f "$R"/; done
+  ln -s "$V"/met_em.d0* "$R"/
+  { echo "run: $(basename "$R")"; echo "kind: gate C (real.exe)"; echo "fire: $FIRE"; echo "inputs: $(basename "$V")"; echo "spec: $SPEC"
+    echo "spec_hash: $(cat "$R"/namelist.input "$R"/namelist.fire 2>/dev/null | sha256sum | cut -c1-12)"; echo "release: $WRFGATE_RELEASE"; echo "created: $(date -Is)"; echo "by: $(wg_by)"; } > "$R/MANIFEST.txt"
+  CAP=$(python3 -c "import json;print(json.load(open('$V.gates/gate_A.json'))['facts'].get('rank_cap',16))" 2>/dev/null || echo 16); N=$(( CAP < 16 ? CAP : 16 ))
+  cat > "$R/gate_c.sbatch" <<SB
+#!/bin/bash
+#SBATCH -J gC_$FIRE
+#SBATCH -p $WG_PARTITION
+#SBATCH --qos=$WG_QOS
+#SBATCH -N 1
+#SBATCH -n $N
+#SBATCH --exclusive
+#SBATCH -t 01:30:00
+$(wg_mail_lines)
+#SBATCH -o $R/slurm_%j.out
+source $WG_HOME/lib/wrfgate.sh
+wg_modules
+cd $R
+T=\$(wg_wrf_run_tables); [[ -n \$T ]] && for f in \$T/*; do b=\$(basename \$f); [[ \$b == namelist* || \$b == *.exe || -e \$b ]] || ln -s \$f \$b; done
+srun -n $N \$(wg_exe real.exe) < /dev/null
+python3 -m wrfgate.gate_c $R --inputs $V --record $REC
+wg_log event=gate_C fire=$FIRE run=$R status=\$(wg_gate_status $R/gate_C.json)
+SB
+  J=$(sbatch --parsable "$R/gate_c.sbatch") || wg_die "sbatch failed"
+  echo "$J" > "$R/JOBID"; echo "gate C submitted: job $J, run folder $R" ;;
+D)
+  C=$(readlink -f "${1:?gate C run folder}"); shift; MIN=2; NR=""; CON=""
+  while [[ $# -gt 0 ]]; do case $1 in --minutes) MIN=$2; shift 2;; --ranks) NR=$2; shift 2;; --constraint) CON=$2; shift 2;; *) wg_die "unknown option $1";; esac; done
+  st=$(wg_gate_status "$C/gate_C.json"); [[ $st == PASS || $st == WARN ]] || wg_die "gate C is $st in $C"
+  CAP=$(python3 -c "import json;print(json.load(open('$C/gate_C.json'))['facts'].get('rank_cap',16))")
+  NR=${NR:-$(( CAP < 32 ? CAP : 32 ))}
+  R=$F/runs/$(wg_stamp)_gateD_$(basename "$C" | sed 's/^[0-9_]*gateC_//'); mkdir -p "$R"
+  for f in "$C"/*; do b=$(basename "$f"); case $b in rsl.*|slurm_*|gate_*|GATES.txt|JOBID|MANIFEST.txt|namelist.input|*.sbatch) ;; *) ln -s "$f" "$R/$b";; esac; done
+  python3 - "$C/namelist.input" "$R/namelist.input" "$MIN" <<'PY'
+import sys
+from wrfgate.common import set_namelist, get_namelist
+src, dst, m = sys.argv[1], sys.argv[2], sys.argv[3]
+t = open(src).read()
+for k, v in [("run_days", "0"), ("run_hours", "0"), ("run_minutes", m), ("run_seconds", "0"), ("restart", ".false."), ("restart_interval", "99999")]:
+    try: t = set_namelist(t, k, v)
+    except KeyError: t = t.replace("&time_control", f"&time_control\n {k} = {v},", 1)
+md = int((get_namelist(t, "max_dom") or ["1"])[0])
+t = set_namelist(t, "history_interval", ", ".join(["99999"] * md))
+open(dst, "w").write(t)
+PY
+  { cat "$C/MANIFEST.txt" | sed 's/^kind: .*/kind: gate D (smoke run)/; s/^run: .*/run: '"$(basename "$R")"'/; /^by: /d; /^created: /d'; echo "from_gate_c: $C"; echo "minutes: $MIN"; echo "ranks: $NR"; echo "created: $(date -Is)"; echo "by: $(wg_by)"; } > "$R/MANIFEST.txt"
+  cat > "$R/gate_d.sbatch" <<SB
+#!/bin/bash
+#SBATCH -J gD_$FIRE
+#SBATCH -p $WG_PARTITION
+#SBATCH --qos=$WG_QOS
+#SBATCH -N 1
+#SBATCH -n $NR
+#SBATCH --exclusive
+#SBATCH -t 00:45:00
+$(wg_mail_lines)
+$( [[ -n $CON ]] && echo "#SBATCH --constraint=$CON" )
+#SBATCH -o $R/slurm_%j.out
+source $WG_HOME/lib/wrfgate.sh
+wg_modules
+cd $R
+srun -n $NR \$(wg_exe wrf.exe) < /dev/null
+python3 -m wrfgate.gate_d $R
+wg_log event=gate_D fire=$FIRE run=$R status=\$(wg_gate_status $R/gate_D.json)
+SB
+  J=$(sbatch --parsable "$R/gate_d.sbatch") || wg_die "sbatch failed"
+  echo "$J" > "$R/JOBID"; echo "gate D submitted: job $J, run folder $R" ;;
+E)
+  wg_modules || exit 1
+  R=$(readlink -f "${1:?run folder}"); python3 -m wrfgate.gate_e "$R" --record "$REC"
+  wg_log event=gate_E fire="$FIRE" run="$R" status=$(wg_gate_status "$R/gate_E.json") ;;
+*) wg_die "gate must be A, B, C, D or E" ;;
+esac

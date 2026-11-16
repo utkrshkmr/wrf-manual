@@ -1,0 +1,65 @@
+#!/bin/bash
+# Submit a production run: wrf-submit FIRE SPEC_DIR --nodes N --ranks R --time HH:MM:SS [--constraint X] [--inputs V] [--name TAG]
+# Refuses unless a gate D smoke run of the same namelists on the same input version passed.
+# Reuses the wrfinput/wrfbdy files that gate C checked, runs wrf.exe, then gate E.
+source "$(dirname "$(readlink -f "$0")")/../lib/wrfgate.sh"
+[[ $# -ge 2 ]] || { sed -n '2,4p' "$0"; exit 1; }
+FIRE=$1; SPEC=$(readlink -f "$2"); shift 2
+NODES=""; RANKS=""; TIME=""; CON=""; VER=current; TAG=$(basename "$SPEC")
+while [[ $# -gt 0 ]]; do case $1 in
+  --nodes) NODES=$2; shift 2;; --ranks) RANKS=$2; shift 2;; --time) TIME=$2; shift 2;;
+  --constraint) CON=$2; shift 2;; --inputs) VER=$2; shift 2;; --name) TAG=$2; shift 2;; *) wg_die "unknown option $1";; esac; done
+[[ -n $NODES && -n $RANKS && -n $TIME ]] || wg_die "--nodes, --ranks and --time are required"
+[[ $TIME =~ ^([0-9]+-)?[0-9]{1,2}:[0-9]{2}:[0-9]{2}$ ]] || wg_die "--time must be HH:MM:SS or D-HH:MM:SS"
+H=$(python3 -c "t='$TIME';d=0
+if '-' in t: d,t=t.split('-'); d=int(d)
+h,m,s=map(int,t.split(':'));print(d*24+h+(m>0 or s>0))")
+(( H <= 72 )) || wg_die "walltime $TIME is over CCR's 72 h limit; use restarts (see the manual's run page)"
+REC=$(wg_record "$FIRE") || exit 1; wg_need_person; wg_start "$FIRE" "$SPEC" --nodes "$NODES" --ranks "$RANKS" --time "$TIME"
+F=$WRF_ROOT/fires/$FIRE; V=$(wg_version_dir "$FIRE" "$VER") || exit 1; VB=$(basename "$V")
+[[ -f $SPEC/namelist.input ]] || wg_die "$SPEC has no namelist.input"
+SH=$(cat "$SPEC"/namelist.input "$SPEC"/namelist.fire 2>/dev/null | sha256sum | cut -c1-12)
+D=""
+for m in $(ls -d "$F"/runs/*_gateD_* 2>/dev/null | sort -r); do
+  grep -q "^spec_hash: $SH$" "$m/MANIFEST.txt" 2>/dev/null || continue
+  grep -q "^inputs: $VB$" "$m/MANIFEST.txt" || continue
+  st=$(wg_gate_status "$m/gate_D.json"); [[ $st == PASS || $st == WARN ]] && { D=$m; break; }
+done
+[[ -n $D ]] || wg_die "no passed gate D for these namelists (hash $SH) on inputs $VB. Run: wrf-gate C $FIRE $SPEC, then wrf-gate D $FIRE <gate C folder>"
+C=$(grep '^from_gate_c:' "$D/MANIFEST.txt" | sed 's/^[^:]*: *//')
+CAP=$(python3 -c "import json;print(json.load(open('$C/gate_C.json'))['facts'].get('rank_cap',0))")
+(( RANKS <= CAP )) || wg_die "--ranks $RANKS is over this grid's cap of $CAP"
+LOCK=$F/runs/.lock_$SH
+if [[ -f $LOCK ]]; then J=$(cat "$LOCK"); squeue -h -j "$J" 2>/dev/null | grep -q . && wg_die "job $J is already queued or running these namelists (remove $LOCK if that is wrong)"; fi
+R=$F/runs/$(wg_stamp)_$TAG; mkdir -p "$R"
+cp "$SPEC"/namelist.input "$R"/; for f in namelist.fire iofields*.txt; do ls "$SPEC"/$f >/dev/null 2>&1 && cp "$SPEC"/$f "$R"/; done
+for f in "$C"/*; do b=$(basename "$f"); case $b in rsl.*|slurm_*|gate_*|GATES.txt|JOBID|MANIFEST.txt|namelist.*|iofields*|*.sbatch) ;; *) ln -s "$(readlink -f "$f")" "$R/$b";; esac; done
+{ echo "run: $(basename "$R")"; echo "kind: production"; echo "fire: $FIRE"; echo "inputs: $VB"; echo "spec: $SPEC"; echo "spec_hash: $SH"
+  echo "gate_c: $C"; echo "gate_d: $D"; echo "nodes: $NODES"; echo "ranks: $RANKS"; echo "time: $TIME"; echo "constraint: $CON"
+  echo "release: $WRFGATE_RELEASE"; echo "created: $(date -Is)"; echo "by: $(wg_by)"; echo "mail: $WG_EMAIL $WG_MAIL_TYPE"; } > "$R/MANIFEST.txt"
+cat > "$R/run.sbatch" <<SB
+#!/bin/bash
+#SBATCH -J $FIRE
+#SBATCH -p $WG_PARTITION
+#SBATCH --qos=$WG_QOS
+#SBATCH -N $NODES
+#SBATCH -n $RANKS
+#SBATCH --exclusive
+#SBATCH -t $TIME
+$(wg_mail_lines)
+$( [[ -n $CON ]] && echo "#SBATCH --constraint=$CON" )
+#SBATCH -o $R/slurm_%j.out
+source $WG_HOME/lib/wrfgate.sh
+wg_modules
+cd $R
+wg_log event=run_start fire=$FIRE run=$R job=\$SLURM_JOB_ID nodes=\$SLURM_JOB_NUM_NODES ranks=$RANKS
+srun -n $RANKS \$(wg_exe wrf.exe) < /dev/null
+rc=\$?
+python3 -m wrfgate.gate_e $R --record $REC
+wg_log event=run_end fire=$FIRE run=$R job=\$SLURM_JOB_ID rc=\$rc gate_E=\$(wg_gate_status $R/gate_E.json)
+rm -f $LOCK
+SB
+J=$(sbatch --parsable "$R/run.sbatch") || wg_die "sbatch failed"
+echo "$J" > "$R/JOBID"; echo "$J" > "$LOCK"
+wg_log event=submitted by="$(wg_by)" fire="$FIRE" run="$R" job="$J" spec_hash="$SH" inputs="$VB" nodes="$NODES" ranks="$RANKS" time="$TIME"
+echo "submitted job $J, run folder $R"

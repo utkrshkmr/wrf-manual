@@ -1,0 +1,20 @@
+<svg viewBox="0 0 900 420" role="img" aria-label="One fire's folder: record, locked input versions with their gate results, specs, and runs that link back to what they used">
+<defs><marker id="gl-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ah-blue"/></marker></defs>
+<text x="20" y="28" class="t-title">Inside fires/CANYON_2025: every run points back at the exact inputs and namelists it used</text>
+<rect x="20" y="50" width="230" height="52" rx="8" class="box-file"/><text x="34" y="72" class="t-mono">fire.yaml</text><text x="34" y="90" class="t-small">the record, read-only</text>
+<rect x="20" y="120" width="230" height="150" rx="8" class="box-strong"/><text x="34" y="142" class="t-mono">inputs/</text>
+<rect x="34" y="154" width="202" height="46" rx="6" class="box-blue"/><text x="46" y="174" class="t-mono">20261116_7f3e19a2/</text><text x="46" y="190" class="t-small">met_em*, MANIFEST.txt, locked</text>
+<rect x="34" y="208" width="202" height="26" rx="6" class="box"/><text x="46" y="226" class="t-mono">20261116_7f3e19a2.gates/</text>
+<text x="46" y="256" class="t-mono">current → 20261116_7f3e19a2</text>
+<rect x="20" y="290" width="230" height="110" rx="8" class="box-strong"/><text x="34" y="312" class="t-mono">specs/</text>
+<rect x="34" y="324" width="202" height="62" rx="6" class="box"/><text x="46" y="344" class="t-mono">campaign/</text><text x="46" y="362" class="t-small">namelist.input</text><text x="46" y="378" class="t-small">namelist.fire</text>
+<rect x="330" y="50" width="550" height="350" rx="8" class="box-strong"/><text x="344" y="72" class="t-mono">runs/</text>
+<rect x="344" y="86" width="520" height="80" rx="6" class="box-blue"/><text x="358" y="108" class="t-mono">20261117_101500_gateC_campaign/</text>
+<text x="358" y="128" class="t-small">met_em links → the input version · namelists copied from the spec</text><text x="358" y="146" class="t-small">wrfinput_d0*, wrfbdy_d01 written by real.exe · gate_C.json · MANIFEST.txt (spec_hash)</text>
+<rect x="344" y="184" width="520" height="80" rx="6" class="box-blue"/><text x="358" y="206" class="t-mono">20261117_113000_gateD_campaign/</text>
+<text x="358" y="226" class="t-small">links to gate C's wrfinput and wrfbdy · namelist cut to 2 minutes, no output</text><text x="358" y="244" class="t-small">rsl.* logs · gate_D.json · MANIFEST.txt (same spec_hash, from_gate_c)</text>
+<rect x="344" y="282" width="520" height="104" rx="6" class="box-acc"/><text x="358" y="304" class="t-mono">20261117_120200_campaign/</text>
+<text x="358" y="324" class="t-small">links to gate C's wrfinput and wrfbdy · the spec's own namelists</text><text x="358" y="342" class="t-small">run.sbatch · JOBID · wrfout_* · rsl.* · gate_E.json</text><text x="358" y="360" class="t-small">MANIFEST.txt: inputs, spec_hash, gate C and D folders, nodes, ranks, time, release</text>
+<g class="ln-blue" marker-end="url(#gl-a)"><path d="M344 126C300 126 280 170 238 176"/><path d="M604 184V168"/><path d="M864 330C892 330 892 126 866 126"/></g>
+<text x="270" y="118" class="t-small t-blue">links</text>
+</svg>

@@ -1,0 +1,34 @@
+#!/bin/bash
+# Register a new input version: wrf-add-inputs FIRE SOURCE_DIR [--note TEXT] [--no-current]
+# Copies met_em files (and namelist.wps, geo_em, logs if present) into fires/FIRE/inputs/<date>_<hash>/,
+# writes MANIFEST.txt, runs gates A and B, locks the folder, and points 'current' at it if no gate failed.
+source "$(dirname "$(readlink -f "$0")")/../lib/wrfgate.sh"
+[[ $# -ge 2 ]] || wg_die "usage: wrf-add-inputs FIRE SOURCE_DIR [--note TEXT] [--no-current]"
+FIRE=$1; SRC=$(readlink -f "$2"); shift 2
+NOTE=""; SETCUR=1
+while [[ $# -gt 0 ]]; do case $1 in --note) NOTE=$2; shift 2;; --no-current) SETCUR=0; shift;; *) wg_die "unknown option $1";; esac; done
+REC=$(wg_record "$FIRE") || exit 1; wg_need_person; wg_start "$FIRE" "$SRC"
+ls "$SRC"/met_em.d0* >/dev/null 2>&1 || wg_die "no met_em files in $SRC"
+wg_modules || exit 1
+I=$WRF_ROOT/fires/$FIRE/inputs; TMP=$I/.incoming_$$; mkdir -p "$TMP"
+echo "== copying from $SRC"
+cp -L --preserve=timestamps "$SRC"/met_em.d0* "$TMP"/ || wg_die "copy failed"
+for f in namelist.wps geo_em.d0*.nc geogrid.log* metgrid.log* ungrib.log; do ls "$SRC"/$f >/dev/null 2>&1 && cp -L --preserve=timestamps "$SRC"/$f "$TMP"/; done
+echo "== hashing $(ls "$TMP" | wc -l) files"
+( cd "$TMP" && sha256sum * > .sha256 ) || wg_die "hashing failed"
+V=$(date +%Y%m%d)_$(sha256sum "$TMP/.sha256" | cut -c1-8)
+OLD=$(ls -d "$I"/*_"${V#*_}" 2>/dev/null | grep -v "\.gates$" | head -1); [[ -n $OLD ]] && { rm -rf "$TMP"; wg_die "identical inputs are already registered as $(basename "$OLD")"; }
+{ echo "version: $V"; echo "fire: $FIRE"; echo "source: $SRC"; echo "added: $(date -Is) on $(hostname)"; echo "by: $(wg_by)"
+  echo "release: $WRFGATE_RELEASE"; echo "note: $NOTE"; echo "files:"; sed 's/^/  /' "$TMP/.sha256"; } > "$TMP/MANIFEST.txt"
+rm -f "$TMP/.sha256"; mv "$TMP" "$I/$V"
+G=$I/$V.gates; mkdir -p "$G"
+FUEL=$(wg_rec "$FIRE" fuel_layer); FUEL=${FUEL:-$WRF_ROOT/static/landfire/LF2024/FBFM40}
+DEM=$(wg_rec "$FIRE" terrain_layer); DEM=${DEM:-$WRF_ROOT/static/CA_1s}
+echo "== gate A"; python3 -m wrfgate.gate_a "$I/$V" --record "$REC" --out "$G"; A=$?
+echo "== gate B"; BARGS=(--fuel "$FUEL" --scan "$WRF_ROOT/static/landfire" --record "$REC" --out "$G")
+[[ -f $DEM/index ]] && BARGS+=(--dem "$DEM")
+python3 -m wrfgate.gate_b "$I/$V" "${BARGS[@]}"; B=$?
+chmod -R a-w "$I/$V"
+wg_log event=inputs_added fire="$FIRE" version="$V" gate_A=$(wg_gate_status "$G/gate_A.json") gate_B=$(wg_gate_status "$G/gate_B.json")
+if [[ $A == 0 && $B == 0 && $SETCUR == 1 ]]; then ln -sfn "$V" "$I/current"; echo "== $V registered and set as current"
+else echo "== $V registered (current unchanged$([[ $A != 0 || $B != 0 ]] && echo ': a gate failed, see '$G/GATES.txt))"; fi

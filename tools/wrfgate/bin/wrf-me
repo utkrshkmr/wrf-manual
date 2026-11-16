@@ -1,0 +1,22 @@
+#!/bin/bash
+# Your profile, used to sign every record, input version and run, and to send Slurm's emails.
+#   wrf-me                                   show it
+#   wrf-me --name "Full Name" --email you@buffalo.edu [--mail END,FAIL]
+# --mail takes Slurm's mail types (BEGIN, END, FAIL, TIME_LIMIT_80, ALL) joined by commas, or NONE.
+source "$(dirname "$(readlink -f "$0")")/../lib/wrfgate.sh"
+P=$WRF_ROOT/people/$USER; F=$P/profile.conf
+if [[ $# -eq 0 ]]; then
+  [[ -f $F ]] && { echo "== $F"; cat "$F"; echo "work folder: $P/work"; } || echo "no profile yet. Run: wrf-me --name 'Your Name' --email you@buffalo.edu"
+  exit 0
+fi
+wg_person; N=$WG_NAME; E=$WG_EMAIL; M=$WG_MAIL_TYPE
+while [[ $# -gt 0 ]]; do case $1 in --name) N=$2; shift 2;; --email) E=$2; shift 2;; --mail) M=$2; shift 2;; *) wg_die "unknown option $1";; esac; done
+[[ -n $N && $N != *$'\n'* ]] || wg_die "give --name"
+[[ $E =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]] || wg_die "'$E' is not an email address"
+[[ $M == NONE || $M =~ ^(BEGIN|END|FAIL|REQUEUE|ALL|INVALID_DEPEND|STAGE_OUT|TIME_LIMIT|TIME_LIMIT_90|TIME_LIMIT_80|TIME_LIMIT_50|ARRAY_TASKS)(,(BEGIN|END|FAIL|REQUEUE|ALL|INVALID_DEPEND|STAGE_OUT|TIME_LIMIT|TIME_LIMIT_90|TIME_LIMIT_80|TIME_LIMIT_50|ARRAY_TASKS))*$ ]] || wg_die "--mail must be Slurm mail types joined by commas, or NONE"
+mkdir -p "$P/work"
+[[ -f $F ]] && cp "$F" "$P/profile.conf.$(wg_stamp)"
+{ echo "# wrfgate profile for $USER. Edit with wrf-me, not by hand."; echo "NAME=$N"; echo "EMAIL=$E"; echo "MAIL_TYPE=$M"; echo "UPDATED=$(date -Is)"; } > "$F"
+chmod 664 "$F"
+wg_log event=profile user="$USER" name="$N" email="$E" mail_type="$M"
+cat "$F"; echo "work folder: $P/work"

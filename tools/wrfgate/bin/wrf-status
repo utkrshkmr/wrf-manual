@@ -1,0 +1,23 @@
+#!/bin/bash
+# wrf-status            all fires, one line each
+# wrf-status FIRE       record, input versions with gate results, runs with gate and job state
+source "$(dirname "$(readlink -f "$0")")/../lib/wrfgate.sh"
+if [[ $# -eq 0 ]]; then
+  printf "%-18s %-26s %-22s %s\n" FIRE START CURRENT_INPUTS RUNS
+  for d in "$WRF_ROOT"/fires/*/; do f=$(basename "$d"); [[ -f $d/fire.yaml ]] || continue
+    c=$(readlink "$d/inputs/current" 2>/dev/null || echo -); n=$(ls -d "$d"/runs/*/ 2>/dev/null | wc -l)
+    printf "%-18s %-26s %-22s %s\n" "$f" "$(wg_rec "$f" start)" "$c" "$n"; done
+  exit 0
+fi
+FIRE=$1; F=$WRF_ROOT/fires/$FIRE; [[ -f $F/fire.yaml ]] || wg_die "no fire $FIRE"
+echo "== record $F/fire.yaml"; grep -v '^#' "$F/fire.yaml"
+echo; echo "== inputs (current -> $(readlink "$F/inputs/current" 2>/dev/null || echo none))"
+for v in $(ls -d "$F"/inputs/*/ 2>/dev/null | grep -v '\.gates/$'); do v=$(basename "$v"); [[ $v == current ]] && continue
+  printf "  %-22s A=%-5s B=%-5s %s\n" "$v" "$(wg_gate_status "$F/inputs/$v.gates/gate_A.json")" "$(wg_gate_status "$F/inputs/$v.gates/gate_B.json")" "$(grep '^note:' "$F/inputs/$v/MANIFEST.txt" | sed 's/^note: *//')"; done
+echo; echo "== specs"; ls "$F/specs" 2>/dev/null | sed 's/^/  /'
+echo; echo "== runs"
+for r in $(ls -d "$F"/runs/*/ 2>/dev/null); do b=$(basename "$r"); g=""
+  for x in C D E; do [[ -f $r/gate_$x.json ]] && g="$g $x=$(wg_gate_status "$r/gate_$x.json")"; done
+  j=$(cat "$r/JOBID" 2>/dev/null); s=""; [[ -n $j ]] && s=$(squeue -h -j "$j" -o %T 2>/dev/null)
+  who=$(grep -m1 '^by: ' "$r/MANIFEST.txt" 2>/dev/null | sed 's/^by: //; s/ <.*//')
+  printf "  %-44s %-18s job=%-10s %-10s%s\n" "$b" "${who:--}" "${j:--}" "${s:-}" "$g"; done

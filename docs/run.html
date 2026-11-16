@@ -33,15 +33,9 @@
 <li><a href="run.html" class="on"><span class="n">9</span><span>Running it on Slurm</span></a></li>
 <li><a href="reference.html"><span class="n">10</span><span>Reference and failures</span></a></li>
 </ol>
-<h4>Our work on CCR</h4><ol>
-<li><a href="setup.html"><span class="n">11</span><span>WPS on CCR: setup so far</span></a></li>
-<li><a href="fuelmatch.html"><span class="n">12</span><span>The fuel-map mismatch</span></a></li>
-<li><a href="campaign.html"><span class="n">13</span><span>The scaling campaign</span></a></li>
-<li><a href="scaling.html"><span class="n">14</span><span>Scaling and the elbow</span></a></li>
-<li><a href="costmodel.html"><span class="n">15</span><span>Cost model and node formula</span></a></li>
-<li><a href="queue.html"><span class="n">16</span><span>Queue waits and cost</span></a></li>
-<li><a href="lessons.html"><span class="n">17</span><span>What went wrong, what we learnt</span></a></li>
-<li><a href="design.html"><span class="n">18</span><span>The workflow we designed</span></a></li>
+<h4>Running it safely</h4><ol>
+<li><a href="gates.html"><span class="n">11</span><span>The gating system</span></a></li>
+<li><a href="example.html"><span class="n">12</span><span>Worked example: every fire</span></a></li>
 </ol>
 <button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
 </nav>
@@ -109,7 +103,7 @@ j=$(sbatch --parsable wps.sbatch); sbatch --dependency=afterok:$j wrf.sbatch
 </g>
 </svg></div><figcaption><strong>The decomposition cap.</strong> WRF splits every domain over the same set of ranks and refuses a split that leaves any rank fewer than 10 points in either direction. Small fires are capped by their small outer domain.</figcaption></figure>
 
-<p>From our campaign (<a href="scaling.html">results</a>):</p>
+<p>From our campaign (results):</p>
 <ul>
 <li><strong>Small fires: run at the cap, on one whole node.</strong> Every step up to the cap was still 76–94% efficient, and CCR charges the whole node, so fewer ranks cost more core-hours, not fewer.</li>
 <li><strong>Large fires: up to the elbow or the cap, whichever comes first.</strong> For Eaton, Cascade Lake's elbow is about 1,060 ranks; on Ice Lake and Sapphire Rapids the 2,025-rank cap comes first.</li>
@@ -119,13 +113,13 @@ j=$(sbatch --parsable wps.sbatch); sbatch --dependency=afterok:$j wrf.sbatch
 <p>Measure, don't guess. A two-minute test run gives the seconds per step; <code>rsl.error.0000</code> prints one timing line per step:</p>
 <pre><code class="language-bash">grep 'Timing for main' rsl.error.0000 | tail -20 | awk '{s+=$(NF-2)} END {print s/NR, &quot;s per step&quot;}'
 </code></pre>
-<p>Then walltime = seconds per step × steps × 1.15 + 1 hour, where steps = simulated seconds ÷ <code>time_step</code>. Steps get slower after ignition, as the fire model's work grows; measure after ignition if you can. For a fire never run before, use × 1.3. <a href="costmodel.html#the-node-formula">The node formula</a> does this from the grid alone.</p>
+<p>Then walltime = seconds per step × steps × 1.15 + 1 hour, where steps = simulated seconds ÷ <code>time_step</code>. Steps get slower after ignition, as the fire model's work grows; measure after ignition if you can. For a fire never run before, use × 1.3. The node formula does this from the grid alone.</p>
 <h2 id="the-72-hour-limit-and-restarts">The 72-hour limit and restarts</h2>
 <p>CCR's <code>general-compute</code> jobs end at 72 hours. A longer run is a chain of jobs, each resuming from the last restart file:</p>
 <ol>
 <li>Set <code>restart_interval</code> (minutes) so a restart file is written well before the limit, for example every 6 simulated hours.</li>
 <li>For the next job, set <code>restart = .true.</code> and <code>start_*</code> to the restart file's time, and keep everything else the same.</li>
-<li>Queue it with <code>--dependency=afterany:&lt;job&gt;</code>, and <strong>cancel it if the first job finished the run</strong>. Leftover continuations were one of our campaign's incidents (<a href="lessons.html">what went wrong</a>).</li>
+<li>Queue it with <code>--dependency=afterany:&lt;job&gt;</code>, and <strong>cancel it if the first job finished the run</strong>. Leftover continuations were one of our campaign's incidents (what went wrong).</li>
 </ol>
 <p>Each continuation waited 12–24 hours in the queue during our campaign, so a set-up that fits one job is worth a lot.</p>
 <h2 id="what-to-check-after-each-phase">What to check after each phase</h2>
