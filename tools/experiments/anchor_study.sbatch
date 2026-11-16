@@ -51,7 +51,9 @@ for m in /projects/academic/negarkhodoe/Nisha/WPS_files/CANYON_2025/WPS-4.6.0 \
   ncdump -h $f | grep -q 'NFUEL_CAT(' && echo "$(echo $m | sed 's#/projects/academic/negarkhodoe/##; s#/#_#g') $m" >> $W/exp1/fires.txt
 done
 cat $W/exp1/fires.txt
-CSV1=$W/exp1/results.csv; rm -f $CSV1
+CSV1=$W/exp1/results.csv
+if [[ ${SKIP_EXP1:-0} == 1 && -s $CSV1 ]]; then log "exp1: keeping $CSV1 (SKIP_EXP1=1)"; else
+rm -f $CSV1
 while read name m; do
   for L in $W/exp1/layers/*; do
     lay=$(basename $L); A=${lay##*_}; [[ $lay == NCAR_* ]] && A=NCAR
@@ -66,6 +68,7 @@ while read name m; do
     rm -f geo_em.d0[1-9].nc.tmp
   done
 done < $W/exp1/fires.txt
+fi
 
 # ---------------------------------------------------------------- Experiment 2
 log "exp2: coded layers"
@@ -112,7 +115,7 @@ wps_env
 RUNS=$W/exp2/runs.csv; echo "run,variant,proj,site_lat,site_lon,anchor_lat,anchor_lon,gx0,gy0,gd,npz" > $RUNS
 run_site() { # id variant proj lat lon anchor_lat anchor_lon coldir rowdir gx0 gy0 gd
   local r=$W/exp2/runs/$1; mkdir -p $r; cd $r
-  printf "name = COLIDX\n  priority = 1\n  dest_type = continuous\n  interp_option = default:nearest_neighbor\n  abs_path = default:%s/\n  fill_missing = 0\n  halt_on_missing = yes\n===============================\nname = ROWIDX\n  priority = 1\n  dest_type = continuous\n  interp_option = default:nearest_neighbor\n  abs_path = default:%s/\n  fill_missing = 0\n  halt_on_missing = yes\n===============================\n" $8 $9 > GEOGRID.TBL
+  printf "name = COLIDX\n  priority = 1\n  dest_type = continuous\n  interp_option = default:nearest_neighbor\n  abs_path = default:%s/\n  fill_missing = 0\n===============================\nname = ROWIDX\n  priority = 1\n  dest_type = continuous\n  interp_option = default:nearest_neighbor\n  abs_path = default:%s/\n  fill_missing = 0\n===============================\n" $8 $9 > GEOGRID.TBL
   [[ -f $W/exp2/full_table ]] && { cat $NT GEOGRID.TBL > G2 && mv G2 GEOGRID.TBL; }
   cat > namelist.wps <<NL
 &share
