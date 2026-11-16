@@ -128,6 +128,7 @@ NL
 import numpy as np; from netCDF4 import Dataset
 d=Dataset('geo_em.d01.nc'); np.savez('cells.npz', lat=d['XLAT_M'][0], lon=d['XLONG_M'][0], col=d['COLIDX'][0], row=d['ROWIDX'][0])" 2>/dev/null < /dev/null && echo "$1,$2,$3,$4,$5,$6,$7,${10},${11},${12},$r/cells.npz" >> $RUNS.$2
 }
+rm -f $W/exp2/full_table
 first=$(head -1 $W/exp2/sites_in.txt)
 run_site probe SW_halo3 albers ${first% * * * *} "" "" $W/exp2/layers/alb_b3_col $W/exp2/layers/alb_b3_row $X0 $Y0 $DX
 if [[ ! -f $W/exp2/runs/probe/cells.npz ]]; then log "minimal table failed; using the full table"; touch $W/exp2/full_table; fi
