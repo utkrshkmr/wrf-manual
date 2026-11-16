@@ -10,7 +10,8 @@
 # Experiment 2: coded layers -> geogrid's positioning error in metres across California, per anchor.
 # Writes everything to $W; the file to read first is $W/REPORT.txt. Nothing outside $W is modified.
 set -u
-X=$(cd "$(dirname "$0")" && pwd)
+X=${EXPDIR:-/projects/academic/negarkhodoe/utkarshk/pipeline/experiments}
+[[ -f $X/exp_namelist.py ]] || { echo "helpers not found in $X"; exit 1; }
 W=/projects/academic/negarkhodoe/wrf/tests/anchor_study
 S=/projects/academic/negarkhodoe/wrf/static/landfire
 NG=/projects/academic/negarkhodoe/Nisha/WPS_files/WPS_GEOG
@@ -56,10 +57,11 @@ while read name m; do
     case $A in SW) al="$SWLAT $SWLON";; *) al="$NWLAT $NWLON";; esac
     r=$W/exp1/runs/${name}__$lay; mkdir -p $r; cd $r
     sed -E "s#rel_path *= *lf2024:[^ ]*#abs_path = lf2024:$L/#" $NT > GEOGRID.TBL
-    read fd flat flon sr < <(python3 $X/exp_namelist.py $m namelist.wps $r/ $NG/)
-    srun -n 8 geogrid.exe > geogrid.out 2>&1 || { log "geogrid failed $name $lay"; continue; }
+    read fd flat flon sr < <(python3 $X/exp_namelist.py $m namelist.wps $r/ $NG/ < /dev/null)
+    [[ -n $fd ]] || { log "namelist failed $name $lay"; continue; }
+    srun -n 8 geogrid.exe > geogrid.out 2>&1 < /dev/null || { log "geogrid failed $name $lay"; continue; }
     met=$(ls $m/met_em.d$fd.* | head -1)
-    python3 $X/exp1_compare.py geo_em.d$fd.nc $met $CSV1 $name $lay $A $flat $flon $al
+    python3 $X/exp1_compare.py geo_em.d$fd.nc $met $CSV1 $name $lay $A $flat $flon $al < /dev/null
     rm -f geo_em.d0[1-9].nc.tmp
   done
 done < $W/exp1/fires.txt
@@ -121,10 +123,10 @@ run_site() { # id variant proj lat lon anchor_lat anchor_lon coldir rowdir gx0 g
  truelat1=$4, truelat2=$4, stand_lon=$5, geog_data_path='$NG/', opt_geogrid_tbl_path='$r/'
 /
 NL
-  srun -n 1 --exclusive geogrid.exe > geogrid.out 2>&1
+  srun -n 1 --exclusive geogrid.exe > geogrid.out 2>&1 < /dev/null
   python3 -c "
 import numpy as np; from netCDF4 import Dataset
-d=Dataset('geo_em.d01.nc'); np.savez('cells.npz', lat=d['XLAT_M'][0], lon=d['XLONG_M'][0], col=d['COLIDX'][0], row=d['ROWIDX'][0])" 2>/dev/null && echo "$1,$2,$3,$4,$5,$6,$7,${10},${11},${12},$r/cells.npz" >> $RUNS.$2
+d=Dataset('geo_em.d01.nc'); np.savez('cells.npz', lat=d['XLAT_M'][0], lon=d['XLONG_M'][0], col=d['COLIDX'][0], row=d['ROWIDX'][0])" 2>/dev/null < /dev/null && echo "$1,$2,$3,$4,$5,$6,$7,${10},${11},${12},$r/cells.npz" >> $RUNS.$2
 }
 first=$(head -1 $W/exp2/sites_in.txt)
 run_site probe SW_halo3 albers ${first% * * * *} "" "" $W/exp2/layers/alb_b3_col $W/exp2/layers/alb_b3_row $X0 $Y0 $DX
