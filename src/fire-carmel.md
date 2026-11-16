@@ -90,3 +90,7 @@ wrf-card --make /projects/academic/negarkhodoe/wrf/people/$USER/work/carmel_vari
 
 Then gates C and D and `wrf-submit` on the spec folder it prints, with a `--name` that says what changed. Ideas: [fuel moisture](moisture.html), [one-way coupling](coupling.html), [slope sensitivity](terrain.html#the-slope-effect), [another ignition](ignitions.html).
 
+## Good to know
+
+- **Its fuel map matches none of our LANDFIRE releases** (best: LF2016 at 66%). The release between 2016 and 2022 that we do not have (LF 2019 or 2020) is the likely source; gate B fails until that layer is added or the inputs are remade from a card.
+

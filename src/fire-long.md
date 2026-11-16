@@ -19,6 +19,7 @@ end:                 2024-07-17 00:00
 ignition_time:       (printed by wrf-card)
 ignition_lat:        (printed by wrf-card)
 ignition_lon:        (printed by wrf-card)
+fuel_layer:          /projects/academic/negarkhodoe/wrf/static/landfire/LF2023/FBFM40
 base_spec:           LONG_2024/campaign
 ```
 
@@ -92,5 +93,6 @@ Then gates C and D and `wrf-submit` on the spec folder it prints, with a `--name
 
 ## Good to know
 
+- Its fuel map is LANDFIRE **2023** (97.9% match; LF2022 is close behind at 97.2%), not 2024 (89%).
 - **It reaches the domain edge.** In the campaign the fire hit the fire domain's boundary at Jul 16 22:24 and WRF stopped. Gate E classes that ending as *domain edge*, not a crash. To run past it, make a variant card with a larger `fire_cells` (and `outer_cells` if needed), which means new `met_em` files: `wrf-card --make … --wps`.
 

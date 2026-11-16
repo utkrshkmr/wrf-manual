@@ -62,7 +62,7 @@
 <p class="kicker">Examples · CARMEL</p>
 <h1>Carmel</h1>
 <p class="lead">NCAR <code>met_em</code> files only; not yet run on CCR. Its card starts from the inputs and a base spec.</p>
-<nav class="toc"><b>On this page</b><ul><li><a href="#the-fire-card">The fire card</a></li><li><a href="#run-it-from-an-ai-chat">Run it from an AI chat</a></li><li><a href="#run-it-with-the-commands">Run it with the commands</a></li><li><a href="#make-a-variant">Make a variant</a></li></ul></nav>
+<nav class="toc"><b>On this page</b><ul><li><a href="#the-fire-card">The fire card</a></li><li><a href="#run-it-from-an-ai-chat">Run it from an AI chat</a></li><li><a href="#run-it-with-the-commands">Run it with the commands</a></li><li><a href="#make-a-variant">Make a variant</a></li><li><a href="#good-to-know">Good to know</a></li></ul></nav>
 <h2 id="the-fire-card">The fire card</h2>
 <p>Everything that defines this fire, from the NCAR <code>met_em</code> files. The exact card, with every value read from the shared folder, is one command away:</p>
 <pre><code class="language-bash">wrf-card CARMEL
@@ -113,6 +113,10 @@ cat /projects/academic/negarkhodoe/wrf/fires/CARMEL/runs/&lt;stamp&gt;_rerun/GAT
 wrf-card --make /projects/academic/negarkhodoe/wrf/people/$USER/work/carmel_variant.card
 </code></pre>
 <p>Then gates C and D and <code>wrf-submit</code> on the spec folder it prints, with a <code>--name</code> that says what changed. Ideas: <a href="moisture.html">fuel moisture</a>, <a href="coupling.html">one-way coupling</a>, <a href="terrain.html#the-slope-effect">slope sensitivity</a>, <a href="ignitions.html">another ignition</a>.</p>
+<h2 id="good-to-know">Good to know</h2>
+<ul>
+<li><strong>Its fuel map matches none of our LANDFIRE releases</strong> (best: LF2016 at 66%). The release between 2016 and 2022 that we do not have (LF 2019 or 2020) is the likely source; gate B fails until that layer is added or the inputs are remade from a card.</li>
+</ul>
 <nav class="pager"><a class="prev" href="fire-bradford.html"><small>Previous</small>Bradford Branch</a><a class="next" href="extend.html"><small>Next</small>Where each change goes</a></nav>
 <footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/fire-carmel.md</code>.</footer>
 </article>

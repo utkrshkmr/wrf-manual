@@ -17,6 +17,8 @@ toc: no
 | `BRADFORD_BRANCH` | in its card | in its card | in its card | — | [Bradford Branch](fire-bradford.html) |
 | `CARMEL` | in its card | in its card | in its card | — | [Carmel](fire-carmel.html) |
 
+Fuel maps (from comparing each fire's `met_em` with every LANDFIRE release): Eaton, Canyon LF2024 · Cranston LF2016 · Long LF2023 · Airport has no fuel map in its inputs · Bradford Branch and Carmel match none of our releases. Details on each page.
+
 Every fire is already in the shared folder with its record, its checked `met_em` files and (for the four we ran) the spec it ran with. `wrf-card FIRE` prints its full card from those files.
 
 ## A new fire

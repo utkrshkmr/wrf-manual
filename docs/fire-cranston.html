@@ -73,6 +73,7 @@ end:                 2018-07-26 12:00
 ignition_time:       (printed by wrf-card)
 ignition_lat:        (printed by wrf-card)
 ignition_lon:        (printed by wrf-card)
+fuel_layer:          /projects/academic/negarkhodoe/wrf/static/landfire/LF2016/FBFM40
 base_spec:           CRANSTON_2018/campaign
 </code></pre>
 <div class="note">
@@ -114,6 +115,7 @@ wrf-card --make /projects/academic/negarkhodoe/wrf/people/$USER/work/cranston_va
 <p>Then gates C and D and <code>wrf-submit</code> on the spec folder it prints, with a <code>--name</code> that says what changed. Ideas: <a href="moisture.html">fuel moisture</a>, <a href="coupling.html">one-way coupling</a>, <a href="terrain.html#the-slope-effect">slope sensitivity</a>, <a href="ignitions.html">another ignition</a>.</p>
 <h2 id="good-to-know">Good to know</h2>
 <ul>
+<li>Its fuel map is LANDFIRE <strong>2016</strong>: 98.4% of fire cells match LF2016, under 35% match any later release.</li>
 <li>The fire's <code>met_em</code> folders exist in three versions (<code>CRANSTON</code>, <code>CRANSTON/met_files</code>, <code>CRANSTON/met_files1</code>); the registered input version names the one used. Check <code>wrf-status CRANSTON_2018</code>.</li>
 </ul>
 <nav class="pager"><a class="prev" href="fire-canyon.html"><small>Previous</small>Canyon 2025</a><a class="next" href="fire-long.html"><small>Next</small>Long 2024</a></nav>

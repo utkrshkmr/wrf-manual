@@ -134,6 +134,7 @@
 </tr>
 </tbody>
 </table></div>
+<p>Fuel maps (from comparing each fire's <code>met_em</code> with every LANDFIRE release): Eaton, Canyon LF2024 · Cranston LF2016 · Long LF2023 · Airport has no fuel map in its inputs · Bradford Branch and Carmel match none of our releases. Details on each page.</p>
 <p>Every fire is already in the shared folder with its record, its checked <code>met_em</code> files and (for the four we ran) the spec it ran with. <code>wrf-card FIRE</code> prints its full card from those files.</p>
 <h2 id="a-new-fire">A new fire</h2>
 <p>Start from the closest of these: <code>wrf-card CANYON_2025 &gt; my.card</code> for a small fire, <code>wrf-card EATON_2025 &gt; my.card</code> for a large one. Change the name, times, ignition and domains, keep <code>base_spec</code> for the lab's physics, and follow the <a href="quickstart.html#3b-or-type-the-commands">quick start</a>.</p>

@@ -19,6 +19,7 @@ end:                 2018-07-26 12:00
 ignition_time:       (printed by wrf-card)
 ignition_lat:        (printed by wrf-card)
 ignition_lon:        (printed by wrf-card)
+fuel_layer:          /projects/academic/negarkhodoe/wrf/static/landfire/LF2016/FBFM40
 base_spec:           CRANSTON_2018/campaign
 ```
 
@@ -92,5 +93,6 @@ Then gates C and D and `wrf-submit` on the spec folder it prints, with a `--name
 
 ## Good to know
 
+- Its fuel map is LANDFIRE **2016**: 98.4% of fire cells match LF2016, under 35% match any later release.
 - The fire's `met_em` folders exist in three versions (`CRANSTON`, `CRANSTON/met_files`, `CRANSTON/met_files1`); the registered input version names the one used. Check `wrf-status CRANSTON_2018`.
 

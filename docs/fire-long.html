@@ -73,6 +73,7 @@ end:                 2024-07-17 00:00
 ignition_time:       (printed by wrf-card)
 ignition_lat:        (printed by wrf-card)
 ignition_lon:        (printed by wrf-card)
+fuel_layer:          /projects/academic/negarkhodoe/wrf/static/landfire/LF2023/FBFM40
 base_spec:           LONG_2024/campaign
 </code></pre>
 <div class="note">
@@ -114,6 +115,7 @@ wrf-card --make /projects/academic/negarkhodoe/wrf/people/$USER/work/long_varian
 <p>Then gates C and D and <code>wrf-submit</code> on the spec folder it prints, with a <code>--name</code> that says what changed. Ideas: <a href="moisture.html">fuel moisture</a>, <a href="coupling.html">one-way coupling</a>, <a href="terrain.html#the-slope-effect">slope sensitivity</a>, <a href="ignitions.html">another ignition</a>.</p>
 <h2 id="good-to-know">Good to know</h2>
 <ul>
+<li>Its fuel map is LANDFIRE <strong>2023</strong> (97.9% match; LF2022 is close behind at 97.2%), not 2024 (89%).</li>
 <li><strong>It reaches the domain edge.</strong> In the campaign the fire hit the fire domain's boundary at Jul 16 22:24 and WRF stopped. Gate E classes that ending as <em>domain edge</em>, not a crash. To run past it, make a variant card with a larger <code>fire_cells</code> (and <code>outer_cells</code> if needed), which means new <code>met_em</code> files: <code>wrf-card --make … --wps</code>.</li>
 </ul>
 <nav class="pager"><a class="prev" href="fire-cranston.html"><small>Previous</small>Cranston 2018</a><a class="next" href="fire-airport.html"><small>Next</small>Airport</a></nav>

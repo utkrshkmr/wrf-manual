@@ -108,5 +108,5 @@ Then gates C and D and `wrf-submit` on the spec folder it prints, with a `--name
 
 ## Good to know
 
-- The fuel map in the NCAR/Nisha inputs matches our LANDFIRE 2024 copy at 97.3% cell by cell, because of how geogrid places the layer; gate B reports the number. The anchor study will settle which placement is right.
+- Its fuel map is LANDFIRE **2024**. Two input sets exist and they were not made identically: Nisha's matches the LF2024 layer placed from its north-west corner (98.6%), the `Thursday_deadline_fires` set matches it placed from the south-west corner (98.3%). The registered version names which one it is; gate B reports the match.
 

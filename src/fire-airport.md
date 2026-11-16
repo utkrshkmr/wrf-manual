@@ -90,3 +90,7 @@ wrf-card --make /projects/academic/negarkhodoe/wrf/people/$USER/work/airport_var
 
 Then gates C and D and `wrf-submit` on the spec folder it prints, with a `--name` that says what changed. Ideas: [fuel moisture](moisture.html), [one-way coupling](coupling.html), [slope sensitivity](terrain.html#the-slope-effect), [another ignition](ignitions.html).
 
+## Good to know
+
+- **Its `met_em` files have no fuel map**: `NFUEL_CAT` is 0 in every fire cell. Gate A fails (A14/A15) and the fire cannot run on these inputs with `fire_fuel_read = -1`. It needs new `met_em` files: make it from a card with `--wps`.
+

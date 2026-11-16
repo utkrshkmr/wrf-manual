@@ -28,6 +28,8 @@ declare -A METROOTS=(
   [AIRPORT]="$P/WRF_NCAR_Fires/AIRPORT"
   [BRADFORD_BRANCH]="$P/WRF_NCAR_Fires/BRADFORD_BRANCH"
   [CARMEL]="$P/WRF_NCAR_Fires/CARMEL")
+# Release each fire's met_em matches best (anchor study, Nov 16): Canyon LF2024, Cranston LF2016, Long LF2023.
+declare -A FUELREL=([CANYON_2025]=LF2024 [CRANSTON_2018]=LF2016 [LONG_2024]=LF2023)
 fuel_for_year() { case $1 in 201[0-9]|2020|2021) echo LF2016;; 2022) echo LF2022;; 2023) echo LF2023;; *) echo LF2024;; esac; }
 best_met() { # the folder under the given roots with the most met_em.d01 files
   for r in "$@"; do [[ -d $r ]] && find -L "$r" -maxdepth 4 -name 'met_em.d01.*' -printf '%h\n' 2>/dev/null; done | sort | uniq -c | sort -k1,1nr | head -1 | awk '{print $2}'; }
@@ -50,7 +52,8 @@ for F in $FIRES; do
   if [[ ! -f $W/fires/$F/fire.yaml ]]; then
     if [[ -n $NL ]]; then
       Y=$(python3 -c "import sys;from wrfgate.common import get_namelist;print(get_namelist(open(sys.argv[1]).read(),'start_year')[0])" "$NL")
-      wrf-new-fire "$F" --from-namelist "$NL" --fuel-layer "$W/static/landfire/$(fuel_for_year "$Y")/FBFM40" --source "campaign namelist $NL" ||
+      REL=${FUELREL[$F]:-$(fuel_for_year "$Y")}
+      wrf-new-fire "$F" --from-namelist "$NL" --fuel-layer "$W/static/landfire/$REL/FBFM40" --source "campaign namelist $NL" ||
         { echo "$F  SKIPPED: record could not be made from $NL" >> "$SUMMARY"; continue; }
     else
       echo "$F  SKIPPED: no namelist.input with an ignition found (set NL_$F, or run wrf-new-fire by hand)" >> "$SUMMARY"; continue

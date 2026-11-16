@@ -130,7 +130,7 @@ wrf-card --make /projects/academic/negarkhodoe/wrf/people/$USER/work/canyon_vari
 <p>Then gates C and D and <code>wrf-submit</code> on the spec folder it prints, with a <code>--name</code> that says what changed. Ideas: <a href="moisture.html">fuel moisture</a>, <a href="coupling.html">one-way coupling</a>, <a href="terrain.html#the-slope-effect">slope sensitivity</a>, <a href="ignitions.html">another ignition</a>.</p>
 <h2 id="good-to-know">Good to know</h2>
 <ul>
-<li>The fuel map in the NCAR/Nisha inputs matches our LANDFIRE 2024 copy at 97.3% cell by cell, because of how geogrid places the layer; gate B reports the number. The anchor study will settle which placement is right.</li>
+<li>Its fuel map is LANDFIRE <strong>2024</strong>. Two input sets exist and they were not made identically: Nisha's matches the LF2024 layer placed from its north-west corner (98.6%), the <code>Thursday_deadline_fires</code> set matches it placed from the south-west corner (98.3%). The registered version names which one it is; gate B reports the match.</li>
 </ul>
 <nav class="pager"><a class="prev" href="fire-eaton.html"><small>Previous</small>Eaton 2025</a><a class="next" href="fire-cranston.html"><small>Next</small>Cranston 2018</a></nav>
 <footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/fire-canyon.md</code>.</footer>
