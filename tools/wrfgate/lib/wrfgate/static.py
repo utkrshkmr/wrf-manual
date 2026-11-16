@@ -104,38 +104,90 @@ def _block(text, name):
     return m
 
 
+FUEL_TEMPLATE = """name=NFUEL_CAT
+    priority=1
+    dest_type=categorical
+    dominant_only=NFUEL_CAT
+    z_dim_name=fuel_cat
+    halt_on_missing=no
+    fill_missing=0
+{interp}
+{paths}
+    subgrid=yes
+==============================="""
+
+TERRAIN_TEMPLATE = """name=ZSF
+    priority=1
+    dest_type=continuous
+    df_dx=DZDXF
+    df_dy=DZDYF
+    smooth_option=smth-desmth_special; smooth_passes=1
+    halt_on_missing=yes
+{interp}
+{paths}
+    subgrid=yes
+==============================="""
+
+
+def blocks(text):
+    """Split a GEOGRID.TBL into its entries: list of (name, entry_text)."""
+    out, cur = [], []
+    for line in text.splitlines():
+        if re.match(r"^\s*=+\s*$", line):
+            if any(l.strip() for l in cur):
+                body = "\n".join(cur)
+                m = re.search(r"^\s*name\s*=\s*(\S+)", body, re.M)
+                out.append((m.group(1) if m else "?", body))
+            cur = []
+        else:
+            cur.append(line)
+    if any(l.strip() and not l.strip().startswith("#") for l in cur):
+        body = "\n".join(cur)
+        m = re.search(r"^\s*name\s*=\s*(\S+)", body, re.M)
+        out.append((m.group(1) if m else "?", body))
+    return out
+
+
+def validate(text):
+    """Problems geogrid would refuse: halt_on_missing=yes together with fill_missing, an entry without a name,
+    the same field twice at the same priority."""
+    bad, seen = [], {}
+    for name, body in blocks(text):
+        if name == "?":
+            bad.append("an entry has no name"); continue
+        halt = re.search(r"^\s*halt_on_missing\s*=\s*yes", body, re.M | re.I)
+        fill = re.search(r"^\s*fill_missing\s*=", body, re.M | re.I)
+        if halt and fill:
+            bad.append(f"{name}: halt_on_missing=yes and fill_missing together")
+        pr = (re.search(r"^\s*priority\s*=\s*(\d+)", body, re.M) or [None, "1"])[1]
+        if (name, pr) in seen:
+            bad.append(f"{name}: two entries with priority {pr}")
+        seen[(name, pr)] = 1
+    return bad
+
+
 def table(layers, default_fuel="lf2024", default_terrain="ca_1s"):
-    """A copy of the current GEOGRID.TBL with the NFUEL_CAT and ZSF entries rebuilt to list every layer by name."""
+    """The current GEOGRID.TBL with every NFUEL_CAT and ZSF entry removed and one clean entry of each added,
+    listing every layer by name."""
     src = open(os.path.join(T, "GEOGRID.TBL")).read()
-    out = src
-    for name, kind in (("NFUEL_CAT", "fuel"), ("ZSF", "terrain")):
-        m = _block(out, name)
-        if not m:
-            raise SystemExit(f"{name} not found in {T}/GEOGRID.TBL")
-        blk = m.group(0)
-        keep = [l for l in blk.splitlines() if not re.match(r"\s*(interp_option|rel_path|abs_path)\s*=", l) and not re.match(r"^=+\s*$", l)]
-        interps = re.findall(r"^\s*interp_option\s*=\s*([^:\n]+):(.*)$", blk, re.M)
-        how = dict((k.strip(), v.strip()) for k, v in interps)
-        style = how.get("default") or next(iter(how.values()), "nearest_neighbor" if kind == "fuel" else "average_gcell(4.0)+four_pt+average_4pt")
+    kept = [body for name, body in blocks(src) if name not in ("NFUEL_CAT", "ZSF")]
+    kept = [re.sub(r"^\s*#.*\n?", "", b, flags=re.M) for b in kept]
+    kept = [b for b in kept if b.strip()]
+    parts = []
+    for kind, tmpl, dflt, style in (("fuel", FUEL_TEMPLATE, default_fuel, "nearest_neighbor"),
+                                    ("terrain", TERRAIN_TEMPLATE, default_terrain, "average_gcell(4.0)+four_pt+average_4pt")):
         sel = [(k, p) for k, kk, p in layers if kk == kind]
-        dflt = default_fuel if kind == "fuel" else default_terrain
-        lines = keep[:]
-        for k, p in sel:
-            lines.append(f"    interp_option = {k}:{style}")
-        lines.append(f"    interp_option = default:{style}")
-        for k, p in sel:
-            lines.append(f"    abs_path = {k}:{p}/")
-        dpath = dict(sel).get(dflt)
-        if dpath:
-            lines.append(f"    abs_path = default:{dpath}/")
-        lines.append("===============================")
-        out = out.replace(blk, "\n".join(lines))
-    if not out.endswith("\n"):
-        out += "\n"
-    out = re.sub(r"(^=+)(?=[^\n=])", r"\1\n", out, flags=re.M)
-    head = (f"# GEOGRID.TBL for WRF-Fire on CCR, written by wrfgate.static on {_dt.datetime.now():%Y-%m-%d %H:%M}.\n"
-            f"# Fuel (NFUEL_CAT) and fire terrain (ZSF) can be chosen by name in geog_data_res; see {S}/LAYERS.txt.\n")
-    return head + out
+        interp = [f"    interp_option={k}:{style}" for k, _ in sel] + [f"    interp_option=default:{style}"]
+        paths = [f"    abs_path={k}:{p}/" for k, p in sel]
+        if dict(sel).get(dflt):
+            paths.append(f"    abs_path=default:{dict(sel)[dflt]}/")
+        parts.append(tmpl.format(interp="\n".join(interp), paths="\n".join(paths)))
+    sep = "==============================="
+    out = sep + "\n" + ("\n" + sep + "\n").join(b.strip("\n") for b in kept) + "\n" + sep + "\n" + "\n".join(parts) + "\n"
+    bad = validate(out)
+    if bad:
+        raise SystemExit("the new table would not work: " + "; ".join(bad) + "; nothing was written")
+    return out
 
 
 def _rename(src, dst):
@@ -189,7 +241,7 @@ def wire(dry=False):
         os.chmod(T, dmode)
     print(f"wrote {T}/GEOGRID.TBL (previous kept as {keep})")
     with open(os.path.join(S, "LAYERS.txt"), "w") as f:
-        f.write(f"# Fuel and terrain layers for WPS, {_dt.datetime.now():%Y-%m-%d}. Select one in namelist.wps geog_data_res, e.g.\n"
+        f.write(f"# Written with {T}/GEOGRID.TBL by wrfgate.static.\n# Fuel and terrain layers for WPS, {_dt.datetime.now():%Y-%m-%d}. Select one in namelist.wps geog_data_res, e.g.\n"
                 f"#   geog_data_res = 'lf2024+default', 'ca_1s+lf2024+default'\n"
                 f"# Fire cards set this from fuel_layer automatically. 'default' = lf2024 for fuel, ca_1s for terrain.\n\n")
         for key, kind, p in layers:
@@ -283,6 +335,14 @@ if __name__ == "__main__":
         wire()
     elif a[0] == "check-job":
         print(check_job(a[1] if len(a) > 1 else os.path.join(ROOT, "tests", "static_check")))
+    elif a[0] == "check-table":
+        txt = open(os.path.join(T, "GEOGRID.TBL")).read()
+        names = [n for n, _ in blocks(txt)]
+        print(f"{len(names)} entries: " + ", ".join(names))
+        for n in ("NFUEL_CAT", "ZSF"):
+            print(f"{n}: {names.count(n)} entr{'y' if names.count(n) == 1 else 'ies'}")
+        bad = validate(txt)
+        print("problems: " + ("; ".join(bad) if bad else "none"))
     elif a[0] == "verify":
         verify(*a[1:5])
     else:
