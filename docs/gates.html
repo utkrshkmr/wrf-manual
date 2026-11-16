@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The gating system · WRF-Fire Manual</title>
-<meta name="description" content="Nine small commands carry a fire from its record to a checked run. Each one does one step, runs the checks for it, and writes what it did to a shared ledger. Nothing reaches the queue until the cheap checks have passed, and nothing is ever deleted.">
+<meta name="description" content="Ten small commands carry a fire from its record to a checked run. Each one does one step, runs the checks for it, and writes what it did to a shared ledger. Nothing reaches the queue until the cheap checks have passed, and nothing is ever deleted.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -23,28 +23,37 @@
 </ol>
 <h4>Running fires</h4><ol>
 <li><a href="gates.html" class="on"><span class="n">1</span><span>The gating system</span></a></li>
-<li><a href="example.html"><span class="n">2</span><span>Worked example: every fire</span></a></li>
-<li><a href="skill.html"><span class="n">3</span><span>Skill file for chat assistants</span></a></li>
+<li><a href="skill.html"><span class="n">2</span><span>Skill file for chat assistants</span></a></li>
+</ol>
+<h4>Examples</h4><ol>
+<li><a href="example.html"><span class="n">3</span><span>All fires at a glance</span></a></li>
+<li><a href="fire-eaton.html"><span class="n">4</span><span>Eaton 2025</span></a></li>
+<li><a href="fire-canyon.html"><span class="n">5</span><span>Canyon 2025</span></a></li>
+<li><a href="fire-cranston.html"><span class="n">6</span><span>Cranston 2018</span></a></li>
+<li><a href="fire-long.html"><span class="n">7</span><span>Long 2024</span></a></li>
+<li><a href="fire-airport.html"><span class="n">8</span><span>Airport</span></a></li>
+<li><a href="fire-bradford.html"><span class="n">9</span><span>Bradford Branch</span></a></li>
+<li><a href="fire-carmel.html"><span class="n">10</span><span>Carmel</span></a></li>
 </ol>
 <h4>Advanced: research inputs</h4><ol>
-<li><a href="extend.html"><span class="n">4</span><span>Where each change goes</span></a></li>
-<li><a href="moisture.html"><span class="n">5</span><span>Fuel moisture</span></a></li>
-<li><a href="fuelmap.html"><span class="n">6</span><span>The fuel map</span></a></li>
-<li><a href="fuelprops.html"><span class="n">7</span><span>How a fuel type burns</span></a></li>
-<li><a href="ignitions.html"><span class="n">8</span><span>Ignitions and perimeters</span></a></li>
-<li><a href="terrain.html"><span class="n">9</span><span>Terrain and slope</span></a></li>
-<li><a href="coupling.html"><span class="n">10</span><span>Fire and atmosphere</span></a></li>
+<li><a href="extend.html"><span class="n">11</span><span>Where each change goes</span></a></li>
+<li><a href="moisture.html"><span class="n">12</span><span>Fuel moisture</span></a></li>
+<li><a href="fuelmap.html"><span class="n">13</span><span>The fuel map</span></a></li>
+<li><a href="fuelprops.html"><span class="n">14</span><span>How a fuel type burns</span></a></li>
+<li><a href="ignitions.html"><span class="n">15</span><span>Ignitions and perimeters</span></a></li>
+<li><a href="terrain.html"><span class="n">16</span><span>Terrain and slope</span></a></li>
+<li><a href="coupling.html"><span class="n">17</span><span>Fire and atmosphere</span></a></li>
 </ol>
 <h4>WRF mechanics</h4><ol>
-<li><a href="env.html"><span class="n">11</span><span>Environment and data</span></a></li>
-<li><a href="domain.html"><span class="n">12</span><span>Domain design</span></a></li>
-<li><a href="geogrid.html"><span class="n">13</span><span>Static data (geogrid)</span></a></li>
-<li><a href="ungrib.html"><span class="n">14</span><span>Weather (ungrib)</span></a></li>
-<li><a href="metgrid.html"><span class="n">15</span><span>Merge (metgrid)</span></a></li>
-<li><a href="real.html"><span class="n">16</span><span>real.exe and namelist.input</span></a></li>
-<li><a href="fire.html"><span class="n">17</span><span>The fire model</span></a></li>
-<li><a href="run.html"><span class="n">18</span><span>Running it on Slurm</span></a></li>
-<li><a href="reference.html"><span class="n">19</span><span>Reference and failures</span></a></li>
+<li><a href="env.html"><span class="n">18</span><span>Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">19</span><span>Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">20</span><span>Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">21</span><span>Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">22</span><span>Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">23</span><span>real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">24</span><span>The fire model</span></a></li>
+<li><a href="run.html"><span class="n">25</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">26</span><span>Reference and failures</span></a></li>
 </ol>
 <button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
 </nav>
@@ -52,8 +61,8 @@
 <article class="page">
 <p class="kicker">Running it safely</p>
 <h1>The gating system</h1>
-<p class="lead">Nine small commands carry a fire from its record to a checked run. Each one does one step, runs the checks for it, and writes what it did to a shared ledger. Nothing reaches the queue until the cheap checks have passed, and nothing is ever deleted.</p>
-<nav class="toc"><b>On this page</b><ul><li><a href="#why-gates">Why gates</a></li><li><a href="#setting-it-up">Setting it up</a></li><li><a href="#your-profile">Your profile</a></li><li><a href="#the-folders">The folders</a></li><li><a href="#the-commands">The commands</a></li><li><a href="#what-each-gate-checks">What each gate checks</a></li><li><a href="#watching-jobs">Watching jobs</a></li><li><a href="#the-ledger">The ledger</a></li><li><a href="#files">Files</a></li></ul></nav>
+<p class="lead">Ten small commands carry a fire from its record to a checked run. Each one does one step, runs the checks for it, and writes what it did to a shared ledger. Nothing reaches the queue until the cheap checks have passed, and nothing is ever deleted.</p>
+<nav class="toc"><b>On this page</b><ul><li><a href="#why-gates">Why gates</a></li><li><a href="#getting-started">Getting started</a></li><li><a href="#your-profile">Your profile</a></li><li><a href="#the-folders">The folders</a></li><li><a href="#the-commands">The commands</a></li><li><a href="#what-each-gate-checks">What each gate checks</a></li><li><a href="#watching-jobs">Watching jobs</a></li><li><a href="#the-ledger">The ledger</a></li><li><a href="#files">Files</a></li></ul></nav>
 <h2 id="why-gates">Why gates</h2>
 <p>A WRF-Fire run can wait a day in the queue and then fail in its first minute: a namelist typo, a fuel map from the wrong place, an ignition outside the fire domain. Each of those can be caught in seconds or minutes, before the expensive job is submitted. The gating system puts a check after every step of the <a href="index.html">chain</a>, and makes each command refuse to start until the check before it has passed.</p>
 <figure><div class="fig"><svg viewBox="0 0 900 400" role="img" aria-label="Six commands carry a fire from its record to a checked run; each passes through a gate">
@@ -93,16 +102,11 @@
 </svg></div><figcaption><strong>The six steps of one run.</strong> The record and the input version are made once per fire; gates C and D are run once per set of namelists; <code>wrf-submit</code> refuses unless gate D passed for exactly those namelists on exactly that input version.</figcaption></figure>
 
 <p>It also answers, for every file in the shared folder, who made it, when, from what, and whether it was checked. That is what the manifests and the ledger are for.</p>
-<h2 id="setting-it-up">Setting it up</h2>
-<p>Once, by whoever installs a release (from a clone of this site's repository):</p>
-<pre><code class="language-bash">git clone https://github.com/utkrshkmr/wrf-manual.git /projects/academic/negarkhodoe/utkarshk/wrf-manual
-bash /projects/academic/negarkhodoe/utkarshk/wrf-manual/tools/wrfgate/install.sh
-</code></pre>
-<p><code>install.sh</code> copies the code to <code>wrf/pipeline/releases/&lt;version&gt;/</code>, makes it read-only, and points <code>wrf/pipeline/current</code> at it. A newer release is installed the same way; the old one stays, so jobs already in the queue keep the code they were submitted with.</p>
+<h2 id="getting-started">Getting started</h2>
 <p>Once per person:</p>
 <pre><code class="language-bash">echo 'source /projects/academic/negarkhodoe/wrf/pipeline/current/setup.sh' &gt;&gt; ~/.bashrc
 source /projects/academic/negarkhodoe/wrf/pipeline/current/setup.sh
-wrf-me --name &quot;Utkarsh Kumar&quot; --email ukumar@buffalo.edu --mail END,FAIL
+wrf-me --name &quot;Your Name&quot; --email you@buffalo.edu --mail END,FAIL
 </code></pre>
 <p><code>setup.sh</code> puts the commands on your <code>PATH</code> and adds a shell hook that logs your commands that touch the shared folder. <code>wrf-me</code> writes your profile.</p>
 <h2 id="your-profile">Your profile</h2>
@@ -123,8 +127,7 @@ UPDATED=2026-11-16T10:02:11-05:00
 <h2 id="the-folders">The folders</h2>
 <pre><code class="language-text">/projects/academic/negarkhodoe/wrf/
   pipeline/
-    current -&gt; releases/2026.11.16-a1b2c3d     the code everyone runs
-    releases/&lt;version&gt;/                        read-only: bin/, lib/, setup.sh, MANIFEST.txt
+    current/                                   the commands everyone runs (read-only)
   people/&lt;username&gt;/                           profile.conf, work/
   static/                                      LANDFIRE, elevation, geography; read-only
   tables/                                      GEOGRID.TBL, METGRID.TBL, Vtables
@@ -166,7 +169,7 @@ UPDATED=2026-11-16T10:02:11-05:00
 <p>Rules the commands keep:</p>
 <ul>
 <li><strong>Group-owned, group-writable folders</strong> (set-group-ID on <code>fires/</code>, <code>people/</code>, <code>ledger/</code>, <code>setaside/</code>), so a second person can add a run to a fire the first one created.</li>
-<li><strong>Locked means locked.</strong> Records, input versions, specs copied by the arrange job and releases are read-only. Changing one means making a new one: <code>wrf-new-fire --replace</code>, a new <code>wrf-add-inputs</code>, a new spec folder, a new release.</li>
+<li><strong>Locked means locked.</strong> Records, input versions, the specs fires ran with, and the commands themselves are read-only. Changing one means making a new one: <code>wrf-new-fire --replace</code>, a new <code>wrf-add-inputs</code>, a new card or spec folder.</li>
 <li><strong>Nothing is deleted.</strong> <code>wrf-setaside PATH "reason"</code> moves a run, an input version or a spec into <code>setaside/&lt;month&gt;/</code> with a <code>NOTE.txt</code> saying where it came from, who moved it, why, and the command that moves it back. It refuses anything still in use: the current input version, an input version a run used, a gate C folder that a later run links to, and runs whose job is still queued or running. The pipeline, the ledger and <code>setaside/</code> itself are never moved.</li>
 </ul>
 <h2 id="the-commands">The commands</h2>
@@ -183,6 +186,11 @@ UPDATED=2026-11-16T10:02:11-05:00
 <td><code>wrf-me [--name --email --mail]</code></td>
 <td>Shows or writes your profile</td>
 <td>the email is not an address</td>
+</tr>
+<tr>
+<td><code>wrf-card FIRE</code> · <code>wrf-card --template</code> · <code>wrf-card --make CARD [--wps]</code></td>
+<td>Prints a fire's card (every setting, from its record, spec and inputs); prints a blank card; or, from a filled card, records the fire and writes <code>namelist.wps</code>, a WPS job and a spec into <code>people/&lt;you&gt;/work/&lt;name&gt;_&lt;time&gt;/</code> (<code>--wps</code> submits WPS, which registers the <code>met_em</code> files when it succeeds)</td>
+<td>the card's ignition is outside or within 2 km of the fire domain's edge, <code>fire_cells - 1</code> does not divide by <code>fire_ratio</code>, the fire domain does not fit in the outer one, or times are out of order</td>
 </tr>
 <tr>
 <td><code>wrf-new-fire FIRE --from-namelist NL</code></td>
@@ -355,20 +363,12 @@ EATON_2025      20261117_131500_gateD_camp  gate D     Utkarsh Kumar  26901377  
 </thead>
 <tbody>
 <tr>
-<td><code>install.sh</code></td>
-<td>installs a read-only release and points <code>current</code> at it</td>
-</tr>
-<tr>
 <td><code>setup.sh</code></td>
 <td><code>PATH</code>, <code>WRF_ROOT</code>, the shell-history hook</td>
 </tr>
 <tr>
 <td><code>SKILL.md</code></td>
 <td>text to paste into an AI chat so it can guide a run (see <a href="skill.html">the skill page</a>)</td>
-</tr>
-<tr>
-<td><code>arrange_ccr.sbatch</code></td>
-<td>one-off job that copies every fire we have into this layout (see the <a href="example.html">worked example</a>)</td>
 </tr>
 <tr>
 <td><code>bin/wrf-*</code></td>
@@ -399,13 +399,17 @@ EATON_2025      20261117_131500_gateD_camp  gate D     Utkarsh Kumar  26901377  
 <td><code>wrf-watch</code>: Slurm state, progress and ETA of every submitted job</td>
 </tr>
 <tr>
+<td><code>lib/wrfgate/card.py</code></td>
+<td>fire cards: print, template, and turning a card into namelists and a WPS job</td>
+</tr>
+<tr>
 <td><code>lib/wrfgate/record.py</code>, <code>ledger.py</code></td>
 <td>the record and the ledger from the command line</td>
 </tr>
 </tbody>
 </table></div>
 <p>All of it is in the site's repository under <a href="https://github.com/utkrshkmr/wrf-manual/tree/main/tools/wrfgate"><code>tools/wrfgate/</code></a>.</p>
-<nav class="pager"><a class="prev" href="quickstart.html"><small>Previous</small>Quick start</a><a class="next" href="example.html"><small>Next</small>Worked example: every fire</a></nav>
+<nav class="pager"><a class="prev" href="quickstart.html"><small>Previous</small>Quick start</a><a class="next" href="skill.html"><small>Next</small>Skill file for chat assistants</a></nav>
 <footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/gates.md</code>.</footer>
 </article>
 </main>

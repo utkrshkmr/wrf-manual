@@ -8,9 +8,9 @@ toc: no
 ## Start here
 
 <div class="cards" markdown="0">
-<a class="card" href="quickstart.html"><span class="k">10 minutes</span><h3>Quick start</h3><p>Install, set yourself up, and start your first run.</p></a>
+<a class="card" href="quickstart.html"><span class="k">Start</span><h3>Quick start</h3><p>Set yourself up, describe a fire as a card, and start it.</p></a>
 <a class="card" href="skill.html"><span class="k">Easiest</span><h3>Use it from an AI chat</h3><p>Copy one block of text into any chat assistant; it walks you through the rest.</p></a>
-<a class="card" href="example.html"><span class="k">Example</span><h3>Every fire we have run</h3><p>Eaton, Canyon, Cranston, Long and the NCAR fires, command by command.</p></a>
+<a class="card" href="example.html"><span class="k">Example</span><h3>The fires we have run</h3><p>Each on its own page: its card, and how to run it again or make a variant.</p></a>
 </div>
 
 ## Running fires

@@ -42,70 +42,36 @@ wrf-me
 wrf-status
 ```
 
-- If `wrf-me` says there is no profile: ask for their full name, their email, and which Slurm emails they want (default `END,FAIL`), then give `wrf-me --name "Full Name" --email them@buffalo.edu --mail END,FAIL`.
-- From `wrf-status` (and `wrf-status FIRE`), decide where to start:
+If `wrf-me` says there is no profile: ask for their full name, their email, and which Slurm emails they want (default `END,FAIL`), then give `wrf-me --name "Full Name" --email them@buffalo.edu --mail END,FAIL`.
 
-| What exists for the fire | Go to |
-| --- | --- |
-| a record, inputs marked `current`, a spec | Step 4 |
-| a record, but no `current` inputs | Step 3 |
-| nothing, but `met_em` files exist somewhere | Step 2 |
-| nothing at all | Step 1 |
+## Step 1: the fire card (always start here)
 
-## Step 1: make met_em files with WPS (only if none exist)
+Every fire, new or already run, is described by its **card**: name, window, ignition time and place, domains, data, a few fire-model settings, and `base_spec` (the fire whose physics and other settings are reused). Work from the card, never from a vague request like "run Canyon".
 
-Ask for: ignition time (UTC) and point, the simulation window (start and end, UTC), and roughly how far the fire spread. Then help them write `namelist.wps` in `/projects/academic/negarkhodoe/wrf/people/<user>/work/<FIRE>/`:
+- **The user pasted a card**: read it back as a short table and confirm it before anything else.
+- **The user names a fire that exists** (`wrf-status` lists it): ask for `wrf-card FIRE` and show them its settings, including the *Measured* lines (gate results, rank cap, `fire_fuel_read`, which must be `-1`). Ask what, if anything, should change.
+- **A new fire**: ask for `wrf-card --template`, or start from the closest existing card (`wrf-card CANYON_2025` for a small fire, `wrf-card EATON_2025` for a large one). Ask the user for the facts you need: name, start and end (UTC), ignition time (UTC), ignition latitude and longitude, how far the fire spread (to size `fire_cells`), and which weather files exist. Never invent them. Fill in the card with them and show it before going on.
 
-- Two domains: outer about 900 m, fire domain about 100 m (`parent_grid_ratio = 9`), Lambert conformal. Each nest's `(e_we - 1)` and `(e_sn - 1)` must divide by its ratio.
-- `subgrid_ratio_x = 4` and `subgrid_ratio_y = 4` go in **`&share`**.
-- The ignition must sit several km inside the fire domain's edges; more for a big fire.
-- `geog_data_path = '/projects/academic/negarkhodoe/wrf/static/WPS_GEOG'`; `opt_geogrid_tbl_path` and `opt_metgrid_tbl_path` = `'/projects/academic/negarkhodoe/wrf/tables/fire/'`. For the fire domain, `geog_data_res` must select the LANDFIRE fuel and the 1-arc-second elevation entries defined in that `GEOGRID.TBL` (ask them to `grep -n "name\|rel_path\|abs_path" /projects/academic/negarkhodoe/wrf/tables/fire/GEOGRID.TBL` if you need the names). Use the LANDFIRE year closest to the fire.
-- **Keep every path in the namelist under about 60 characters**; geogrid crashes with `End of record` on long paths.
-- Weather: HRRR `wrfprsf00` hourly files, `interval_seconds = 3600`, `Vtable.HRRR.prs`.
+Card rules to check with the user:
 
-Run WPS as one job **on one core** (more ranks run out of time: each reads the whole weather file). Have them save this as `wps.sbatch` in their work folder and submit it with `sbatch` (this is the one `sbatch` they run by hand):
+- `start` < `ignition_time` < `end`; at least an hour of weather before ignition is better.
+- `(fire_cells - 1)` must divide by `fire_ratio`; the fire domain needs 5 outer cells of margin inside the outer one; the ignition at least 2 km (better: much more) inside the fire domain. `wrf-card --make` checks all three.
+- `fuel_layer`: the LANDFIRE release before the fire's date.
+- A change to times or domains needs new `met_em` files (WPS). A change to anything else (moisture, feedback, slope, `base_spec`, time step) reuses the fire's existing inputs.
+
+Have them save the card as a file, e.g. `/projects/academic/negarkhodoe/wrf/people/$USER/work/<name>.card` (they can paste it with `cat > FILE <<'EOF'` … `EOF`).
+
+## Step 2: make the fire from its card
 
 ```bash
-#!/bin/bash
-#SBATCH -p general-compute
-#SBATCH --qos=general-compute
-#SBATCH -N 1
-#SBATCH -n 1
-#SBATCH --mem=64G
-#SBATCH -t 06:00:00
-module purge
-module load gcc/11.2.0 openmpi/4.1.1 wps/4.6.0-dmpar
-cd /projects/academic/negarkhodoe/wrf/people/USER/work/FIRE
-srun -n 1 geogrid.exe < /dev/null
-csh $EBROOTWPS/WPS-4.6.0/link_grib.csh /path/to/hrrr/files/*wrfprsf00*
-ln -sf /projects/academic/negarkhodoe/wrf/tables/fire/Vtable.HRRR.prs Vtable
-srun -n 1 ungrib.exe < /dev/null
-srun -n 1 metgrid.exe < /dev/null
+wrf-card --make /projects/academic/negarkhodoe/wrf/people/$USER/work/<name>.card
 ```
 
-Done when `geogrid.log`, `ungrib.log` and `metgrid.log` each end with `Successful completion`.
+It checks the card, records the fire (if new), and writes `namelist.wps`, `wps.sbatch` and a spec folder (`spec/namelist.input`, `spec/namelist.fire`) into `people/$USER/work/<NAME>_<time>/`. Read its notes (ignition distance from the edge, rank cap) back to the user.
 
-## Step 2: record the fire and register its inputs
-
-From a namelist that was already used for this fire:
-
-```bash
-wrf-new-fire FIRE --from-namelist /path/to/namelist.input
-```
-
-or from values (UTC):
-
-```bash
-wrf-new-fire FIRE --start "YYYY-MM-DD HH:MM" --end "YYYY-MM-DD HH:MM" --ignition "YYYY-MM-DD HH:MM" --lat LAT --lon LON
-```
-
-Show them the printed record and confirm window and ignition before going on. Then:
-
-```bash
-wrf-add-inputs FIRE /path/to/met_em_folder --note "how these were made"
-```
-
-It copies and locks the files and runs gates A and B.
+- **New met_em needed** (new fire, or changed times or domains): add `--wps`. It submits WPS on one core; when WPS succeeds, the `met_em` files are registered and gates A and B run automatically. If WPS fails, ask for `tail -20` of `geogrid.log`, `ungrib.log` or `metgrid.log` in that folder, and of `wps_<job>.out`.
+- **Inputs already registered**: no `--wps`; go to Step 3 with `wrf-status FIRE`, then Step 5 with the printed spec folder.
+- A fire whose `met_em` came from elsewhere (not WPS here): `wrf-add-inputs FIRE /path/to/met_em_folder --note "where these came from"`.
 
 ## Step 3: read gates A and B
 
@@ -116,24 +82,20 @@ cat /projects/academic/negarkhodoe/wrf/fires/FIRE/inputs/VERSION.gates/GATES.txt
 
 | Failed check | Fix |
 | --- | --- |
-| A05 window | weather does not cover the record's start or end: more hours in WPS, or the right record |
-| A08 finite | NaN/Inf: rerun metgrid, check those hours' weather files |
-| A09 nest rule | change `e_we`/`e_sn` in `namelist.wps`, rerun WPS |
-| A11/A12 no fire mesh or fuel | `subgrid_ratio` not in `&share`, or fuel entry not in `geog_data_res` |
+| A05 window | weather does not cover the card's start or end: more weather files, or fix the card |
+| A08 finite | NaN/Inf: rerun WPS, check those hours' weather files |
+| A09 nest rule | `fire_cells` in the card, then `--make --wps` again |
+| A11/A12 no fire mesh or fuel | `fire_mesh_ratio` 0, or `fuel_key` not a resolution key in `/projects/academic/negarkhodoe/wrf/tables/fire/GEOGRID.TBL` |
 | A14 invalid fuel codes | wrong fuel layer |
 | A16 warning, code 204 | the spec's `namelist.fire` needs `nfuelcats = 54` |
-| A19/A20 ignition outside or near the edge | move or enlarge the fire domain, rerun WPS |
+| A19/A20 ignition outside or near the edge | move the domain (`center_lat/lon`, `fire_start_i/j`) or enlarge `fire_cells` |
 | A21 ignition unburnable | check the ignition point with the user |
 | B02 below 90% | fuel map does not match LANDFIRE; look at B07's best release; report to the user, do not go on |
 | B02 90–98% (warning) | tell the user the numbers before going on |
 
-## Step 4: the spec (namelists)
+## Step 4: when the spec needs a hand edit
 
-A spec is a folder holding `namelist.input` and `namelist.fire`. Start from a similar fire's spec, e.g. `/projects/academic/negarkhodoe/wrf/fires/CANYON_2025/specs/campaign/`; have them copy it into `people/<user>/work/<FIRE>_<label>/` and edit the copy. Never edit `specs/campaign/` itself.
-
-Must match the inputs (ask for `cat .../inputs/VERSION.gates/gate_A.json` and `ncdump -h` of one `met_em.d02` file): `max_dom`, `e_we`, `e_sn`, `dx`, `dy`, `parent_grid_ratio`, `i_parent_start`, `j_parent_start`, `num_metgrid_levels`, `num_metgrid_soil_levels`, `sr_x`/`sr_y` (4 on the fire domain, 0 elsewhere), start = record start, end = record end.
-
-Fire domain: `ifire = 2`, `fire_fuel_read = -1`, `fire_ignition_start_lat1`/`lon1` = the record's, `fire_ignition_start_time1` = seconds from the run's start to the ignition, `fire_ignition_radius1`, `fire_fmc_read = 1` with the moisture value in `namelist.fire`. `time_step` about 6 × the outer `dx` in km.
+The card writes the spec. Edit the spec folder by hand only for settings the card does not hold (physics, extra ignitions, output fields), in the copy under `people/$USER/work/`, never in `fires/*/specs/`. Values that must match the inputs (gate C checks them): `max_dom`, `e_we`, `e_sn`, `dx`, `dy`, `parent_grid_ratio`, `i_parent_start`, `j_parent_start`, `num_metgrid_levels`, `num_metgrid_soil_levels`, `sr_x`/`sr_y`, start and end times. `num_metgrid_levels` comes from `base_spec`; if the weather product differs from the base fire's, set it from `ncdump -h` of one `met_em.d01` file.
 
 ## Step 5: gates C and D
 
@@ -207,12 +169,13 @@ Base address for raw files: `https://raw.githubusercontent.com/utkrshkmr/wrf-man
 | several ignitions, an observed perimeter (`LFN_HIST`) | `src/ignitions.md` |
 | fine terrain (`ZSF`), slope sensitivity | `src/terrain.md` |
 | fire–atmosphere coupling, heat release, spread wind | `src/coupling.md` |
-| install and first steps | `src/quickstart.md` |
+| first steps | `src/quickstart.md` |
 | ranks, walltime, 72-hour limit, restarts, how a run ended | `src/run.md` |
 | what a gate check means or why it failed | `src/gates.md`, then the gate's code: `tools/wrfgate/lib/wrfgate/gate_a.py` … `gate_e.py` (search for the check ID, e.g. `C07_`) |
 | what a `wrf-*` command does or why it refused | `tools/wrfgate/bin/<command>` (the refusals are the `wg_die` lines) |
 | `wrf-watch` columns and warnings | `tools/wrfgate/lib/wrfgate/watch.py` |
-| an example of a whole run | `src/example.md` |
+| a fire we have run, step by step | `src/fire-eaton.md`, `fire-canyon.md`, `fire-cranston.md`, `fire-long.md`, `fire-airport.md`, `fire-bradford.md`, `fire-carmel.md` |
+| fire cards (`wrf-card`) | `src/quickstart.md`, `tools/wrfgate/lib/wrfgate/card.py` |
 
 How to look:
 
@@ -227,7 +190,7 @@ curl -fsSL https://raw.githubusercontent.com/utkrshkmr/wrf-manual/main/PATH | gr
 - **Searching every page at once** for a message:
 
 ```bash
-for p in quickstart env domain geogrid ungrib metgrid real fire moisture extend fuelmap fuelprops ignitions terrain coupling run reference gates example; do curl -fsSL https://raw.githubusercontent.com/utkrshkmr/wrf-manual/main/src/$p.md | grep -n -i -H --label=$p -A8 "SEARCH WORDS"; done
+for p in quickstart env domain geogrid ungrib metgrid real fire moisture extend fuelmap fuelprops ignitions terrain coupling run reference gates example fire-eaton fire-canyon fire-cranston fire-long; do curl -fsSL https://raw.githubusercontent.com/utkrshkmr/wrf-manual/main/src/$p.md | grep -n -i -H --label=$p -A8 "SEARCH WORDS"; done
 ```
 
 - Quote what you found (page and line) when you explain the fix. If the repo has nothing on it, say so, and then reason from the logs.
@@ -236,6 +199,7 @@ for p in quickstart env domain geogrid ungrib metgrid real fire moisture extend 
 
 ```bash
 wrf-status FIRE
+wrf-card FIRE
 wrf-watch --active
 wrf-watch --mine --every 120
 wrf-setaside /projects/academic/negarkhodoe/wrf/fires/FIRE/runs/RUN "reason"

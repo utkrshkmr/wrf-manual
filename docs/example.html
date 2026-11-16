@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Worked example: every fire we have run · WRF-Fire Manual</title>
-<meta name="description" content="The same six steps, fire by fire, starting with Eaton. The arrange job does the first two steps for all seven fires at once; after that each fire is three commands and a wait.">
+<title>Examples: the fires we have run · WRF-Fire Manual</title>
+<meta name="description" content="Each fire has its own page that can be followed on its own: its card with every setting, how to run it from an AI chat or with the commands, how to size it, and how to make a variant.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -23,223 +23,121 @@
 </ol>
 <h4>Running fires</h4><ol>
 <li><a href="gates.html"><span class="n">1</span><span>The gating system</span></a></li>
-<li><a href="example.html" class="on"><span class="n">2</span><span>Worked example: every fire</span></a></li>
-<li><a href="skill.html"><span class="n">3</span><span>Skill file for chat assistants</span></a></li>
+<li><a href="skill.html"><span class="n">2</span><span>Skill file for chat assistants</span></a></li>
+</ol>
+<h4>Examples</h4><ol>
+<li><a href="example.html" class="on"><span class="n">3</span><span>All fires at a glance</span></a></li>
+<li><a href="fire-eaton.html"><span class="n">4</span><span>Eaton 2025</span></a></li>
+<li><a href="fire-canyon.html"><span class="n">5</span><span>Canyon 2025</span></a></li>
+<li><a href="fire-cranston.html"><span class="n">6</span><span>Cranston 2018</span></a></li>
+<li><a href="fire-long.html"><span class="n">7</span><span>Long 2024</span></a></li>
+<li><a href="fire-airport.html"><span class="n">8</span><span>Airport</span></a></li>
+<li><a href="fire-bradford.html"><span class="n">9</span><span>Bradford Branch</span></a></li>
+<li><a href="fire-carmel.html"><span class="n">10</span><span>Carmel</span></a></li>
 </ol>
 <h4>Advanced: research inputs</h4><ol>
-<li><a href="extend.html"><span class="n">4</span><span>Where each change goes</span></a></li>
-<li><a href="moisture.html"><span class="n">5</span><span>Fuel moisture</span></a></li>
-<li><a href="fuelmap.html"><span class="n">6</span><span>The fuel map</span></a></li>
-<li><a href="fuelprops.html"><span class="n">7</span><span>How a fuel type burns</span></a></li>
-<li><a href="ignitions.html"><span class="n">8</span><span>Ignitions and perimeters</span></a></li>
-<li><a href="terrain.html"><span class="n">9</span><span>Terrain and slope</span></a></li>
-<li><a href="coupling.html"><span class="n">10</span><span>Fire and atmosphere</span></a></li>
+<li><a href="extend.html"><span class="n">11</span><span>Where each change goes</span></a></li>
+<li><a href="moisture.html"><span class="n">12</span><span>Fuel moisture</span></a></li>
+<li><a href="fuelmap.html"><span class="n">13</span><span>The fuel map</span></a></li>
+<li><a href="fuelprops.html"><span class="n">14</span><span>How a fuel type burns</span></a></li>
+<li><a href="ignitions.html"><span class="n">15</span><span>Ignitions and perimeters</span></a></li>
+<li><a href="terrain.html"><span class="n">16</span><span>Terrain and slope</span></a></li>
+<li><a href="coupling.html"><span class="n">17</span><span>Fire and atmosphere</span></a></li>
 </ol>
 <h4>WRF mechanics</h4><ol>
-<li><a href="env.html"><span class="n">11</span><span>Environment and data</span></a></li>
-<li><a href="domain.html"><span class="n">12</span><span>Domain design</span></a></li>
-<li><a href="geogrid.html"><span class="n">13</span><span>Static data (geogrid)</span></a></li>
-<li><a href="ungrib.html"><span class="n">14</span><span>Weather (ungrib)</span></a></li>
-<li><a href="metgrid.html"><span class="n">15</span><span>Merge (metgrid)</span></a></li>
-<li><a href="real.html"><span class="n">16</span><span>real.exe and namelist.input</span></a></li>
-<li><a href="fire.html"><span class="n">17</span><span>The fire model</span></a></li>
-<li><a href="run.html"><span class="n">18</span><span>Running it on Slurm</span></a></li>
-<li><a href="reference.html"><span class="n">19</span><span>Reference and failures</span></a></li>
+<li><a href="env.html"><span class="n">18</span><span>Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">19</span><span>Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">20</span><span>Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">21</span><span>Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">22</span><span>Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">23</span><span>real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">24</span><span>The fire model</span></a></li>
+<li><a href="run.html"><span class="n">25</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">26</span><span>Reference and failures</span></a></li>
 </ol>
 <button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
 </nav>
 <main>
 <article class="page">
-<p class="kicker">Running it safely</p>
-<h1>Worked example: every fire we have run</h1>
-<p class="lead">The same six steps, fire by fire, starting with Eaton. The arrange job does the first two steps for all seven fires at once; after that each fire is three commands and a wait.</p>
-<nav class="toc"><b>On this page</b><ul><li><a href="#before-the-first-fire">Before the first fire</a></li><li><a href="#step-1-and-2-for-all-fires-the-arrange-job">Step 1 and 2 for all fires: the arrange job</a></li><li><a href="#eaton-2025">Eaton 2025</a></li><li><a href="#canyon-cranston-and-long">Canyon, Cranston and Long</a></li><li><a href="#airport-bradford-branch-and-carmel">Airport, Bradford Branch and Carmel</a></li><li><a href="#changing-something">Changing something</a></li></ul></nav>
-<h2 id="before-the-first-fire">Before the first fire</h2>
-<p>Install a release and make your profile, as on <a href="gates.html#setting-it-up">the gating system</a> page:</p>
-<pre><code class="language-bash">git clone https://github.com/utkrshkmr/wrf-manual.git /projects/academic/negarkhodoe/utkarshk/wrf-manual
-bash /projects/academic/negarkhodoe/utkarshk/wrf-manual/tools/wrfgate/install.sh
-echo 'source /projects/academic/negarkhodoe/wrf/pipeline/current/setup.sh' &gt;&gt; ~/.bashrc
-source /projects/academic/negarkhodoe/wrf/pipeline/current/setup.sh
-wrf-me --name &quot;Utkarsh Kumar&quot; --email ukumar@buffalo.edu --mail END,FAIL
-</code></pre>
-<h2 id="step-1-and-2-for-all-fires-the-arrange-job">Step 1 and 2 for all fires: the arrange job</h2>
-<p>The fires we have run, or have inputs for, live in several older folders. One job copies each into the gated layout: it writes the record from the namelist the fire was run with, copies that namelist (and <code>namelist.fire</code>) as the spec <code>campaign</code>, and registers the <code>met_em</code> files as an input version, which runs gates A and B.</p>
-<pre><code class="language-bash">sbatch /projects/academic/negarkhodoe/wrf/pipeline/current/arrange_ccr.sbatch
-</code></pre>
-<div class="tbl"><table>
-<thead>
-<tr>
-<th>Fire</th>
-<th>Record name</th>
-<th><code>met_em</code> from</th>
-<th>Run in the campaign</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Eaton 2025</td>
-<td><code>EATON_2025</code></td>
-<td><code>utkarshk/fires/EATON</code></td>
-<td>yes, 24 nodes</td>
-</tr>
-<tr>
-<td>Canyon 2025</td>
-<td><code>CANYON_2025</code></td>
-<td><code>Thursday_deadline_fires/CANYON</code></td>
-<td>yes, 25 ranks</td>
-</tr>
-<tr>
-<td>Cranston 2018</td>
-<td><code>CRANSTON_2018</code></td>
-<td><code>Thursday_deadline_fires/CRANSTON</code></td>
-<td>yes, 36 ranks</td>
-</tr>
-<tr>
-<td>Long 2024</td>
-<td><code>LONG_2024</code></td>
-<td><code>Thursday_deadline_fires/LONG</code></td>
-<td>yes, 36 ranks</td>
-</tr>
-<tr>
-<td>Airport</td>
-<td><code>AIRPORT</code></td>
-<td><code>WRF_NCAR_Fires/AIRPORT</code></td>
-<td>inputs only</td>
-</tr>
-<tr>
-<td>Bradford Branch</td>
-<td><code>BRADFORD_BRANCH</code></td>
-<td><code>WRF_NCAR_Fires/BRADFORD_BRANCH</code></td>
-<td>inputs only</td>
-</tr>
-<tr>
-<td>Carmel</td>
-<td><code>CARMEL</code></td>
-<td><code>WRF_NCAR_Fires/CARMEL</code></td>
-<td>inputs only</td>
-</tr>
-</tbody>
-</table></div>
-<p>What it does and does not do:</p>
-<ul>
-<li><strong>Copies only.</strong> It reads the old folders and never moves, edits or deletes anything in them, and submits nothing. Jobs already running are not touched.</li>
-<li><strong>Finds the files itself.</strong> For each fire it takes the folder with the most <code>met_em.d01</code> files, and the newest <code>namelist.input</code> that has an ignition, under <code>utkarshk/fires/&lt;FIRE&gt;</code>, <code>utkarshk/campaign</code>, <code>utkarshk/runs</code> and the <code>met_em</code> folder. The log lists every other candidate it saw.</li>
-<li><strong>Can be told.</strong> Any choice can be overridden when submitting, e.g. <code>sbatch --export=ALL,NL_LONG_2024=/path/namelist.input,MET_LONG_2024=/path/met_em_folder …/arrange_ccr.sbatch</code>.</li>
-<li><strong>Picks the reference fuel layer by the fire's year</strong> (2016 release for fires before 2022, otherwise the matching year, 2024 for 2024 and later); gate B's release scan then shows which release each input really matches.</li>
-<li><strong>Can be rerun.</strong> Records that exist are kept, identical inputs are refused as already registered, and a fire it skipped can be fixed and picked up next time.</li>
-</ul>
-<p>The log is <code>wrf/ledger/arrange_&lt;job&gt;.out</code>, ending in a one-line summary per fire, and <code>wrf-status</code> shows the result:</p>
-<pre><code class="language-text">$ wrf-status
-FIRE               START                      CURRENT_INPUTS         RUNS
-CANYON_2025        2025-08-07 18:00:00        20261116_7f3e19a2      0
-EATON_2025         2025-01-08 00:00:00        20261116_c04a91e7      0
-...
-</code></pre>
-<p>A fire whose gate B <strong>failed</strong> has its inputs registered but no <code>current</code>; read its <code>GATES.txt</code> before going on.</p>
-<h2 id="eaton-2025">Eaton 2025</h2>
-<p>The largest fire: 6.1 million column updates per coarse step, a rank cap of 2,025, and in the campaign 1.16 s per step on 24 Sapphire Rapids nodes.</p>
-<p><strong>1. Look at the record and the gates.</strong></p>
-<pre><code class="language-bash">wrf-status EATON_2025
-cat /projects/academic/negarkhodoe/wrf/fires/EATON_2025/inputs/$(readlink /projects/academic/negarkhodoe/wrf/fires/EATON_2025/inputs/current).gates/GATES.txt
-</code></pre>
-<p>Check that the record's window is Jan 8 00:00 → 17:00 UTC and that the ignition time and place are the ones you mean. If not, make it again from the right namelist, which keeps the old one: <code>wrf-new-fire EATON_2025 --from-namelist /path/namelist.input --replace</code>.</p>
-<p><strong>2. Gate C: real.exe on the campaign namelists.</strong></p>
-<pre><code class="language-bash">wrf-gate C EATON_2025 /projects/academic/negarkhodoe/wrf/fires/EATON_2025/specs/campaign
-</code></pre>
-<p>It prints the job ID and the run folder <code>fires/EATON_2025/runs/&lt;stamp&gt;_gateC_campaign</code>. You get an email when it ends; then:</p>
-<pre><code class="language-bash">cat /projects/academic/negarkhodoe/wrf/fires/EATON_2025/runs/*_gateC_campaign/GATES.txt
-</code></pre>
-<p><strong>3. Gate D: two minutes of wrf.exe.</strong> On one Sapphire Rapids node, so the measured rate is for the node type the run will use:</p>
-<pre><code class="language-bash">wrf-gate D EATON_2025 /projects/academic/negarkhodoe/wrf/fires/EATON_2025/runs/&lt;stamp&gt;_gateC_campaign --ranks 64 --constraint SAPPHIRE-RAPIDS-IB
-</code></pre>
-<p><strong>4. The run.</strong> 24 whole nodes, 1,530 ranks as in the campaign:</p>
-<pre><code class="language-bash">wrf-submit EATON_2025 /projects/academic/negarkhodoe/wrf/fires/EATON_2025/specs/campaign --nodes 24 --ranks 1530 --time 24:00:00 --constraint SAPPHIRE-RAPIDS-IB --name full17h
-</code></pre>
-<p>The campaign's first 5 simulated hours took 3.7 h on 24 nodes; the fire makes later hours slower, so 24 h for all 17 leaves room under the 72-hour limit. <code>wrf-submit</code> refuses if the namelists changed since gate D, if 1,530 is over the cap, or if the same namelists are already queued.</p>
-<p><strong>5. When it ends</strong>, gate E has already run inside the job:</p>
-<pre><code class="language-bash">wrf-status EATON_2025
-cat /projects/academic/negarkhodoe/wrf/fires/EATON_2025/runs/*_full17h/GATES.txt
-</code></pre>
-<h2 id="canyon-cranston-and-long">Canyon, Cranston and Long</h2>
-<p>The same three commands, one node each. Every fire's gate C folder name comes from step 2's output.</p>
+<p class="kicker">Examples</p>
+<h1>Examples: the fires we have run</h1>
+<p class="lead">Each fire has its own page that can be followed on its own: its card with every setting, how to run it from an AI chat or with the commands, how to size it, and how to make a variant.</p>
+
+<h2 id="the-fires">The fires</h2>
 <div class="tbl"><table>
 <thead>
 <tr>
 <th>Fire</th>
 <th>Window (UTC)</th>
+<th>Ignition</th>
+<th>Domains</th>
 <th>Rank cap</th>
-<th><code>wrf-submit</code> options</th>
+<th>Page</th>
 </tr>
 </thead>
 <tbody>
 <tr>
+<td><code>EATON_2025</code></td>
+<td>Jan 8 00:00 → 17:00, 2025</td>
+<td>02:18 at 34.18604, −118.09325</td>
+<td>450² at 900 m, fire 811² at 100 m</td>
+<td>2,025</td>
+<td><a href="fire-eaton.html">Eaton 2025</a></td>
+</tr>
+<tr>
 <td><code>CANYON_2025</code></td>
-<td>Aug 7 18:00 → Aug 9 00:00</td>
+<td>Aug 7 18:00 → Aug 9 00:00, 2025</td>
+<td>20:25</td>
+<td>54² at 900 m, fire 217² at 100 m</td>
 <td>25</td>
-<td><code>--nodes 1 --ranks 25 --time 48:00:00</code></td>
+<td><a href="fire-canyon.html">Canyon 2025</a></td>
 </tr>
 <tr>
 <td><code>CRANSTON_2018</code></td>
-<td>Jul 25 16:00 → Jul 26 12:00</td>
+<td>Jul 25 16:00 → Jul 26 12:00, 2018</td>
+<td>in its card</td>
+<td>in its card</td>
 <td>36</td>
-<td><code>--nodes 1 --ranks 36 --time 48:00:00</code></td>
+<td><a href="fire-cranston.html">Cranston 2018</a></td>
 </tr>
 <tr>
 <td><code>LONG_2024</code></td>
-<td>Jul 15 20:00 → Jul 17 00:00</td>
+<td>Jul 15 20:00 → Jul 17 00:00, 2024</td>
+<td>in its card</td>
+<td>in its card</td>
 <td>36</td>
-<td><code>--nodes 1 --ranks 36 --time 56:00:00 --constraint SAPPHIRE-RAPIDS-IB</code></td>
+<td><a href="fire-long.html">Long 2024</a></td>
+</tr>
+<tr>
+<td><code>AIRPORT</code></td>
+<td>in its card</td>
+<td>in its card</td>
+<td>in its card</td>
+<td>—</td>
+<td><a href="fire-airport.html">Airport</a></td>
+</tr>
+<tr>
+<td><code>BRADFORD_BRANCH</code></td>
+<td>in its card</td>
+<td>in its card</td>
+<td>in its card</td>
+<td>—</td>
+<td><a href="fire-bradford.html">Bradford Branch</a></td>
+</tr>
+<tr>
+<td><code>CARMEL</code></td>
+<td>in its card</td>
+<td>in its card</td>
+<td>in its card</td>
+<td>—</td>
+<td><a href="fire-carmel.html">Carmel</a></td>
 </tr>
 </tbody>
 </table></div>
-<pre><code class="language-bash">F=CANYON_2025
-S=/projects/academic/negarkhodoe/wrf/fires/$F/specs/campaign
-wrf-gate C $F $S
-wrf-gate D $F /projects/academic/negarkhodoe/wrf/fires/$F/runs/&lt;stamp&gt;_gateC_campaign
-wrf-submit $F $S --nodes 1 --ranks 25 --time 48:00:00
-</code></pre>
-<p>Walltimes: Cranston took 41.6 h in the campaign; the others use the <a href="run.html">walltime rule</a> with its margin. Gate D prints the seconds per step before ignition; multiply by the number of steps and by 1.15, and add an hour, to check the number before submitting.</p>
-<div class="note">
-<p><strong>Long reaches its domain edge.</strong> In the campaign, Long's fire hit the edge of the fire domain at Jul 16 22:24 and WRF stopped. Gate E classes that ending as <strong>domain edge</strong>, not as a crash. Running past it needs a larger fire domain, which means new <code>met_em</code> files: a new input version, then gates C and D again.</p>
-</div>
-<h2 id="airport-bradford-branch-and-carmel">Airport, Bradford Branch and Carmel</h2>
-<p>These came from NCAR as <code>met_em</code> files only. The arrange job registers their inputs (gates A and B) if it finds a <code>namelist.input</code> with an ignition next to them, since the record comes from it. If it does not, give the record by hand, then register the inputs:</p>
-<pre><code class="language-bash">wrf-new-fire AIRPORT --start &quot;YYYY-MM-DD HH:MM&quot; --end &quot;YYYY-MM-DD HH:MM&quot; --ignition &quot;YYYY-MM-DD HH:MM&quot; --lat LAT --lon LON
-wrf-add-inputs AIRPORT /projects/academic/negarkhodoe/WRF_NCAR_Fires/AIRPORT --note &quot;NCAR met_em&quot;
-</code></pre>
-<p>They have no spec yet. Write one in your <code>people/&lt;username&gt;/work/</code> folder: copy Canyon's <code>namelist.input</code> and <code>namelist.fire</code>, set the domain sizes, <code>dx</code>, the time step and the window from gate A's facts (<code>inputs/&lt;version&gt;.gates/gate_A.json</code>), and the ignition from the record; <a href="real.html">Phase 5</a> and <a href="fire.html">Phase 6</a> explain each variable. Then gates C and D will tell you what is still wrong, before any long job is queued.</p>
-<h2 id="changing-something">Changing something</h2>
-<div class="tbl"><table>
-<thead>
-<tr>
-<th>You want to</th>
-<th>Do</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>try other namelists</td>
-<td>copy <code>specs/campaign</code> to a new spec folder, edit it, then gates C, D and <code>wrf-submit</code> with it</td>
-</tr>
-<tr>
-<td>use new <code>met_em</code> files</td>
-<td><code>wrf-add-inputs</code>; it becomes <code>current</code> if gates A and B pass; older versions stay, and <code>--inputs V</code> picks one</td>
-</tr>
-<tr>
-<td>fix a wrong record</td>
-<td><code>wrf-new-fire FIRE … --replace</code></td>
-</tr>
-<tr>
-<td>get rid of a failed run</td>
-<td><code>wrf-setaside RUN_DIR "why"</code></td>
-</tr>
-<tr>
-<td>stop a run</td>
-<td><code>scancel JOB</code>; gate E does not run, so run <code>wrf-gate E FIRE RUN_DIR</code> after</td>
-</tr>
-</tbody>
-</table></div>
-<nav class="pager"><a class="prev" href="gates.html"><small>Previous</small>The gating system</a><a class="next" href="skill.html"><small>Next</small>Skill file for chat assistants</a></nav>
+<p>Every fire is already in the shared folder with its record, its checked <code>met_em</code> files and (for the four we ran) the spec it ran with. <code>wrf-card FIRE</code> prints its full card from those files.</p>
+<h2 id="a-new-fire">A new fire</h2>
+<p>Start from the closest of these: <code>wrf-card CANYON_2025 &gt; my.card</code> for a small fire, <code>wrf-card EATON_2025 &gt; my.card</code> for a large one. Change the name, times, ignition and domains, keep <code>base_spec</code> for the lab's physics, and follow the <a href="quickstart.html#3b-or-type-the-commands">quick start</a>.</p>
+<nav class="pager"><a class="prev" href="skill.html"><small>Previous</small>Skill file for chat assistants</a><a class="next" href="fire-eaton.html"><small>Next</small>Eaton 2025</a></nav>
 <footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/example.md</code>.</footer>
 </article>
 </main>

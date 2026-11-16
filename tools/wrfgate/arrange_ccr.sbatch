@@ -63,6 +63,7 @@ for F in $FIRES; do
     chmod -R a-w "$D"
   fi
   wrf-add-inputs "$F" "$MET" --note "arranged from $MET"
+  wrf-card "$F" > "$W/fires/$F/CARD.txt" 2>/dev/null && echo "card: $W/fires/$F/CARD.txt"
   V=$(readlink "$W/fires/$F/inputs/current" 2>/dev/null)
   last=$(ls -d "$W"/fires/$F/inputs/*/ 2>/dev/null | grep -v -e '\.gates/$' -e '/current/$' | tail -1); last=$(basename "${last:-none}")
   printf "%-16s inputs %-20s gate A %-5s gate B %-5s current %s\n" "$F" "$last" \

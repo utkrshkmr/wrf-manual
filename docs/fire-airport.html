@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Airport · WRF-Fire Manual</title>
+<meta name="description" content="One of the three fires we have as NCAR met_em files only. It has not been run on CCR yet, so its card starts from the inputs and a base spec.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</head>
+<body>
+<div class="topbar"><a href="index.html">WRF-Fire Manual</a><button type="button" onclick="document.querySelector('.side').classList.add('open')">Menu</button></div>
+<div class="layout">
+<nav class="side" aria-label="Site">
+<button type="button" class="close" onclick="this.parentNode.classList.remove('open')">Close</button>
+<a class="brand" href="index.html"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#b4501f"/><path d="M15 5c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 3 1 4 2 4 0-3 0-6 1-9z" fill="#f6e2d5"/></svg><b>WRF-Fire Manual<span>WPS → WRF on UB CCR</span></b></a>
+<h4>Start</h4><ol>
+<li><a href="index.html"><span class="n"></span><span>Overview</span></a></li>
+<li><a href="quickstart.html"><span class="n">0</span><span>Quick start</span></a></li>
+</ol>
+<h4>Running fires</h4><ol>
+<li><a href="gates.html"><span class="n">1</span><span>The gating system</span></a></li>
+<li><a href="skill.html"><span class="n">2</span><span>Skill file for chat assistants</span></a></li>
+</ol>
+<h4>Examples</h4><ol>
+<li><a href="example.html"><span class="n">3</span><span>All fires at a glance</span></a></li>
+<li><a href="fire-eaton.html"><span class="n">4</span><span>Eaton 2025</span></a></li>
+<li><a href="fire-canyon.html"><span class="n">5</span><span>Canyon 2025</span></a></li>
+<li><a href="fire-cranston.html"><span class="n">6</span><span>Cranston 2018</span></a></li>
+<li><a href="fire-long.html"><span class="n">7</span><span>Long 2024</span></a></li>
+<li><a href="fire-airport.html" class="on"><span class="n">8</span><span>Airport</span></a></li>
+<li><a href="fire-bradford.html"><span class="n">9</span><span>Bradford Branch</span></a></li>
+<li><a href="fire-carmel.html"><span class="n">10</span><span>Carmel</span></a></li>
+</ol>
+<h4>Advanced: research inputs</h4><ol>
+<li><a href="extend.html"><span class="n">11</span><span>Where each change goes</span></a></li>
+<li><a href="moisture.html"><span class="n">12</span><span>Fuel moisture</span></a></li>
+<li><a href="fuelmap.html"><span class="n">13</span><span>The fuel map</span></a></li>
+<li><a href="fuelprops.html"><span class="n">14</span><span>How a fuel type burns</span></a></li>
+<li><a href="ignitions.html"><span class="n">15</span><span>Ignitions and perimeters</span></a></li>
+<li><a href="terrain.html"><span class="n">16</span><span>Terrain and slope</span></a></li>
+<li><a href="coupling.html"><span class="n">17</span><span>Fire and atmosphere</span></a></li>
+</ol>
+<h4>WRF mechanics</h4><ol>
+<li><a href="env.html"><span class="n">18</span><span>Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">19</span><span>Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">20</span><span>Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">21</span><span>Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">22</span><span>Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">23</span><span>real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">24</span><span>The fire model</span></a></li>
+<li><a href="run.html"><span class="n">25</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">26</span><span>Reference and failures</span></a></li>
+</ol>
+<button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
+</nav>
+<main>
+<article class="page">
+<p class="kicker">Examples · AIRPORT</p>
+<h1>Airport</h1>
+<p class="lead">One of the three fires we have as NCAR <code>met_em</code> files only. It has not been run on CCR yet, so its card starts from the inputs and a base spec.</p>
+<nav class="toc"><b>On this page</b><ul><li><a href="#the-fire-card">The fire card</a></li><li><a href="#run-it-from-an-ai-chat">Run it from an AI chat</a></li><li><a href="#run-it-with-the-commands">Run it with the commands</a></li><li><a href="#make-a-variant">Make a variant</a></li></ul></nav>
+<h2 id="the-fire-card">The fire card</h2>
+<p>Everything that defines this fire, from the NCAR <code>met_em</code> files. The exact card, with every value read from the shared folder, is one command away:</p>
+<pre><code class="language-bash">wrf-card AIRPORT
+</code></pre>
+<pre><code class="language-text">name:                AIRPORT
+start:               (printed by wrf-card)
+end:                 (printed by wrf-card)
+ignition_time:       (printed by wrf-card)
+ignition_lat:        (printed by wrf-card)
+ignition_lon:        (printed by wrf-card)
+base_spec:           CANYON_2025/campaign
+</code></pre>
+<div class="note">
+<p>Values shown as <em>(printed by wrf-card)</em> (<code>start</code>, <code>end</code>, <code>ignition_time</code>, <code>ignition_lat</code>, <code>ignition_lon</code>) are in the fire's record in the shared folder but not yet on this page.</p>
+</div>
+<h2 id="run-it-from-an-ai-chat">Run it from an AI chat</h2>
+<p>Copy the <a href="skill.html">skill</a> into a new chat, then paste underneath:</p>
+<pre><code class="language-text">Run this fire. Here is its card:
+&lt;paste the output of: wrf-card AIRPORT&gt;
+</code></pre>
+<p>The assistant checks the card with you, then walks you through the commands below one at a time.</p>
+<h2 id="run-it-with-the-commands">Run it with the commands</h2>
+<p><strong>1. Check the fire and its inputs.</strong></p>
+<pre><code class="language-bash">wrf-status AIRPORT
+wrf-card AIRPORT
+</code></pre>
+<p>Read the card: times, ignition, domains, and under <em>Measured</em> the gate A and B results and <code>fire_fuel_read</code> (must be <code>-1</code>).</p>
+<p><strong>2. Make its spec from a card.</strong> These fires have inputs but no spec of their own yet. Print the card, fill in what is missing from the record and the inputs, keep <code>base_spec: CANYON_2025/campaign</code> for the lab's physics, and make the spec without rerunning WPS:</p>
+<pre><code class="language-bash">wrf-card AIRPORT &gt; /projects/academic/negarkhodoe/wrf/people/$USER/work/airport.card
+wrf-card --make /projects/academic/negarkhodoe/wrf/people/$USER/work/airport.card
+</code></pre>
+<p>It prints the spec folder (<code>people/$USER/work/AIRPORT_&lt;time&gt;/spec</code>). Its domain sizes and grid spacing must match the <code>met_em</code> files; gate C checks them.</p>
+<p><strong>3. Gate C (real.exe), then gate D (2-minute smoke run).</strong></p>
+<pre><code class="language-bash">wrf-gate C AIRPORT /projects/academic/negarkhodoe/wrf/people/$USER/work/AIRPORT_&lt;time&gt;/spec
+wrf-gate D AIRPORT /projects/academic/negarkhodoe/wrf/fires/AIRPORT/runs/&lt;stamp&gt;_gateC_spec
+</code></pre>
+<p><strong>4. Size and submit.</strong> The rank cap is in gate C's <code>GATES.txt</code> (<code>C15</code>). Use one whole node at the cap if it is under 64, and set the walltime from gate D's seconds per step (<a href="run.html">how</a>):</p>
+<pre><code class="language-bash">wrf-submit AIRPORT /projects/academic/negarkhodoe/wrf/people/$USER/work/AIRPORT_&lt;time&gt;/spec --nodes 1 --ranks &lt;cap&gt; --time &lt;HH:MM:SS&gt;
+</code></pre>
+<p><strong>5. Watch it, and read how it ended.</strong></p>
+<pre><code class="language-bash">wrf-watch AIRPORT
+cat /projects/academic/negarkhodoe/wrf/fires/AIRPORT/runs/&lt;stamp&gt;_rerun/GATES.txt
+</code></pre>
+<p>Gate E runs inside the job when it ends: <em>finished</em>, <em>domain edge</em>, <em>crash</em> or <em>killed</em>, plus whether the first burning cell matches the card's ignition time and place.</p>
+<h2 id="make-a-variant">Make a variant</h2>
+<p>Copy the card, change what you are testing (and the <code>note:</code> line), and make it. Times and domains unchanged means the existing inputs are reused, so no WPS:</p>
+<pre><code class="language-bash">wrf-card AIRPORT &gt; /projects/academic/negarkhodoe/wrf/people/$USER/work/airport_variant.card
+wrf-card --make /projects/academic/negarkhodoe/wrf/people/$USER/work/airport_variant.card
+</code></pre>
+<p>Then gates C and D and <code>wrf-submit</code> on the spec folder it prints, with a <code>--name</code> that says what changed. Ideas: <a href="moisture.html">fuel moisture</a>, <a href="coupling.html">one-way coupling</a>, <a href="terrain.html#the-slope-effect">slope sensitivity</a>, <a href="ignitions.html">another ignition</a>.</p>
+<nav class="pager"><a class="prev" href="fire-long.html"><small>Previous</small>Long 2024</a><a class="next" href="fire-bradford.html"><small>Next</small>Bradford Branch</a></nav>
+<footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/fire-airport.md</code>.</footer>
+</article>
+</main>
+</div>
+<script>
+function toggleTheme(){var d=document.documentElement;var cur=d.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var nx=cur==='dark'?'light':'dark';d.setAttribute('data-theme',nx);try{localStorage.setItem('theme',nx);}catch(e){}}
+</script>
+</body>
+</html>

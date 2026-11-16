@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Quick start · WRF-Fire Manual</title>
-<meta name="description" content="From nothing to a running fire in about ten minutes of typing. Install once for the lab, set yourself up once, then either let an AI chat guide you or type the five commands yourself.">
+<meta name="description" content="Every fire is described by one short card: its name, ignition time and place, the window, the domains and a few model settings. Set yourself up once, write or copy a card, and the commands (or an AI chat) take it from there.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -23,28 +23,37 @@
 </ol>
 <h4>Running fires</h4><ol>
 <li><a href="gates.html"><span class="n">1</span><span>The gating system</span></a></li>
-<li><a href="example.html"><span class="n">2</span><span>Worked example: every fire</span></a></li>
-<li><a href="skill.html"><span class="n">3</span><span>Skill file for chat assistants</span></a></li>
+<li><a href="skill.html"><span class="n">2</span><span>Skill file for chat assistants</span></a></li>
+</ol>
+<h4>Examples</h4><ol>
+<li><a href="example.html"><span class="n">3</span><span>All fires at a glance</span></a></li>
+<li><a href="fire-eaton.html"><span class="n">4</span><span>Eaton 2025</span></a></li>
+<li><a href="fire-canyon.html"><span class="n">5</span><span>Canyon 2025</span></a></li>
+<li><a href="fire-cranston.html"><span class="n">6</span><span>Cranston 2018</span></a></li>
+<li><a href="fire-long.html"><span class="n">7</span><span>Long 2024</span></a></li>
+<li><a href="fire-airport.html"><span class="n">8</span><span>Airport</span></a></li>
+<li><a href="fire-bradford.html"><span class="n">9</span><span>Bradford Branch</span></a></li>
+<li><a href="fire-carmel.html"><span class="n">10</span><span>Carmel</span></a></li>
 </ol>
 <h4>Advanced: research inputs</h4><ol>
-<li><a href="extend.html"><span class="n">4</span><span>Where each change goes</span></a></li>
-<li><a href="moisture.html"><span class="n">5</span><span>Fuel moisture</span></a></li>
-<li><a href="fuelmap.html"><span class="n">6</span><span>The fuel map</span></a></li>
-<li><a href="fuelprops.html"><span class="n">7</span><span>How a fuel type burns</span></a></li>
-<li><a href="ignitions.html"><span class="n">8</span><span>Ignitions and perimeters</span></a></li>
-<li><a href="terrain.html"><span class="n">9</span><span>Terrain and slope</span></a></li>
-<li><a href="coupling.html"><span class="n">10</span><span>Fire and atmosphere</span></a></li>
+<li><a href="extend.html"><span class="n">11</span><span>Where each change goes</span></a></li>
+<li><a href="moisture.html"><span class="n">12</span><span>Fuel moisture</span></a></li>
+<li><a href="fuelmap.html"><span class="n">13</span><span>The fuel map</span></a></li>
+<li><a href="fuelprops.html"><span class="n">14</span><span>How a fuel type burns</span></a></li>
+<li><a href="ignitions.html"><span class="n">15</span><span>Ignitions and perimeters</span></a></li>
+<li><a href="terrain.html"><span class="n">16</span><span>Terrain and slope</span></a></li>
+<li><a href="coupling.html"><span class="n">17</span><span>Fire and atmosphere</span></a></li>
 </ol>
 <h4>WRF mechanics</h4><ol>
-<li><a href="env.html"><span class="n">11</span><span>Environment and data</span></a></li>
-<li><a href="domain.html"><span class="n">12</span><span>Domain design</span></a></li>
-<li><a href="geogrid.html"><span class="n">13</span><span>Static data (geogrid)</span></a></li>
-<li><a href="ungrib.html"><span class="n">14</span><span>Weather (ungrib)</span></a></li>
-<li><a href="metgrid.html"><span class="n">15</span><span>Merge (metgrid)</span></a></li>
-<li><a href="real.html"><span class="n">16</span><span>real.exe and namelist.input</span></a></li>
-<li><a href="fire.html"><span class="n">17</span><span>The fire model</span></a></li>
-<li><a href="run.html"><span class="n">18</span><span>Running it on Slurm</span></a></li>
-<li><a href="reference.html"><span class="n">19</span><span>Reference and failures</span></a></li>
+<li><a href="env.html"><span class="n">18</span><span>Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">19</span><span>Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">20</span><span>Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">21</span><span>Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">22</span><span>Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">23</span><span>real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">24</span><span>The fire model</span></a></li>
+<li><a href="run.html"><span class="n">25</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">26</span><span>Reference and failures</span></a></li>
 </ol>
 <button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
 </nav>
@@ -52,42 +61,58 @@
 <article class="page">
 <p class="kicker">Start here</p>
 <h1>Quick start</h1>
-<p class="lead">From nothing to a running fire in about ten minutes of typing. Install once for the lab, set yourself up once, then either let an AI chat guide you or type the five commands yourself.</p>
+<p class="lead">Every fire is described by one short card: its name, ignition time and place, the window, the domains and a few model settings. Set yourself up once, write or copy a card, and the commands (or an AI chat) take it from there.</p>
 
-<h2 id="1-install-once-for-the-whole-lab">1. Install (once for the whole lab)</h2>
-<p>Skip this step if <code>/projects/academic/negarkhodoe/wrf/pipeline/current</code> already exists: someone has installed it.</p>
-<pre><code class="language-bash">git clone https://github.com/utkrshkmr/wrf-manual.git /projects/academic/negarkhodoe/utkarshk/wrf-manual
-bash /projects/academic/negarkhodoe/utkarshk/wrf-manual/tools/wrfgate/install.sh
-</code></pre>
-<p>To update later: <code>git -C /projects/academic/negarkhodoe/utkarshk/wrf-manual pull</code>, then run <code>install.sh</code> again. Old versions are kept, so jobs already queued are not affected.</p>
-<h2 id="2-set-yourself-up-once-per-person">2. Set yourself up (once per person)</h2>
+<h2 id="1-set-yourself-up-once">1. Set yourself up (once)</h2>
 <pre><code class="language-bash">echo 'source /projects/academic/negarkhodoe/wrf/pipeline/current/setup.sh' &gt;&gt; ~/.bashrc
 source /projects/academic/negarkhodoe/wrf/pipeline/current/setup.sh
 wrf-me --name &quot;Your Name&quot; --email you@buffalo.edu --mail END,FAIL
 </code></pre>
-<p>Your name goes on everything you create, and Slurm emails you when your jobs end or fail.</p>
-<p>Check it worked:</p>
-<pre><code class="language-bash">wrf-status
+<p>Your name goes on everything you create, and Slurm emails you when your jobs end or fail. <code>wrf-status</code> should now list the lab's fires.</p>
+<h2 id="2-describe-the-fire-as-a-card">2. Describe the fire as a card</h2>
+<p>A fire card is a short text file. Start from a blank one, or from a fire we have already run:</p>
+<pre><code class="language-bash">wrf-card --template &gt; /projects/academic/negarkhodoe/wrf/people/$USER/work/bridge.card
+wrf-card EATON_2025 &gt; /projects/academic/negarkhodoe/wrf/people/$USER/work/eaton_variant.card
 </code></pre>
-<p>You should see a table of fires (it may be empty).</p>
-<h2 id="3a-the-easy-way-let-an-ai-chat-guide-you">3a. The easy way: let an AI chat guide you</h2>
+<p>A filled card looks like this (the full list, with defaults and help, is in the template):</p>
+<pre><code class="language-text">name:                BRIDGE_2024
+note:                first look, campaign physics
+start:               2024-09-08 12:00
+end:                 2024-09-10 00:00
+ignition_time:       2024-09-08 21:00
+ignition_lat:        34.30
+ignition_lon:        -117.78
+ignition_radius_m:   50
+outer_cells:         54
+outer_dx_m:          900
+fire_cells:          217
+fire_ratio:          9
+fire_mesh_ratio:     4
+weather:             HRRR
+weather_interval_s:  3600
+fuel_layer:          /projects/academic/negarkhodoe/wrf/static/landfire/LF2024/FBFM40
+fuel_moisture:       0.08
+fire_feedback:       1.0
+base_spec:           CANYON_2025/campaign
+</code></pre>
+<p><code>base_spec</code> is the fire whose physics and other settings are reused; the card overrides the times, domains, ignition and fire settings. Blank fields take the lab defaults.</p>
+<h2 id="3a-let-an-ai-chat-guide-you-easiest">3a. Let an AI chat guide you (easiest)</h2>
 <ol>
 <li>Open the <a href="skill.html">skill page</a> and press <strong>Copy the skill</strong>.</li>
-<li>Paste it into a new chat with Claude, ChatGPT or any assistant, and write underneath what you want, e.g. <em>"Run CANYON_2025 with the campaign settings"</em> or <em>"Set up the Bridge fire from 2024 from scratch"</em>.</li>
+<li>Paste it into a new chat with Claude, ChatGPT or any assistant, and paste your card underneath with one line saying what you want, for example <em>"Run this fire."</em> or <em>"Run this fire with fire_feedback 0 as a one-way coupling test."</em></li>
 <li>Paste the commands it gives you into your CCR terminal, and paste the output back. Repeat.</li>
 </ol>
-<p>It asks before anything that spends core-hours, never deletes anything, and looks up errors in this manual for you.</p>
-<h2 id="3b-or-type-it-yourself">3b. Or type it yourself</h2>
-<p>For a fire that already has a record, inputs and a spec (all the fires we have run; see <code>wrf-status</code>):</p>
-<pre><code class="language-bash">wrf-gate C CANYON_2025 /projects/academic/negarkhodoe/wrf/fires/CANYON_2025/specs/campaign
+<p>It checks the card with you, asks before anything that spends core-hours, never deletes anything, and looks up errors in this manual.</p>
+<h2 id="3b-or-type-the-commands">3b. Or type the commands</h2>
+<pre><code class="language-bash">wrf-card --make /projects/academic/negarkhodoe/wrf/people/$USER/work/bridge.card --wps
 </code></pre>
-<p>When the email says it ended, use the folder name it printed:</p>
-<pre><code class="language-bash">wrf-gate D CANYON_2025 /projects/academic/negarkhodoe/wrf/fires/CANYON_2025/runs/&lt;stamp&gt;_gateC_campaign
+<p>This checks the card (ignition inside the fire domain, domain sizes, times), records the fire, writes <code>namelist.wps</code> and a spec into <code>people/$USER/work/BRIDGE_2024_&lt;time&gt;/</code>, and submits WPS. When WPS ends, its <code>met_em</code> files are registered and checked (gates A and B) automatically. For a fire that already has <code>met_em</code> files, leave out <code>--wps</code>: it prints the next command instead.</p>
+<p>Then, using the folder names each command prints:</p>
+<pre><code class="language-bash">wrf-gate C BRIDGE_2024 /projects/academic/negarkhodoe/wrf/people/$USER/work/BRIDGE_2024_&lt;time&gt;/spec
+wrf-gate D BRIDGE_2024 /projects/academic/negarkhodoe/wrf/fires/BRIDGE_2024/runs/&lt;stamp&gt;_gateC_spec
+wrf-submit BRIDGE_2024 /projects/academic/negarkhodoe/wrf/people/$USER/work/BRIDGE_2024_&lt;time&gt;/spec --nodes 1 --ranks 25 --time 48:00:00
 </code></pre>
-<p>When that one ends too, start the real run:</p>
-<pre><code class="language-bash">wrf-submit CANYON_2025 /projects/academic/negarkhodoe/wrf/fires/CANYON_2025/specs/campaign --nodes 1 --ranks 25 --time 48:00:00
-</code></pre>
-<p>Each command refuses, with a reason, if the step before it did not pass. To read a step's result, <code>cat</code> the <code>GATES.txt</code> in the folder it printed.</p>
+<p>Each refuses, with a reason, if the step before it did not pass. To read a step's result, <code>cat</code> the <code>GATES.txt</code> in the folder it printed.</p>
 <h2 id="4-keep-an-eye-on-your-jobs">4. Keep an eye on your jobs</h2>
 <pre><code class="language-bash">wrf-watch --mine
 wrf-watch --active --every 120
@@ -107,16 +132,16 @@ wrf-watch --active --every 120
 <td><code>wrf-status</code>, <code>wrf-status FIRE</code></td>
 </tr>
 <tr>
+<td>see a fire's full settings</td>
+<td><code>wrf-card FIRE</code></td>
+</tr>
+<tr>
+<td>start a new fire or a variant</td>
+<td><code>wrf-card --template</code> or <code>wrf-card FIRE</code>, edit, then <code>wrf-card --make CARD [--wps]</code></td>
+</tr>
+<tr>
 <td>watch my jobs</td>
 <td><code>wrf-watch --mine</code> (add <code>--every 120</code> to refresh)</td>
-</tr>
-<tr>
-<td>add a new fire</td>
-<td><code>wrf-new-fire FIRE --start … --end … --ignition … --lat … --lon …</code></td>
-</tr>
-<tr>
-<td>add its <code>met_em</code> files</td>
-<td><code>wrf-add-inputs FIRE /path/to/met_em_folder</code></td>
 </tr>
 <tr>
 <td>check real.exe, then a 2-minute run</td>
@@ -138,9 +163,9 @@ wrf-watch --active --every 120
 </table></div>
 <h2 id="where-next">Where next</h2>
 <div class="cards" markdown="0">
-<a class="card" href="example.html"><span class="k">Example</span><h3 id="every-fire-we-have-run">Every fire we have run</h3><p>Eaton, Canyon, Cranston, Long and the NCAR fires, command by command.</p></a>
-<a class="card" href="gates.html"><span class="k">Reference</span><h3 id="the-gating-system">The gating system</h3><p>What each gate checks, the folders, profiles, monitoring and the ledger.</p></a>
-<a class="card" href="env.html"><span class="k">Manual</span><h3 id="wps-to-wrf-fire">WPS to WRF-Fire</h3><p>Every input and variable, for making a new fire's files from scratch.</p></a>
+<a class="card" href="example.html"><span class="k">Example</span><h3 id="the-fires-we-have-run">The fires we have run</h3><p>Each one as its card, and how to run it again.</p></a>
+<a class="card" href="gates.html"><span class="k">Reference</span><h3 id="the-gating-system">The gating system</h3><p>What each gate checks, the folders, profiles, monitoring and the log.</p></a>
+<a class="card" href="extend.html"><span class="k">Advanced</span><h3 id="research-inputs">Research inputs</h3><p>Fuel moisture, fuel maps, ignitions, terrain, coupling.</p></a>
 </div>
 <nav class="pager"><a class="prev" href="index.html"><small>Previous</small>Overview</a><a class="next" href="gates.html"><small>Next</small>The gating system</a></nav>
 <footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/quickstart.md</code>.</footer>

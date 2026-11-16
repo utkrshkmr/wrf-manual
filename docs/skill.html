@@ -23,28 +23,37 @@
 </ol>
 <h4>Running fires</h4><ol>
 <li><a href="gates.html"><span class="n">1</span><span>The gating system</span></a></li>
-<li><a href="example.html"><span class="n">2</span><span>Worked example: every fire</span></a></li>
-<li><a href="skill.html" class="on"><span class="n">3</span><span>Skill file for chat assistants</span></a></li>
+<li><a href="skill.html" class="on"><span class="n">2</span><span>Skill file for chat assistants</span></a></li>
+</ol>
+<h4>Examples</h4><ol>
+<li><a href="example.html"><span class="n">3</span><span>All fires at a glance</span></a></li>
+<li><a href="fire-eaton.html"><span class="n">4</span><span>Eaton 2025</span></a></li>
+<li><a href="fire-canyon.html"><span class="n">5</span><span>Canyon 2025</span></a></li>
+<li><a href="fire-cranston.html"><span class="n">6</span><span>Cranston 2018</span></a></li>
+<li><a href="fire-long.html"><span class="n">7</span><span>Long 2024</span></a></li>
+<li><a href="fire-airport.html"><span class="n">8</span><span>Airport</span></a></li>
+<li><a href="fire-bradford.html"><span class="n">9</span><span>Bradford Branch</span></a></li>
+<li><a href="fire-carmel.html"><span class="n">10</span><span>Carmel</span></a></li>
 </ol>
 <h4>Advanced: research inputs</h4><ol>
-<li><a href="extend.html"><span class="n">4</span><span>Where each change goes</span></a></li>
-<li><a href="moisture.html"><span class="n">5</span><span>Fuel moisture</span></a></li>
-<li><a href="fuelmap.html"><span class="n">6</span><span>The fuel map</span></a></li>
-<li><a href="fuelprops.html"><span class="n">7</span><span>How a fuel type burns</span></a></li>
-<li><a href="ignitions.html"><span class="n">8</span><span>Ignitions and perimeters</span></a></li>
-<li><a href="terrain.html"><span class="n">9</span><span>Terrain and slope</span></a></li>
-<li><a href="coupling.html"><span class="n">10</span><span>Fire and atmosphere</span></a></li>
+<li><a href="extend.html"><span class="n">11</span><span>Where each change goes</span></a></li>
+<li><a href="moisture.html"><span class="n">12</span><span>Fuel moisture</span></a></li>
+<li><a href="fuelmap.html"><span class="n">13</span><span>The fuel map</span></a></li>
+<li><a href="fuelprops.html"><span class="n">14</span><span>How a fuel type burns</span></a></li>
+<li><a href="ignitions.html"><span class="n">15</span><span>Ignitions and perimeters</span></a></li>
+<li><a href="terrain.html"><span class="n">16</span><span>Terrain and slope</span></a></li>
+<li><a href="coupling.html"><span class="n">17</span><span>Fire and atmosphere</span></a></li>
 </ol>
 <h4>WRF mechanics</h4><ol>
-<li><a href="env.html"><span class="n">11</span><span>Environment and data</span></a></li>
-<li><a href="domain.html"><span class="n">12</span><span>Domain design</span></a></li>
-<li><a href="geogrid.html"><span class="n">13</span><span>Static data (geogrid)</span></a></li>
-<li><a href="ungrib.html"><span class="n">14</span><span>Weather (ungrib)</span></a></li>
-<li><a href="metgrid.html"><span class="n">15</span><span>Merge (metgrid)</span></a></li>
-<li><a href="real.html"><span class="n">16</span><span>real.exe and namelist.input</span></a></li>
-<li><a href="fire.html"><span class="n">17</span><span>The fire model</span></a></li>
-<li><a href="run.html"><span class="n">18</span><span>Running it on Slurm</span></a></li>
-<li><a href="reference.html"><span class="n">19</span><span>Reference and failures</span></a></li>
+<li><a href="env.html"><span class="n">18</span><span>Environment and data</span></a></li>
+<li><a href="domain.html"><span class="n">19</span><span>Domain design</span></a></li>
+<li><a href="geogrid.html"><span class="n">20</span><span>Static data (geogrid)</span></a></li>
+<li><a href="ungrib.html"><span class="n">21</span><span>Weather (ungrib)</span></a></li>
+<li><a href="metgrid.html"><span class="n">22</span><span>Merge (metgrid)</span></a></li>
+<li><a href="real.html"><span class="n">23</span><span>real.exe and namelist.input</span></a></li>
+<li><a href="fire.html"><span class="n">24</span><span>The fire model</span></a></li>
+<li><a href="run.html"><span class="n">25</span><span>Running it on Slurm</span></a></li>
+<li><a href="reference.html"><span class="n">26</span><span>Reference and failures</span></a></li>
 </ol>
 <button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
 </nav>
@@ -58,12 +67,13 @@
 <ol>
 <li><strong>Copy the skill.</strong> Press <strong>Copy the skill</strong> below (or select the whole block and copy it).</li>
 <li><strong>Start a new chat</strong> with your assistant (Claude, ChatGPT, Gemini, or any other) and paste it as your first message.</li>
-<li><strong>Add your request in the same message, underneath.</strong> For example:</li>
-<li>"I want to run the Bridge fire from 2024. Start me from scratch."</li>
-<li>"Gate C failed for CANYON_2025, here is GATES.txt: …"</li>
-<li>"Rerun LONG_2024 with a smaller time step."</li>
-<li><strong>Follow it step by step.</strong> The assistant gives you commands to paste into your CCR terminal. Paste them, then paste what CCR prints back into the chat. It reads the output and tells you the next step.</li>
+<li><strong>Underneath, paste the fire's card and one line saying what you want.</strong> A card is the fire's settings: name, window, ignition time and place, domains and a few model settings (<a href="quickstart.html#2-describe-the-fire-as-a-card">what a card is</a>). For example:</li>
+<li>a filled card from <code>wrf-card --template</code>, and <em>"Run this fire."</em></li>
+<li>the output of <code>wrf-card LONG_2024</code> with <code>time_step_s</code> changed, and <em>"Run this as a variant."</em></li>
+<li>the output of <code>wrf-card CANYON_2025</code>, plus its gate C <code>GATES.txt</code>, and <em>"Gate C failed; what is wrong?"</em></li>
 </ol>
+<p>No card yet? Give it what you know (name, dates, ignition point) and it builds the card with you first.
+4. <strong>Follow it step by step.</strong> The assistant gives you commands to paste into your CCR terminal. Paste them, then paste what CCR prints back into the chat. It reads the output and tells you the next step.</p>
 <h2 id="good-to-know">Good to know</h2>
 <ul>
 <li><strong>It works one step at a time.</strong> Run only the block it just gave you, and paste back all of the output, including errors.</li>
@@ -122,70 +132,36 @@ wrf-me
 wrf-status
 ```
 
-- If `wrf-me` says there is no profile: ask for their full name, their email, and which Slurm emails they want (default `END,FAIL`), then give `wrf-me --name &quot;Full Name&quot; --email them@buffalo.edu --mail END,FAIL`.
-- From `wrf-status` (and `wrf-status FIRE`), decide where to start:
+If `wrf-me` says there is no profile: ask for their full name, their email, and which Slurm emails they want (default `END,FAIL`), then give `wrf-me --name &quot;Full Name&quot; --email them@buffalo.edu --mail END,FAIL`.
 
-| What exists for the fire | Go to |
-| --- | --- |
-| a record, inputs marked `current`, a spec | Step 4 |
-| a record, but no `current` inputs | Step 3 |
-| nothing, but `met_em` files exist somewhere | Step 2 |
-| nothing at all | Step 1 |
+## Step 1: the fire card (always start here)
 
-## Step 1: make met_em files with WPS (only if none exist)
+Every fire, new or already run, is described by its **card**: name, window, ignition time and place, domains, data, a few fire-model settings, and `base_spec` (the fire whose physics and other settings are reused). Work from the card, never from a vague request like &quot;run Canyon&quot;.
 
-Ask for: ignition time (UTC) and point, the simulation window (start and end, UTC), and roughly how far the fire spread. Then help them write `namelist.wps` in `/projects/academic/negarkhodoe/wrf/people/&lt;user&gt;/work/&lt;FIRE&gt;/`:
+- **The user pasted a card**: read it back as a short table and confirm it before anything else.
+- **The user names a fire that exists** (`wrf-status` lists it): ask for `wrf-card FIRE` and show them its settings, including the *Measured* lines (gate results, rank cap, `fire_fuel_read`, which must be `-1`). Ask what, if anything, should change.
+- **A new fire**: ask for `wrf-card --template`, or start from the closest existing card (`wrf-card CANYON_2025` for a small fire, `wrf-card EATON_2025` for a large one). Ask the user for the facts you need: name, start and end (UTC), ignition time (UTC), ignition latitude and longitude, how far the fire spread (to size `fire_cells`), and which weather files exist. Never invent them. Fill in the card with them and show it before going on.
 
-- Two domains: outer about 900 m, fire domain about 100 m (`parent_grid_ratio = 9`), Lambert conformal. Each nest's `(e_we - 1)` and `(e_sn - 1)` must divide by its ratio.
-- `subgrid_ratio_x = 4` and `subgrid_ratio_y = 4` go in **`&amp;share`**.
-- The ignition must sit several km inside the fire domain's edges; more for a big fire.
-- `geog_data_path = '/projects/academic/negarkhodoe/wrf/static/WPS_GEOG'`; `opt_geogrid_tbl_path` and `opt_metgrid_tbl_path` = `'/projects/academic/negarkhodoe/wrf/tables/fire/'`. For the fire domain, `geog_data_res` must select the LANDFIRE fuel and the 1-arc-second elevation entries defined in that `GEOGRID.TBL` (ask them to `grep -n &quot;name\|rel_path\|abs_path&quot; /projects/academic/negarkhodoe/wrf/tables/fire/GEOGRID.TBL` if you need the names). Use the LANDFIRE year closest to the fire.
-- **Keep every path in the namelist under about 60 characters**; geogrid crashes with `End of record` on long paths.
-- Weather: HRRR `wrfprsf00` hourly files, `interval_seconds = 3600`, `Vtable.HRRR.prs`.
+Card rules to check with the user:
 
-Run WPS as one job **on one core** (more ranks run out of time: each reads the whole weather file). Have them save this as `wps.sbatch` in their work folder and submit it with `sbatch` (this is the one `sbatch` they run by hand):
+- `start` &lt; `ignition_time` &lt; `end`; at least an hour of weather before ignition is better.
+- `(fire_cells - 1)` must divide by `fire_ratio`; the fire domain needs 5 outer cells of margin inside the outer one; the ignition at least 2 km (better: much more) inside the fire domain. `wrf-card --make` checks all three.
+- `fuel_layer`: the LANDFIRE release before the fire's date.
+- A change to times or domains needs new `met_em` files (WPS). A change to anything else (moisture, feedback, slope, `base_spec`, time step) reuses the fire's existing inputs.
+
+Have them save the card as a file, e.g. `/projects/academic/negarkhodoe/wrf/people/$USER/work/&lt;name&gt;.card` (they can paste it with `cat &gt; FILE &lt;&lt;'EOF'` … `EOF`).
+
+## Step 2: make the fire from its card
 
 ```bash
-#!/bin/bash
-#SBATCH -p general-compute
-#SBATCH --qos=general-compute
-#SBATCH -N 1
-#SBATCH -n 1
-#SBATCH --mem=64G
-#SBATCH -t 06:00:00
-module purge
-module load gcc/11.2.0 openmpi/4.1.1 wps/4.6.0-dmpar
-cd /projects/academic/negarkhodoe/wrf/people/USER/work/FIRE
-srun -n 1 geogrid.exe &lt; /dev/null
-csh $EBROOTWPS/WPS-4.6.0/link_grib.csh /path/to/hrrr/files/*wrfprsf00*
-ln -sf /projects/academic/negarkhodoe/wrf/tables/fire/Vtable.HRRR.prs Vtable
-srun -n 1 ungrib.exe &lt; /dev/null
-srun -n 1 metgrid.exe &lt; /dev/null
+wrf-card --make /projects/academic/negarkhodoe/wrf/people/$USER/work/&lt;name&gt;.card
 ```
 
-Done when `geogrid.log`, `ungrib.log` and `metgrid.log` each end with `Successful completion`.
+It checks the card, records the fire (if new), and writes `namelist.wps`, `wps.sbatch` and a spec folder (`spec/namelist.input`, `spec/namelist.fire`) into `people/$USER/work/&lt;NAME&gt;_&lt;time&gt;/`. Read its notes (ignition distance from the edge, rank cap) back to the user.
 
-## Step 2: record the fire and register its inputs
-
-From a namelist that was already used for this fire:
-
-```bash
-wrf-new-fire FIRE --from-namelist /path/to/namelist.input
-```
-
-or from values (UTC):
-
-```bash
-wrf-new-fire FIRE --start &quot;YYYY-MM-DD HH:MM&quot; --end &quot;YYYY-MM-DD HH:MM&quot; --ignition &quot;YYYY-MM-DD HH:MM&quot; --lat LAT --lon LON
-```
-
-Show them the printed record and confirm window and ignition before going on. Then:
-
-```bash
-wrf-add-inputs FIRE /path/to/met_em_folder --note &quot;how these were made&quot;
-```
-
-It copies and locks the files and runs gates A and B.
+- **New met_em needed** (new fire, or changed times or domains): add `--wps`. It submits WPS on one core; when WPS succeeds, the `met_em` files are registered and gates A and B run automatically. If WPS fails, ask for `tail -20` of `geogrid.log`, `ungrib.log` or `metgrid.log` in that folder, and of `wps_&lt;job&gt;.out`.
+- **Inputs already registered**: no `--wps`; go to Step 3 with `wrf-status FIRE`, then Step 5 with the printed spec folder.
+- A fire whose `met_em` came from elsewhere (not WPS here): `wrf-add-inputs FIRE /path/to/met_em_folder --note &quot;where these came from&quot;`.
 
 ## Step 3: read gates A and B
 
@@ -196,24 +172,20 @@ cat /projects/academic/negarkhodoe/wrf/fires/FIRE/inputs/VERSION.gates/GATES.txt
 
 | Failed check | Fix |
 | --- | --- |
-| A05 window | weather does not cover the record's start or end: more hours in WPS, or the right record |
-| A08 finite | NaN/Inf: rerun metgrid, check those hours' weather files |
-| A09 nest rule | change `e_we`/`e_sn` in `namelist.wps`, rerun WPS |
-| A11/A12 no fire mesh or fuel | `subgrid_ratio` not in `&amp;share`, or fuel entry not in `geog_data_res` |
+| A05 window | weather does not cover the card's start or end: more weather files, or fix the card |
+| A08 finite | NaN/Inf: rerun WPS, check those hours' weather files |
+| A09 nest rule | `fire_cells` in the card, then `--make --wps` again |
+| A11/A12 no fire mesh or fuel | `fire_mesh_ratio` 0, or `fuel_key` not a resolution key in `/projects/academic/negarkhodoe/wrf/tables/fire/GEOGRID.TBL` |
 | A14 invalid fuel codes | wrong fuel layer |
 | A16 warning, code 204 | the spec's `namelist.fire` needs `nfuelcats = 54` |
-| A19/A20 ignition outside or near the edge | move or enlarge the fire domain, rerun WPS |
+| A19/A20 ignition outside or near the edge | move the domain (`center_lat/lon`, `fire_start_i/j`) or enlarge `fire_cells` |
 | A21 ignition unburnable | check the ignition point with the user |
 | B02 below 90% | fuel map does not match LANDFIRE; look at B07's best release; report to the user, do not go on |
 | B02 90–98% (warning) | tell the user the numbers before going on |
 
-## Step 4: the spec (namelists)
+## Step 4: when the spec needs a hand edit
 
-A spec is a folder holding `namelist.input` and `namelist.fire`. Start from a similar fire's spec, e.g. `/projects/academic/negarkhodoe/wrf/fires/CANYON_2025/specs/campaign/`; have them copy it into `people/&lt;user&gt;/work/&lt;FIRE&gt;_&lt;label&gt;/` and edit the copy. Never edit `specs/campaign/` itself.
-
-Must match the inputs (ask for `cat .../inputs/VERSION.gates/gate_A.json` and `ncdump -h` of one `met_em.d02` file): `max_dom`, `e_we`, `e_sn`, `dx`, `dy`, `parent_grid_ratio`, `i_parent_start`, `j_parent_start`, `num_metgrid_levels`, `num_metgrid_soil_levels`, `sr_x`/`sr_y` (4 on the fire domain, 0 elsewhere), start = record start, end = record end.
-
-Fire domain: `ifire = 2`, `fire_fuel_read = -1`, `fire_ignition_start_lat1`/`lon1` = the record's, `fire_ignition_start_time1` = seconds from the run's start to the ignition, `fire_ignition_radius1`, `fire_fmc_read = 1` with the moisture value in `namelist.fire`. `time_step` about 6 × the outer `dx` in km.
+The card writes the spec. Edit the spec folder by hand only for settings the card does not hold (physics, extra ignitions, output fields), in the copy under `people/$USER/work/`, never in `fires/*/specs/`. Values that must match the inputs (gate C checks them): `max_dom`, `e_we`, `e_sn`, `dx`, `dy`, `parent_grid_ratio`, `i_parent_start`, `j_parent_start`, `num_metgrid_levels`, `num_metgrid_soil_levels`, `sr_x`/`sr_y`, start and end times. `num_metgrid_levels` comes from `base_spec`; if the weather product differs from the base fire's, set it from `ncdump -h` of one `met_em.d01` file.
 
 ## Step 5: gates C and D
 
@@ -287,12 +259,13 @@ Base address for raw files: `https://raw.githubusercontent.com/utkrshkmr/wrf-man
 | several ignitions, an observed perimeter (`LFN_HIST`) | `src/ignitions.md` |
 | fine terrain (`ZSF`), slope sensitivity | `src/terrain.md` |
 | fire–atmosphere coupling, heat release, spread wind | `src/coupling.md` |
-| install and first steps | `src/quickstart.md` |
+| first steps | `src/quickstart.md` |
 | ranks, walltime, 72-hour limit, restarts, how a run ended | `src/run.md` |
 | what a gate check means or why it failed | `src/gates.md`, then the gate's code: `tools/wrfgate/lib/wrfgate/gate_a.py` … `gate_e.py` (search for the check ID, e.g. `C07_`) |
 | what a `wrf-*` command does or why it refused | `tools/wrfgate/bin/&lt;command&gt;` (the refusals are the `wg_die` lines) |
 | `wrf-watch` columns and warnings | `tools/wrfgate/lib/wrfgate/watch.py` |
-| an example of a whole run | `src/example.md` |
+| a fire we have run, step by step | `src/fire-eaton.md`, `fire-canyon.md`, `fire-cranston.md`, `fire-long.md`, `fire-airport.md`, `fire-bradford.md`, `fire-carmel.md` |
+| fire cards (`wrf-card`) | `src/quickstart.md`, `tools/wrfgate/lib/wrfgate/card.py` |
 
 How to look:
 
@@ -307,7 +280,7 @@ curl -fsSL https://raw.githubusercontent.com/utkrshkmr/wrf-manual/main/PATH | gr
 - **Searching every page at once** for a message:
 
 ```bash
-for p in quickstart env domain geogrid ungrib metgrid real fire moisture extend fuelmap fuelprops ignitions terrain coupling run reference gates example; do curl -fsSL https://raw.githubusercontent.com/utkrshkmr/wrf-manual/main/src/$p.md | grep -n -i -H --label=$p -A8 &quot;SEARCH WORDS&quot;; done
+for p in quickstart env domain geogrid ungrib metgrid real fire moisture extend fuelmap fuelprops ignitions terrain coupling run reference gates example fire-eaton fire-canyon fire-cranston fire-long; do curl -fsSL https://raw.githubusercontent.com/utkrshkmr/wrf-manual/main/src/$p.md | grep -n -i -H --label=$p -A8 &quot;SEARCH WORDS&quot;; done
 ```
 
 - Quote what you found (page and line) when you explain the fix. If the repo has nothing on it, say so, and then reason from the logs.
@@ -316,6 +289,7 @@ for p in quickstart env domain geogrid ungrib metgrid real fire moisture extend 
 
 ```bash
 wrf-status FIRE
+wrf-card FIRE
 wrf-watch --active
 wrf-watch --mine --every 120
 wrf-setaside /projects/academic/negarkhodoe/wrf/fires/FIRE/runs/RUN &quot;reason&quot;
@@ -324,7 +298,7 @@ wrf-setaside /projects/academic/negarkhodoe/wrf/fires/FIRE/runs/RUN &quot;reason
 `wrf-watch` lists every job the system submitted with its Slurm state, simulated time reached, % of the window, seconds per step, ETA and warnings (&quot;log idle&quot;, &quot;won't finish: needs … of …&quot;, the pending reason, failed or timed out, gate results). When the user asks &quot;how is my run doing&quot;, ask for `wrf-watch --mine` and read it; if it says &quot;won't finish&quot;, plan a restart or more nodes with them before the time limit hits.
 </code></pre>
 </div>
-<nav class="pager"><a class="prev" href="example.html"><small>Previous</small>Worked example: every fire</a><a class="next" href="extend.html"><small>Next</small>Where each change goes</a></nav>
+<nav class="pager"><a class="prev" href="gates.html"><small>Previous</small>The gating system</a><a class="next" href="example.html"><small>Next</small>All fires at a glance</a></nav>
 <footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/skill.md</code>.</footer>
 </article>
 </main>

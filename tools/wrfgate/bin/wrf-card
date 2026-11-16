@@ -1,0 +1,34 @@
+#!/bin/bash
+# Fire cards: every fire is described by the same short list of settings.
+#   wrf-card FIRE [--spec NAME]          print a registered fire's card, from its record, spec and inputs
+#   wrf-card --template                  print a blank card with the lab defaults
+#   wrf-card --make CARD [--wps]         from a filled card: record the fire, write namelist.wps, a WPS job and a spec
+#                                        into people/$USER/work/<name>_<time>/; --wps also submits the WPS job, which
+#                                        registers the met_em files (gates A and B) when it succeeds
+source "$(dirname "$(readlink -f "$0")")/../lib/wrfgate.sh"
+case ${1:-} in
+""|-h|--help) sed -n '2,8p' "$0"; exit 0 ;;
+--template) python3 -m wrfgate.card template ;;
+--make)
+  CARD=$(readlink -f "${2:?card file}"); SUB=0; [[ ${3:-} == --wps ]] && SUB=1
+  wg_need_person
+  NAME=$(grep -m1 '^name:' "$CARD" | sed 's/^name: *//; s/ *#.*//')
+  [[ $NAME =~ ^[A-Z0-9_]+$ ]] || wg_die "the card's name must be UPPER_CASE letters, digits and _"
+  wg_start --make "$CARD"
+  OUT=$WRF_ROOT/people/$USER/work/${NAME}_$(date +%Y%m%d_%H%M%S)
+  mkdir -p "$OUT"
+  python3 -m wrfgate.card make "$CARD" "$OUT" || exit 1
+  g() { grep -m1 "^$1:" "$OUT/fire.card" | sed "s/^$1: *//; s/ *#.*//"; }
+  if [[ ! -f $WRF_ROOT/fires/$NAME/fire.yaml ]]; then
+    wrf-new-fire "$NAME" --start "$(g start)" --end "$(g end)" --ignition "$(g ignition_time)" --lat "$(g ignition_lat)" --lon "$(g ignition_lon)" \
+      --fuel-layer "$(g fuel_layer)" --terrain-layer "$(g terrain_layer)" --note "$(g note)" --source "fire card $OUT/fire.card" >/dev/null || exit 1
+    echo "recorded $WRF_ROOT/fires/$NAME/fire.yaml"
+  else echo "record exists, kept: $WRF_ROOT/fires/$NAME/fire.yaml (check that it agrees with the card)"; fi
+  if [[ -e $WRF_ROOT/fires/$NAME/inputs/current && $SUB == 0 ]]; then
+    echo "this fire already has registered met_em files: if the card keeps its times and domains, skip WPS and go straight to"
+    echo "  wrf-gate C $NAME $OUT/spec"
+  elif [[ $SUB == 1 ]]; then J=$(sbatch --parsable "$OUT/wps.sbatch") || wg_die "sbatch failed"; echo "$J" > "$OUT/WPS_JOBID"; wg_log event=wps_submitted fire="$NAME" job="$J"; echo "WPS job $J submitted; when it ends the met_em files are registered and gated"
+  else echo "next: sbatch $OUT/wps.sbatch   (or rerun with --wps)"; fi
+  echo "spec for gates C and D: $OUT/spec" ;;
+*) [[ -f $WRF_ROOT/fires/$1/fire.yaml ]] || wg_die "no fire $1 (wrf-status lists them)"; shift_=$1; shift; python3 -m wrfgate.card show "$shift_" "$@" ;;
+esac

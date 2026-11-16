@@ -24,8 +24,17 @@ NAV = [
     ]),
     ("Running fires", [
         ("gates", "The gating system"),
-        ("example", "Worked example: every fire"),
         ("skill", "Skill file for chat assistants"),
+    ]),
+    ("Examples", [
+        ("example", "All fires at a glance"),
+        ("fire-eaton", "Eaton 2025"),
+        ("fire-canyon", "Canyon 2025"),
+        ("fire-cranston", "Cranston 2018"),
+        ("fire-long", "Long 2024"),
+        ("fire-airport", "Airport"),
+        ("fire-bradford", "Bradford Branch"),
+        ("fire-carmel", "Carmel"),
     ]),
     ("Advanced: research inputs", [
         ("extend", "Where each change goes"),

@@ -1,7 +1,7 @@
 ---
 title: The gating system
 kicker: Running it safely
-lead: Nine small commands carry a fire from its record to a checked run. Each one does one step, runs the checks for it, and writes what it did to a shared ledger. Nothing reaches the queue until the cheap checks have passed, and nothing is ever deleted.
+lead: Ten small commands carry a fire from its record to a checked run. Each one does one step, runs the checks for it, and writes what it did to a shared ledger. Nothing reaches the queue until the cheap checks have passed, and nothing is ever deleted.
 ---
 
 ## Why gates
@@ -12,23 +12,14 @@ A WRF-Fire run can wait a day in the queue and then fail in its first minute: a 
 
 It also answers, for every file in the shared folder, who made it, when, from what, and whether it was checked. That is what the manifests and the ledger are for.
 
-## Setting it up
-
-Once, by whoever installs a release (from a clone of this site's repository):
-
-```bash
-git clone https://github.com/utkrshkmr/wrf-manual.git /projects/academic/negarkhodoe/utkarshk/wrf-manual
-bash /projects/academic/negarkhodoe/utkarshk/wrf-manual/tools/wrfgate/install.sh
-```
-
-`install.sh` copies the code to `wrf/pipeline/releases/<version>/`, makes it read-only, and points `wrf/pipeline/current` at it. A newer release is installed the same way; the old one stays, so jobs already in the queue keep the code they were submitted with.
+## Getting started
 
 Once per person:
 
 ```bash
 echo 'source /projects/academic/negarkhodoe/wrf/pipeline/current/setup.sh' >> ~/.bashrc
 source /projects/academic/negarkhodoe/wrf/pipeline/current/setup.sh
-wrf-me --name "Utkarsh Kumar" --email ukumar@buffalo.edu --mail END,FAIL
+wrf-me --name "Your Name" --email you@buffalo.edu --mail END,FAIL
 ```
 
 `setup.sh` puts the commands on your `PATH` and adds a shell hook that logs your commands that touch the shared folder. `wrf-me` writes your profile.
@@ -56,8 +47,7 @@ UPDATED=2026-11-16T10:02:11-05:00
 ```text
 /projects/academic/negarkhodoe/wrf/
   pipeline/
-    current -> releases/2026.11.16-a1b2c3d     the code everyone runs
-    releases/<version>/                        read-only: bin/, lib/, setup.sh, MANIFEST.txt
+    current/                                   the commands everyone runs (read-only)
   people/<username>/                           profile.conf, work/
   static/                                      LANDFIRE, elevation, geography; read-only
   tables/                                      GEOGRID.TBL, METGRID.TBL, Vtables
@@ -81,7 +71,7 @@ UPDATED=2026-11-16T10:02:11-05:00
 Rules the commands keep:
 
 - **Group-owned, group-writable folders** (set-group-ID on `fires/`, `people/`, `ledger/`, `setaside/`), so a second person can add a run to a fire the first one created.
-- **Locked means locked.** Records, input versions, specs copied by the arrange job and releases are read-only. Changing one means making a new one: `wrf-new-fire --replace`, a new `wrf-add-inputs`, a new spec folder, a new release.
+- **Locked means locked.** Records, input versions, the specs fires ran with, and the commands themselves are read-only. Changing one means making a new one: `wrf-new-fire --replace`, a new `wrf-add-inputs`, a new card or spec folder.
 - **Nothing is deleted.** `wrf-setaside PATH "reason"` moves a run, an input version or a spec into `setaside/<month>/` with a `NOTE.txt` saying where it came from, who moved it, why, and the command that moves it back. It refuses anything still in use: the current input version, an input version a run used, a gate C folder that a later run links to, and runs whose job is still queued or running. The pipeline, the ledger and `setaside/` itself are never moved.
 
 ## The commands
@@ -89,6 +79,7 @@ Rules the commands keep:
 | Command | What it does | Refuses when |
 | --- | --- | --- |
 | `wrf-me [--name --email --mail]` | Shows or writes your profile | the email is not an address |
+| `wrf-card FIRE` · `wrf-card --template` · `wrf-card --make CARD [--wps]` | Prints a fire's card (every setting, from its record, spec and inputs); prints a blank card; or, from a filled card, records the fire and writes `namelist.wps`, a WPS job and a spec into `people/<you>/work/<name>_<time>/` (`--wps` submits WPS, which registers the `met_em` files when it succeeds) | the card's ignition is outside or within 2 km of the fire domain's edge, `fire_cells - 1` does not divide by `fire_ratio`, the fire domain does not fit in the outer one, or times are out of order |
 | `wrf-new-fire FIRE --from-namelist NL` | Writes `fires/FIRE/fire.yaml` from a namelist that was used for the fire (or from `--start --end --ignition --lat --lon`) | a record exists (use `--replace`, which keeps the old one) |
 | `wrf-add-inputs FIRE DIR [--note]` | Copies `met_em*` (and `namelist.wps`, `geo_em*`, logs) into a new version folder, writes `MANIFEST.txt` with a SHA-256 per file, runs gates A and B, locks it; moves `current` only if neither gate failed | no record; identical files already registered |
 | `wrf-gate A\|B FIRE [VERSION]` | Reruns gate A or B on a version | — |
@@ -180,10 +171,8 @@ The honest limit: anyone can still call `sbatch` by hand. Such a run has no mani
 
 | File | Role |
 | --- | --- |
-| `install.sh` | installs a read-only release and points `current` at it |
 | `setup.sh` | `PATH`, `WRF_ROOT`, the shell-history hook |
 | `SKILL.md` | text to paste into an AI chat so it can guide a run (see [the skill page](skill.html)) |
-| `arrange_ccr.sbatch` | one-off job that copies every fire we have into this layout (see the [worked example](example.html)) |
 | `bin/wrf-*` | the commands above |
 | `lib/wrfgate.sh` | shared shell functions: modules, profile, ledger, Slurm mail lines |
 | `lib/wrfgate/common.py` | records, namelist reading and editing, the ledger, the gate result format |
@@ -191,6 +180,7 @@ The honest limit: anyone can still call `sbatch` by hand. Such a run has no mani
 | `lib/wrfgate/metem.py` | reading `met_em` files and building the fire mesh's coordinates |
 | `lib/wrfgate/gate_a.py` … `gate_e.py` | the five gates; each also runs on its own with `python3 -m wrfgate.gate_X --help` |
 | `lib/wrfgate/watch.py` | `wrf-watch`: Slurm state, progress and ETA of every submitted job |
+| `lib/wrfgate/card.py` | fire cards: print, template, and turning a card into namelists and a WPS job |
 | `lib/wrfgate/record.py`, `ledger.py` | the record and the ledger from the command line |
 
 All of it is in the site's repository under [`tools/wrfgate/`](https://github.com/utkrshkmr/wrf-manual/tree/main/tools/wrfgate).

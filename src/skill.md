@@ -8,10 +8,12 @@ lead: One block of text you paste at the start of a chat with any AI assistant. 
 
 1. **Copy the skill.** Press **Copy the skill** below (or select the whole block and copy it).
 2. **Start a new chat** with your assistant (Claude, ChatGPT, Gemini, or any other) and paste it as your first message.
-3. **Add your request in the same message, underneath.** For example:
-   - "I want to run the Bridge fire from 2024. Start me from scratch."
-   - "Gate C failed for CANYON_2025, here is GATES.txt: …"
-   - "Rerun LONG_2024 with a smaller time step."
+3. **Underneath, paste the fire's card and one line saying what you want.** A card is the fire's settings: name, window, ignition time and place, domains and a few model settings ([what a card is](quickstart.html#2-describe-the-fire-as-a-card)). For example:
+   - a filled card from `wrf-card --template`, and *"Run this fire."*
+   - the output of `wrf-card LONG_2024` with `time_step_s` changed, and *"Run this as a variant."*
+   - the output of `wrf-card CANYON_2025`, plus its gate C `GATES.txt`, and *"Gate C failed; what is wrong?"*
+
+   No card yet? Give it what you know (name, dates, ignition point) and it builds the card with you first.
 4. **Follow it step by step.** The assistant gives you commands to paste into your CCR terminal. Paste them, then paste what CCR prints back into the chat. It reads the output and tells you the next step.
 
 ## Good to know
