@@ -34,7 +34,8 @@ for R in LF2016 LF2022 LF2023 LF2024 LF2025; do
   base=$src/index; [[ -f $src/index.anchor_sw ]] && base=$src/index.anchor_sw
   for A in SW NW; do
     d=$W/exp1/layers/${R}_$A; mkdir -p $d; ln -sf $src/[0-9]* $d/ 2>/dev/null
-    if [[ $A == SW ]]; then cp $base $d/index
+    rm -f $d/index
+    if [[ $A == SW ]]; then install -m 0644 $base $d/index
     else sed -e "s/^known_x *=.*/known_x = $NWX.0/" -e "s/^known_y *=.*/known_y = $NWY.0/" -e "s/^known_lat *=.*/known_lat = $NWLAT/" -e "s/^known_lon *=.*/known_lon = $NWLON/" $base > $d/index; fi
   done
 done
