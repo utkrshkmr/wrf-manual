@@ -174,10 +174,19 @@ def wire(dry=False):
     keep = os.path.join(T + "_previous", f"GEOGRID.TBL.{stamp}")
     shutil.copy2(os.path.join(T, "GEOGRID.TBL"), keep)
     new = table(layers)
+    import stat
+    dmode = os.stat(T).st_mode
+    fmode = os.stat(os.path.join(T, "GEOGRID.TBL")).st_mode
     tmp = os.path.join(T, ".GEOGRID.TBL.new")
-    open(tmp, "w").write(new)
-    os.chmod(os.path.join(T, "GEOGRID.TBL"), 0o664)
-    os.replace(tmp, os.path.join(T, "GEOGRID.TBL"))
+    try:
+        os.chmod(T, dmode | stat.S_IWUSR)
+        open(tmp, "w").write(new)
+        os.chmod(tmp, stat.S_IMODE(fmode))
+        os.replace(tmp, os.path.join(T, "GEOGRID.TBL"))
+    except OSError as e:
+        raise SystemExit(f"could not write {T}/GEOGRID.TBL ({e.strerror}); the old table is unchanged")
+    finally:
+        os.chmod(T, dmode)
     print(f"wrote {T}/GEOGRID.TBL (previous kept as {keep})")
     with open(os.path.join(S, "LAYERS.txt"), "w") as f:
         f.write(f"# Fuel and terrain layers for WPS, {_dt.datetime.now():%Y-%m-%d}. Select one in namelist.wps geog_data_res, e.g.\n"
