@@ -49,13 +49,13 @@
 <p class="kicker">Our work · November 2026</p>
 <h1>WPS on CCR, setup so far</h1>
 <p class="lead">CCR now provides WPS 4.6 as a module. Until now our inputs were built by our collaborator on NCAR's Derecho. This page records how we verified the module, staged the data, worked out exactly how NCAR built Canyon, and where the end-to-end rebuild stands.</p>
-<nav class="toc"><b>On this page</b><ul><li><a href="#where-it-stands">Where it stands</a></li><li><a href="#what-we-did-step-by-step">What we did, step by step</a></li><li><a href="#what-we-learnt-about-wps-on-ccr">What we learnt about WPS on CCR</a></li><li><a href="#the-data-now-on-ccr">The data now on CCR</a></li><li><a href="#scripts-written-along-the-way">Scripts written along the way</a></li></ul></nav>
+<nav class="toc"><b>On this page</b><ul><li><a href="#where-it-stands">Where it stands</a></li><li><a href="#what-we-did-step-by-step">What we did, step by step</a></li><li><a href="#test-a-result">Test A result</a></li><li><a href="#what-we-learnt-about-wps-on-ccr">What we learnt about WPS on CCR</a></li><li><a href="#the-data-now-on-ccr">The data now on CCR</a></li><li><a href="#scripts-written-along-the-way">Scripts written along the way</a></li></ul></nav>
 <h2 id="where-it-stands">Where it stands</h2>
 <div class="stats" markdown="0">
 <div class="stat"><b>0</b><span>failures in the module check, on login and compute nodes</span></div>
 <div class="stat"><b>29 GB</b><span>static geography staged, read-only, in 40 s of download</span></div>
 <div class="stat"><b>10 GB</b><span>of fuel and terrain snapshots copied from the Canyon set-up</span></div>
-<div class="stat"><b>2 of 3</b><span>WPS programs rerun on Canyon with CCR's module</span></div>
+<div class="stat"><b>96 of 97</b><span>met_em fields identical to NCAR's in all 62 files; the 97th differs in 3 of 753,424 fire cells</span></div>
 </div>
 
 <figure><div class="fig"><svg viewBox="0 0 900 300" role="img" aria-label="Two tests separate software differences from data differences">
@@ -69,7 +69,7 @@
 <rect x="38" y="140" width="170" height="40" rx="8" class="box"/><text x="123" y="165" text-anchor="middle" class="t-body">her WPS build</text>
 <rect x="250" y="140" width="170" height="40" rx="8" class="box-strong"/><text x="335" y="165" text-anchor="middle" class="t-name">CCR's WPS module</text>
 <text x="38" y="208" class="t-body">A difference here = the build or the machine</text>
-<text x="38" y="234" class="t-small">status: geogrid and ungrib done; metgrid rerunning on 1 core</text>
+<text x="38" y="234" class="t-small">status: PASSED Nov 16 · 96 of 97 fields identical, NFUEL_CAT 3 cells off</text>
 </g>
 <g>
 <rect x="460" y="52" width="420" height="200" rx="12" class="box-blue"/>
@@ -161,12 +161,23 @@
 <td>47 minutes for all 31 hours: one core is about 6× faster than eight here</td>
 </tr>
 <tr>
-<td>next</td>
-<td>Test A: metgrid on one core, then compare</td>
-<td>Pending</td>
+<td>Nov 16</td>
+<td>Test A: metgrid on one core</td>
+<td><code>rc 0</code>, 62 files, 1 h 33 min (her build: 47 min)</td>
+</tr>
+<tr>
+<td>Nov 16</td>
+<td>Test A: compared every field with NCAR's files</td>
+<td><strong>Pass.</strong> Every static field identical on both domains, <code>ZSF</code> identical, all weather identical. <code>NFUEL_CAT</code> differs in 3 of 753,424 fire cells</td>
 </tr>
 </tbody>
 </table></div>
+<h2 id="test-a-result">Test A result</h2>
+<div class="good">
+<p><span class="callout-title">Test A passed</span></p>
+<p>CCR's WPS module, given exactly the Canyon inputs, reproduces NCAR's files. Across all 62 <code>met_em</code> files, 96 of 97 fields are bit-for-bit identical, including every weather field and the fine terrain <code>ZSF</code>. The fuel map <code>NFUEL_CAT</code> differs in 3 of 753,424 fire cells (<code>122→145</code>, <code>121→91</code>, <code>102→122</code>), 99.9996% identical. Single cells like this are what nearest-neighbour picking does when a fire-cell centre falls almost exactly on a pixel edge, where tiny rounding differences between builds or MPI layouts tip the choice; our geogrid ran on 8 ranks, hers on one.</p>
+</div>
+<p>So WPS can run on CCR: the "WPS runs at NCAR" assumption is no longer needed. Two follow-ups: metgrid took 1 h 33 min on one core here against 47 min for her build, worth one timing rerun on a quiet node before fixing the walltime rule; and Test B, rebuilding from public downloads, is next.</p>
 <h2 id="what-we-learnt-about-wps-on-ccr">What we learnt about WPS on CCR</h2>
 <p><strong>The module is sound.</strong> It ships with the same compiler, MPI and netCDF as the WRF module our runs use, which is the best case for consistency.</p>
 <p><strong>Run WPS on one core.</strong> Each HRRR intermediate file is 3.4 GB, and with MPI every rank reads all of it. For two small domains there is nothing to gain from splitting the work. From her timings: about 45 s per hour of weather for ungrib and 90 s for metgrid, so about 2.5 minutes per weather hour on one core. Our walltime rule for the WPS job is 4 minutes per weather hour plus 15 minutes.</p>

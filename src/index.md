@@ -41,7 +41,7 @@ A WRF-Fire run is six programs in a row. Each one reads a namelist and a few fil
 <div class="stat"><b>25</b><span>usable instrumented runs from 48 planned, Oct 18–25</span></div>
 <div class="stat"><b>1.5–2.1×</b><span>Sapphire Rapids speed per rank over Cascade Lake</span></div>
 <div class="stat"><b>41.8 h</b><span>node formula's walltime for Cranston, against 41.6 h measured</span></div>
-<div class="stat"><b>47 min</b><span>metgrid for Canyon on one core; about 4.7 h on eight</span></div>
+<div class="stat"><b>96 / 97</b><span>fields identical when CCR's WPS rebuilt NCAR's Canyon inputs</span></div>
 <div class="stat"><b>23 h</b><span>median queue wait on Cascade Lake after day two</span></div>
 </div>
 

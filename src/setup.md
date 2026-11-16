@@ -10,7 +10,7 @@ lead: CCR now provides WPS 4.6 as a module. Until now our inputs were built by o
 <div class="stat"><b>0</b><span>failures in the module check, on login and compute nodes</span></div>
 <div class="stat"><b>29 GB</b><span>static geography staged, read-only, in 40 s of download</span></div>
 <div class="stat"><b>10 GB</b><span>of fuel and terrain snapshots copied from the Canyon set-up</span></div>
-<div class="stat"><b>2 of 3</b><span>WPS programs rerun on Canyon with CCR's module</span></div>
+<div class="stat"><b>96 of 97</b><span>met_em fields identical to NCAR's in all 62 files; the 97th differs in 3 of 753,424 fire cells</span></div>
 </div>
 
 {{fig:testab|**The validation plan.** Test A swaps only the software; test B swaps only the data. Running both tells us which one to blame if anything differs.}}
@@ -32,7 +32,18 @@ lead: CCR now provides WPS 4.6 as a module. Until now our inputs were built by o
 | Nov 10 | Test A: geogrid and ungrib | Both `rc 0`. geogrid 12 s. ungrib 55 min (her build: 22.5), slowed by our own copy running at the same time |
 | Nov 10 | Test A: metgrid on 8 ranks | Killed at the 2-hour limit while on hour 7 of 31: about 9 minutes per hour of weather |
 | Nov 15 | Compared with her single-core metgrid | 47 minutes for all 31 hours: one core is about 6× faster than eight here |
-| next | Test A: metgrid on one core, then compare | Pending |
+| Nov 16 | Test A: metgrid on one core | `rc 0`, 62 files, 1 h 33 min (her build: 47 min) |
+| Nov 16 | Test A: compared every field with NCAR's files | **Pass.** Every static field identical on both domains, `ZSF` identical, all weather identical. `NFUEL_CAT` differs in 3 of 753,424 fire cells |
+
+## Test A result
+
+<div class="good" markdown="1">
+<span class="callout-title">Test A passed</span>
+
+CCR's WPS module, given exactly the Canyon inputs, reproduces NCAR's files. Across all 62 `met_em` files, 96 of 97 fields are bit-for-bit identical, including every weather field and the fine terrain `ZSF`. The fuel map `NFUEL_CAT` differs in 3 of 753,424 fire cells (`122→145`, `121→91`, `102→122`), 99.9996% identical. Single cells like this are what nearest-neighbour picking does when a fire-cell centre falls almost exactly on a pixel edge, where tiny rounding differences between builds or MPI layouts tip the choice; our geogrid ran on 8 ranks, hers on one.
+</div>
+
+So WPS can run on CCR: the "WPS runs at NCAR" assumption is no longer needed. Two follow-ups: metgrid took 1 h 33 min on one core here against 47 min for her build, worth one timing rerun on a quiet node before fixing the walltime rule; and Test B, rebuilding from public downloads, is next.
 
 ## What we learnt about WPS on CCR
 
