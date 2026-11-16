@@ -61,7 +61,7 @@
 <p class="kicker">How it works</p>
 <h1>The checks behind each step</h1>
 <p class="lead">A few small commands carry a fire from its record to a checked run. Each one does one step, runs the checks for it, and writes what it did to a shared ledger. Nothing reaches the queue until the cheap checks have passed, and nothing is ever deleted.</p>
-<nav class="toc"><b>On this page</b><ul><li><a href="#why-gates">Why gates</a></li><li><a href="#getting-started">Getting started</a></li><li><a href="#your-profile">Your profile</a></li><li><a href="#the-folders">The folders</a></li><li><a href="#the-commands">The commands</a></li><li><a href="#what-each-gate-checks">What each gate checks</a></li><li><a href="#watching-jobs">Watching jobs</a></li><li><a href="#the-ledger">The ledger</a></li><li><a href="#files">Files</a></li></ul></nav>
+<nav class="toc"><b>On this page</b><ul><li><a href="#why-gates">Why gates</a></li><li><a href="#getting-started">Getting started</a></li><li><a href="#your-profile">Your profile</a></li><li><a href="#the-folders">The folders</a></li><li><a href="#the-shared-data">The shared data</a></li><li><a href="#the-commands">The commands</a></li><li><a href="#what-each-gate-checks">What each gate checks</a></li><li><a href="#watching-jobs">Watching jobs</a></li><li><a href="#the-ledger">The ledger</a></li><li><a href="#files">Files</a></li></ul></nav>
 <h2 id="why-gates">Why gates</h2>
 <p>A WRF-Fire run can wait a day in the queue and then fail in its first minute: a namelist typo, a fuel map from the wrong place, an ignition outside the fire domain. Each of those can be caught in seconds or minutes, before the expensive job is submitted. The gating system puts a check after every step of the <a href="index.html">chain</a>, and makes each command refuse to start until the check before it has passed.</p>
 <figure><div class="fig"><svg viewBox="0 0 900 400" role="img" aria-label="Six commands carry a fire from its record to a checked run; each passes through a gate">
@@ -167,6 +167,18 @@ UPDATED=2026-11-16T10:02:11-05:00
 <li><strong>Locked means locked.</strong> Records, input versions, the specs fires ran with, and the commands themselves are read-only. Changing one means making a new one: <code>wrf-new-fire --replace</code>, a new <code>wrf-add-inputs</code>, a new card or spec folder.</li>
 <li><strong>Nothing is deleted.</strong> <code>wrf-setaside PATH "reason"</code> moves a run, an input version or a spec into <code>setaside/&lt;month&gt;/</code> with a <code>NOTE.txt</code> saying where it came from, who moved it, why, and the command that moves it back. It refuses anything still in use: the current input version, an input version a run used, a gate C folder that a later run links to, and runs whose job is still queued or running. The pipeline, the ledger and <code>setaside/</code> itself are never moved.</li>
 </ul>
+<h2 id="the-shared-data">The shared data</h2>
+<p>Every fuel and terrain layer lives in one place, and each has a short name that WPS uses to select it:</p>
+<pre><code class="language-text">/projects/academic/negarkhodoe/wrf/static/
+  landfire/&lt;LF2016|LF2022|LF2023|LF2024|LF2025&gt;/&lt;FBFM40|FBFM13&gt;/   our conversions of the LANDFIRE downloads
+  landfire_ncar/&lt;LFyyyy&gt;/FBFM40/                                     the NCAR copies, to reproduce inputs made with them
+  elevation/CA_1s/                                                   1 arc-second California elevation
+  WPS_GEOG/                                                          UCAR's standard geography
+  LAYERS.txt                                                         every layer with its name
+/projects/academic/negarkhodoe/wrf/tables/fire/GEOGRID.TBL           selects each layer by its name
+</code></pre>
+<p>Names: <code>lf2024</code> is LANDFIRE 2024 FBFM40, <code>lf2016_fbfm13</code> LANDFIRE 2016 FBFM13, <code>ncar_lf2024</code> the NCAR copy of 2024, <code>ca_1s</code> the elevation. A fire card's <code>fuel_layer</code> and <code>terrain_layer</code> set the names in <code>namelist.wps</code> automatically, and gate B compares the inputs against the same layer, so the map WPS used and the map it is checked against are always the same file.</p>
+<p>Whoever maintains the folder uses <code>wrf-static</code>: with no option it lists every layer; <code>--plan</code> shows what <code>--wire</code> would do; <code>--wire</code> puts each layer in its place (leaving a link at any old path, deleting nothing), rebuilds the table's fuel and terrain entries with every name (the previous table is kept in <code>tables/fire_previous/</code>) and writes <code>LAYERS.txt</code>; <code>--check</code> runs geogrid once per name on a small domain and checks that the fuel it wrote equals the layer read directly. A new LANDFIRE release is added by converting it into <code>landfire/&lt;LFyyyy&gt;/&lt;product&gt;/</code> and running <code>--wire</code> and <code>--check</code> again.</p>
 <h2 id="the-commands">The commands</h2>
 <div class="tbl"><table>
 <thead>
@@ -226,6 +238,11 @@ UPDATED=2026-11-16T10:02:11-05:00
 <td><code>wrf-next FIRE [--yes] [--retry] [--spec DIR]</code></td>
 <td>Looks at where the fire is and does the next step: waits for WPS, submits gate C, then gate D, then proposes the run size from gate D's measured rate and submits after a yes; afterwards shows progress and how it ended</td>
 <td>—</td>
+</tr>
+<tr>
+<td><code>wrf-static [--plan\|--wire\|--check]</code></td>
+<td>Lists, places and names the shared fuel and terrain layers, and checks each with geogrid (see above)</td>
+<td><code>--wire</code> asks before changing anything</td>
 </tr>
 <tr>
 <td><code>wrf-watch [FIRE] [--mine] [--active] [--every SECONDS]</code></td>

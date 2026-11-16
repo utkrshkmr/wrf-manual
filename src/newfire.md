@@ -91,6 +91,7 @@ In `nano`: change the value, then Ctrl-O, Enter to save and Ctrl-X to exit. Add 
 | `fire_feedback` | 1 = the fire changes the wind, 0 = it does not | `0` |
 | `slope_factor` | how strongly slope speeds the fire, 1 = normal | `1.5` |
 | `ignition_radius_m` | size of the first burning circle, in metres | `100` |
+| `fuel_layer` | which fuel map; the card picks the LANDFIRE year before the fire, any map listed in `/projects/academic/negarkhodoe/wrf/static/LAYERS.txt` can be used | `…/static/landfire/LF2022/FBFM40` · *new weather and map files* |
 | `ignition_lat`, `ignition_lon` | where it starts (must stay inside the fire area) | |
 | `ignition_time` | when it starts, UTC (must stay inside the simulated period) | |
 | `start`, `end` | the simulated period, UTC | *new weather and map files* |

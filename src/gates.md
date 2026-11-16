@@ -68,6 +68,24 @@ Rules the commands keep:
 - **Locked means locked.** Records, input versions, the specs fires ran with, and the commands themselves are read-only. Changing one means making a new one: `wrf-new-fire --replace`, a new `wrf-add-inputs`, a new card or spec folder.
 - **Nothing is deleted.** `wrf-setaside PATH "reason"` moves a run, an input version or a spec into `setaside/<month>/` with a `NOTE.txt` saying where it came from, who moved it, why, and the command that moves it back. It refuses anything still in use: the current input version, an input version a run used, a gate C folder that a later run links to, and runs whose job is still queued or running. The pipeline, the ledger and `setaside/` itself are never moved.
 
+## The shared data
+
+Every fuel and terrain layer lives in one place, and each has a short name that WPS uses to select it:
+
+```text
+/projects/academic/negarkhodoe/wrf/static/
+  landfire/<LF2016|LF2022|LF2023|LF2024|LF2025>/<FBFM40|FBFM13>/   our conversions of the LANDFIRE downloads
+  landfire_ncar/<LFyyyy>/FBFM40/                                     the NCAR copies, to reproduce inputs made with them
+  elevation/CA_1s/                                                   1 arc-second California elevation
+  WPS_GEOG/                                                          UCAR's standard geography
+  LAYERS.txt                                                         every layer with its name
+/projects/academic/negarkhodoe/wrf/tables/fire/GEOGRID.TBL           selects each layer by its name
+```
+
+Names: `lf2024` is LANDFIRE 2024 FBFM40, `lf2016_fbfm13` LANDFIRE 2016 FBFM13, `ncar_lf2024` the NCAR copy of 2024, `ca_1s` the elevation. A fire card's `fuel_layer` and `terrain_layer` set the names in `namelist.wps` automatically, and gate B compares the inputs against the same layer, so the map WPS used and the map it is checked against are always the same file.
+
+Whoever maintains the folder uses `wrf-static`: with no option it lists every layer; `--plan` shows what `--wire` would do; `--wire` puts each layer in its place (leaving a link at any old path, deleting nothing), rebuilds the table's fuel and terrain entries with every name (the previous table is kept in `tables/fire_previous/`) and writes `LAYERS.txt`; `--check` runs geogrid once per name on a small domain and checks that the fuel it wrote equals the layer read directly. A new LANDFIRE release is added by converting it into `landfire/<LFyyyy>/<product>/` and running `--wire` and `--check` again.
+
 ## The commands
 
 | Command | What it does | Refuses when |
@@ -82,6 +100,7 @@ Rules the commands keep:
 | `wrf-submit FIRE SPEC_DIR --nodes --ranks --time [--constraint] [--name]` | The production run: links gate C's files, submits wrf.exe, runs gate E when the job ends | no passed gate D for the same namelists and inputs; ranks over the cap; walltime over 72 h; the same namelists already queued |
 | `wrf-gate E FIRE RUN_DIR` | Reruns gate E, for a run that was killed before its own gate E | — |
 | `wrf-next FIRE [--yes] [--retry] [--spec DIR]` | Looks at where the fire is and does the next step: waits for WPS, submits gate C, then gate D, then proposes the run size from gate D's measured rate and submits after a yes; afterwards shows progress and how it ended | — |
+| `wrf-static [--plan\|--wire\|--check]` | Lists, places and names the shared fuel and terrain layers, and checks each with geogrid (see above) | `--wire` asks before changing anything |
 | `wrf-watch [FIRE] [--mine] [--active] [--every SECONDS]` | Every submitted job: Slurm state, elapsed and limit, simulated time reached, % done, seconds per step, ETA, and warnings (log idle over 30 min, won't finish in its time limit, pending reason, failed or timed out, gate results) | — |
 | `wrf-status [FIRE]` | All fires, or one fire's record, versions, gates and runs with who started them and the job state | — |
 | `wrf-setaside PATH "reason"` | Moves something into `setaside/` instead of deleting it | it is in use (see above) |

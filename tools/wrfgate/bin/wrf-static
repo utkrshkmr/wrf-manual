@@ -1,0 +1,16 @@
+#!/bin/bash
+# The shared fuel and terrain layers (for whoever maintains the shared folder).
+#   wrf-static                list every layer under static/ and its name
+#   wrf-static --plan         show what --wire would move and the names it would give, changing nothing
+#   wrf-static --wire         put every layer in its standard place (links left at old paths), rebuild GEOGRID.TBL, write LAYERS.txt
+#   wrf-static --check        submit a job that runs geogrid once per layer name and checks each one
+source "$(dirname "$(readlink -f "$0")")/../lib/wrfgate.sh"
+case ${1:-} in
+"") python3 -m wrfgate.static inventory; echo; [[ -f $WRF_ROOT/static/LAYERS.txt ]] && cat "$WRF_ROOT/static/LAYERS.txt" ;;
+--plan) python3 -m wrfgate.static plan ;;
+--wire) wg_need_person; wg_start --wire; python3 -m wrfgate.static plan; echo; read -r -p "Go ahead? [y/N] " a; [[ $a == [yY]* ]] || exit 0
+  python3 -m wrfgate.static wire && wg_log event=static_wired ;;
+--check) wg_need_person; wg_start --check; J=$(python3 -m wrfgate.static check-job "$WRF_ROOT/tests/static_check_$(wg_stamp)") || exit 1
+  sbatch "$J" && echo "results will be in $(dirname "$J")/RESULTS.txt" ;;
+*) sed -n '2,6p' "$0" ;;
+esac

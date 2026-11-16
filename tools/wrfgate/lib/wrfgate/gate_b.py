@@ -63,9 +63,11 @@ def run(input_dir, fuel_layer, scan_dir=None, dem=None, record=None, out=None, p
          f"burnable share {burn_in:.1f}% vs reference {burn_ref:.1f}%", warn_only=True)
     if scan_dir:
         res = []
-        for lay in sorted(glob.glob(os.path.join(scan_dir, "LF20*", "FBFM40"))):
+        lays = [(l, l.split(os.sep)[-2]) for l in sorted(glob.glob(os.path.join(scan_dir, "LF20*", "FBFM40")))]
+        lays += [(l, "NCAR " + l.split(os.sep)[-2]) for l in sorted(glob.glob(os.path.join(os.path.dirname(scan_dir.rstrip("/")), "landfire_ncar", "LF20*", "FBFM40")))]
+        for lay, label in lays:
             s, _, _, _ = compare(fuel, WPSLayer(lay).sample(lat, lon))
-            res.append((s, lay.split(os.sep)[-2]))
+            res.append((s, label))
         res.sort(reverse=True)
         g.facts["release_scan"] = {r: round(s, 3) for s, r in res}
         g.check("B07_release_scan", "INFO", "best matching releases: " + ", ".join(f"{r} {s:.2f}%" for s, r in res))

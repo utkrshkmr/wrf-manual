@@ -48,7 +48,7 @@ FIELDS = [
         ("vtable", "Vtable.HRRR.prs", "Vtable in tables/fire/ for this product"),
         ("fuel_layer", f"{ROOT}/static/landfire/LF2024/FBFM40", "LANDFIRE reference for gate B; pick the release before the fire"),
         ("fuel_key", "lf2024", "GEOGRID.TBL resolution key for the fuel"),
-        ("terrain_layer", f"{ROOT}/static/CA_1s", "elevation reference for gate B"),
+        ("terrain_layer", f"{ROOT}/static/elevation/CA_1s", "elevation layer (fire terrain and gate B reference)"),
         ("terrain_key", "ca_1s", "GEOGRID.TBL resolution key for the fire terrain"),
     ]),
     ("Fire model", [
@@ -223,6 +223,16 @@ def parse(path):
     for k in ["name", "start", "end", "ignition_time", "ignition_lat", "ignition_lon"]:
         if not c.get(k):
             raise SystemExit(f"the card needs {k}")
+    import re as _re
+    m = _re.search(r"/landfire(_ncar)?/(LF20\d\d)/(FBFM40|FBFM13)/?$", c["fuel_layer"])
+    if m:
+        c["fuel_key"] = ("ncar_" if m.group(1) else "") + m.group(2).lower() + ("_fbfm13" if m.group(3) == "FBFM13" else "")
+    m = _re.search(r"/(?:elevation/)?([A-Za-z0-9_]+)/?$", c["terrain_layer"])
+    if m and ("/elevation/" in c["terrain_layer"] or c["terrain_layer"].rstrip("/").endswith("CA_1s")):
+        c["terrain_key"] = m.group(1).lower()
+    for k, what in (("fuel_layer", "fuel"), ("terrain_layer", "terrain")):
+        if not os.path.exists(os.path.join(c[k], "index")):
+            raise SystemExit(f"{k} {c[k]} has no index file: not a WPS layer (see {ROOT}/static/LAYERS.txt for the {what} layers)")
     c["center_lat"] = c["center_lat"] or c["ignition_lat"]
     c["center_lon"] = c["center_lon"] or c["ignition_lon"]
     for k in ["fire_feedback", "slope_factor", "wind_height_m", "fuel_moisture", "time_step_s", "history_minutes"]:

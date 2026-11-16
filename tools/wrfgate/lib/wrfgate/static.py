@@ -1,0 +1,264 @@
+"""The shared static data: one place for every fuel and terrain layer, and a GEOGRID.TBL that can select each by name.
+
+  python3 -m wrfgate.static inventory          every WPS layer under static/ (any folder with an 'index')
+  python3 -m wrfgate.static plan               what 'wire' would do, changing nothing
+  python3 -m wrfgate.static wire               put layers in their standard places, write the table and LAYERS.txt
+  python3 -m wrfgate.static check-job          write a Slurm job that runs geogrid once per layer name and checks the result
+
+Standard places (WRF_ROOT/static/):
+  landfire/<LFyyyy>/<FBFM40|FBFM13>/   our conversions of the LANDFIRE downloads, every release and product
+  landfire_ncar/<LFyyyy>/FBFM40/        the NCAR/Nisha copies, to reproduce inputs made with them
+  elevation/<name>/                     terrain layers, e.g. CA_1s (1 arc-second California)
+  WPS_GEOG/                             UCAR's standard geography
+Nothing is deleted. A layer that is moved leaves a link at its old path, so anything that used the old path still works."""
+import datetime as _dt
+import glob
+import os
+import re
+import shutil
+import sys
+from .common import ROOT
+
+S = os.path.join(ROOT, "static")
+T = os.path.join(ROOT, "tables", "fire")
+
+
+def read_index(d):
+    out = {}
+    for line in open(os.path.join(d, "index")):
+        line = line.split("#")[0]
+        if "=" in line:
+            k, v = line.split("=", 1)
+            out[k.strip().lower()] = v.strip().strip("'\"")
+    return out
+
+
+def inventory():
+    rows = []
+    idxs = []
+    for top in sorted(os.listdir(S)):
+        if top == "WPS_GEOG" or not os.path.isdir(os.path.join(S, top)):
+            continue
+        idxs += glob.glob(os.path.join(S, top, "**", "index"), recursive=True)
+    for idx in sorted(idxs):
+        d = os.path.dirname(idx)
+        try:
+            ix = read_index(d)
+        except Exception as e:
+            rows.append((d, "unreadable index", str(e))); continue
+        tiles = len([f for f in os.listdir(d) if re.match(r"^\d{5}-\d{5}\.\d{5}-\d{5}$", f)])
+        rows.append((d, ix.get("type", "?"), f"proj={ix.get('projection', '?')} dx={ix.get('dx', '?')} "
+                     f"cat={ix.get('category_min', '')}-{ix.get('category_max', '')} tiles={tiles} "
+                     f"known=({ix.get('known_x', '')},{ix.get('known_y', '')}) {ix.get('known_lat', '')},{ix.get('known_lon', '')}"))
+    return rows
+
+
+def classify(d):
+    """Decide where a layer folder belongs. Returns (standard_path, key, kind) or None if it is not a fuel or terrain layer we manage."""
+    rel = d[len(S) + 1:]
+    if rel.startswith("WPS_GEOG"):
+        return None
+    m = re.match(r"landfire/(LF20\d\d)/(FBFM40|FBFM13)$", rel)
+    if m:
+        key = m.group(1).lower() + ("" if m.group(2) == "FBFM40" else "_fbfm13")
+        return d, key, "fuel"
+    m = re.match(r"landfire_ncar/(LF20\d\d)/FBFM40$", rel)
+    if m:
+        return d, "ncar_" + m.group(1).lower(), "fuel"
+    m = re.match(r"elevation/([A-Za-z0-9_]+)$", rel)
+    if m:
+        return d, m.group(1).lower(), "terrain"
+    # the earlier snapshots of Nisha's layers: static/LF2016, static/LF2023, static/LF2024 (index at any depth)
+    m = re.match(r"(LF20\d\d)(/.*)?$", rel)
+    if m:
+        ix = read_index(d)
+        if ix.get("type") == "categorical":
+            return os.path.join(S, "landfire_ncar", m.group(1), "FBFM40"), "ncar_" + m.group(1).lower(), "fuel"
+    m = re.match(r"(CA_1s)(/.*)?$", rel)
+    if m:
+        return os.path.join(S, "elevation", "CA_1s"), "ca_1s", "terrain"
+    return None
+
+
+def plan():
+    moves, layers = [], []
+    for d, kind, _ in inventory():
+        c = classify(d)
+        if not c:
+            continue
+        std, key, k = c
+        if os.path.realpath(d) != os.path.realpath(std) and not os.path.islink(d):
+            top = d
+            # move the whole top-level snapshot folder (e.g. static/LF2024) only when the index sits in it directly
+            moves.append((d, std))
+        layers.append((key, k, std))
+    seen, uniq = set(), []
+    for key, k, std in layers:
+        if key not in seen:
+            seen.add(key); uniq.append((key, k, std))
+    return moves, sorted(uniq)
+
+
+def _block(text, name):
+    m = re.search(rf"^\s*name\s*=\s*{name}\s*$.*?^=+\s*$", text, re.M | re.S)
+    return m
+
+
+def table(layers, default_fuel="lf2024", default_terrain="ca_1s"):
+    """A copy of the current GEOGRID.TBL with the NFUEL_CAT and ZSF entries rebuilt to list every layer by name."""
+    src = open(os.path.join(T, "GEOGRID.TBL")).read()
+    out = src
+    for name, kind in (("NFUEL_CAT", "fuel"), ("ZSF", "terrain")):
+        m = _block(out, name)
+        if not m:
+            raise SystemExit(f"{name} not found in {T}/GEOGRID.TBL")
+        blk = m.group(0)
+        keep = [l for l in blk.splitlines() if not re.match(r"\s*(interp_option|rel_path|abs_path)\s*=", l) and not re.match(r"^=+\s*$", l)]
+        interps = re.findall(r"^\s*interp_option\s*=\s*([^:\n]+):(.*)$", blk, re.M)
+        how = dict((k.strip(), v.strip()) for k, v in interps)
+        style = how.get("default") or next(iter(how.values()), "nearest_neighbor" if kind == "fuel" else "average_gcell(4.0)+four_pt+average_4pt")
+        sel = [(k, p) for k, kk, p in layers if kk == kind]
+        dflt = default_fuel if kind == "fuel" else default_terrain
+        lines = keep[:]
+        for k, p in sel:
+            lines.append(f"    interp_option = {k}:{style}")
+        lines.append(f"    interp_option = default:{style}")
+        for k, p in sel:
+            lines.append(f"    abs_path = {k}:{p}/")
+        dpath = dict(sel).get(dflt)
+        if dpath:
+            lines.append(f"    abs_path = default:{dpath}/")
+        lines.append("===============================")
+        out = out.replace(blk, "\n".join(lines))
+    if not out.endswith("\n"):
+        out += "\n"
+    out = re.sub(r"(^=+)(?=[^\n=])", r"\1\n", out, flags=re.M)
+    head = (f"# GEOGRID.TBL for WRF-Fire on CCR, written by wrfgate.static on {_dt.datetime.now():%Y-%m-%d %H:%M}.\n"
+            f"# Fuel (NFUEL_CAT) and fire terrain (ZSF) can be chosen by name in geog_data_res; see {S}/LAYERS.txt.\n")
+    return head + out
+
+
+def wire(dry=False):
+    moves, layers = plan()
+    stamp = _dt.datetime.now().strftime("%Y%m%d_%H%M%S")
+    for src, dst in moves:
+        print(f"move  {src}\n   -> {dst}   (a link is left at the old path)")
+        if dry:
+            continue
+        if os.path.exists(dst):
+            print(f"   skipped: {dst} already exists"); continue
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        shutil.move(src, dst)
+        os.symlink(dst, src)
+    for key, kind, p in layers:
+        print(f"layer {key:<16} {kind:<8} {p}")
+    if dry:
+        return
+    os.makedirs(T + "_previous", exist_ok=True)
+    keep = os.path.join(T + "_previous", f"GEOGRID.TBL.{stamp}")
+    shutil.copy2(os.path.join(T, "GEOGRID.TBL"), keep)
+    new = table(layers)
+    tmp = os.path.join(T, ".GEOGRID.TBL.new")
+    open(tmp, "w").write(new)
+    os.chmod(os.path.join(T, "GEOGRID.TBL"), 0o664)
+    os.replace(tmp, os.path.join(T, "GEOGRID.TBL"))
+    print(f"wrote {T}/GEOGRID.TBL (previous kept as {keep})")
+    with open(os.path.join(S, "LAYERS.txt"), "w") as f:
+        f.write(f"# Fuel and terrain layers for WPS, {_dt.datetime.now():%Y-%m-%d}. Select one in namelist.wps geog_data_res, e.g.\n"
+                f"#   geog_data_res = 'lf2024+default', 'ca_1s+lf2024+default'\n"
+                f"# Fire cards set this from fuel_layer automatically. 'default' = lf2024 for fuel, ca_1s for terrain.\n\n")
+        for key, kind, p in layers:
+            ix = read_index(p)
+            f.write(f"{key:<16} {kind:<8} {p}   ({ix.get('projection', '?')}, dx {ix.get('dx', '?')})\n")
+    print(f"wrote {S}/LAYERS.txt")
+
+
+def check_job(out_dir):
+    """A Slurm job: geogrid on a small Canyon-area domain, once per layer name; then the fuel layers are compared cell by cell
+    with the same layer read directly (exact projection), which shows the name reaches the right files."""
+    _, layers = plan()
+    os.makedirs(out_dir, exist_ok=True)
+    runs = []
+    for key, kind, p in layers:
+        res = f"'{key}+default', '{key}+default'" if kind == "fuel" else f"'{key}+default', '{key}+lf2024+default'"
+        runs.append((key, kind, p, res))
+    lines = [f"""#!/bin/bash
+#SBATCH -J wg_static_check
+#SBATCH -p general-compute
+#SBATCH --qos=general-compute
+#SBATCH -N 1
+#SBATCH -n 1
+#SBATCH --mem=32G
+#SBATCH -t 03:00:00
+#SBATCH -o {out_dir}/check_%j.out
+source {ROOT}/pipeline/current/lib/wrfgate.sh
+wg_modules
+"""]
+    for key, kind, p, res in runs:
+        d = os.path.join(out_dir, key)
+        lines.append(f"""mkdir -p {d}; cd {d}
+cat > namelist.wps <<'NL'
+&share
+ wrf_core = 'ARW', max_dom = 2, start_date = '2025-08-07_18:00:00','2025-08-07_18:00:00', end_date = '2025-08-07_18:00:00','2025-08-07_18:00:00',
+ interval_seconds = 3600, io_form_geogrid = 2, subgrid_ratio_x = 0, 4, subgrid_ratio_y = 0, 4,
+/
+&geogrid
+ parent_id = 1, 1, parent_grid_ratio = 1, 9, i_parent_start = 1, 6, j_parent_start = 1, 6,
+ e_we = 16, 37, e_sn = 16, 37, geog_data_res = {res},
+ dx = 900, dy = 900, map_proj = 'lambert', ref_lat = 34.44, ref_lon = -118.73, truelat1 = 34.44, truelat2 = 34.44, stand_lon = -118.73,
+ geog_data_path = '{S}/WPS_GEOG/', opt_geogrid_tbl_path = '{T}/'
+/
+NL
+srun -n 1 geogrid.exe > geogrid.out 2>&1 < /dev/null
+python3 -m wrfgate.static verify {d} {key} {kind} {p} >> {out_dir}/RESULTS.txt 2>&1
+""")
+    lines.append(f"echo; cat {out_dir}/RESULTS.txt\n")
+    path = os.path.join(out_dir, "check_static.sbatch")
+    open(path, "w").write("".join(lines))
+    open(os.path.join(out_dir, "RESULTS.txt"), "w").write(f"layer            kind     result\n")
+    return path
+
+
+def verify(d, key, kind, layer):
+    import numpy as np
+    from netCDF4 import Dataset
+    g = os.path.join(d, "geo_em.d02.nc")
+    ok = os.path.exists(g) and "Successful completion" in open(os.path.join(d, "geogrid.log")).read() if os.path.exists(os.path.join(d, "geogrid.log")) else False
+    if not ok:
+        err = [l.strip() for l in open(os.path.join(d, "geogrid.log"))][-1] if os.path.exists(os.path.join(d, "geogrid.log")) else "no geogrid.log"
+        print(f"{key:<16} {kind:<8} FAIL geogrid: {err}"); return
+    nc = Dataset(g)
+    if kind == "fuel":
+        from .geo import WPSLayer
+        from .metem import fire_mesh_latlon, fire_field
+        lat, lon, shape = fire_mesh_latlon(g, 4)
+        v = fire_field(g, "NFUEL_CAT", shape)
+        ref = WPSLayer(layer).sample(lat, lon)
+        good = np.isfinite(ref)
+        same = float((v[good] == ref[good]).mean() * 100) if good.any() else 0.0
+        zero = float((v == 0).mean() * 100)
+        status = "PASS" if same >= 95 and zero < 5 else "FAIL"
+        print(f"{key:<16} {kind:<8} {status} {same:.2f}% of fire cells equal the layer read directly; {zero:.1f}% empty; codes {sorted(set(np.unique(v).astype(int)))[:12]}")
+    else:
+        z = np.asarray(nc["ZSF"][0]); h = np.asarray(nc["HGT_M"][0])
+        status = "PASS" if np.isfinite(z).all() and z.max() > 0 and abs(float(z.mean()) - float(h.mean())) < 100 else "FAIL"
+        print(f"{key:<16} {kind:<8} {status} ZSF {z.min():.0f} to {z.max():.0f} m, mean {z.mean():.0f} m (atmosphere terrain mean {h.mean():.0f} m)")
+
+
+if __name__ == "__main__":
+    a = sys.argv[1:]
+    if not a:
+        print(__doc__); raise SystemExit(1)
+    if a[0] == "inventory":
+        for r in inventory():
+            print(f"{r[0]}\n    {r[1]}  {r[2]}")
+    elif a[0] == "plan":
+        wire(dry=True)
+    elif a[0] == "wire":
+        wire()
+    elif a[0] == "check-job":
+        print(check_job(a[1] if len(a) > 1 else os.path.join(ROOT, "tests", "static_check")))
+    elif a[0] == "verify":
+        verify(*a[1:5])
+    else:
+        print(__doc__); raise SystemExit(1)

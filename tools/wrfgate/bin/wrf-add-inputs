@@ -23,7 +23,7 @@ OLD=$(ls -d "$I"/*_"${V#*_}" 2>/dev/null | grep -v "\.gates$" | head -1); [[ -n 
 rm -f "$TMP/.sha256"; mv "$TMP" "$I/$V"
 G=$I/$V.gates; mkdir -p "$G"
 FUEL=$(wg_rec "$FIRE" fuel_layer); FUEL=${FUEL:-$WRF_ROOT/static/landfire/LF2024/FBFM40}
-DEM=$(wg_rec "$FIRE" terrain_layer); DEM=${DEM:-$WRF_ROOT/static/CA_1s}
+DEM=$(wg_rec "$FIRE" terrain_layer); DEM=${DEM:-$WRF_ROOT/static/elevation/CA_1s}
 echo "== gate A"; python3 -m wrfgate.gate_a "$I/$V" --record "$REC" --out "$G"; A=$?
 echo "== gate B"; BARGS=(--fuel "$FUEL" --scan "$WRF_ROOT/static/landfire" --record "$REC" --out "$G")
 [[ -f $DEM/index ]] && BARGS+=(--dem "$DEM")

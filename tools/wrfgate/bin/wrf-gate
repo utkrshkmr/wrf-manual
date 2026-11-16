@@ -15,7 +15,7 @@ A|B)
   wg_modules || exit 1
   V=$(wg_version_dir "$FIRE" "${1:-current}") || exit 1; G=$V.gates; mkdir -p "$G"
   if [[ $GATE == A ]]; then python3 -m wrfgate.gate_a "$V" --record "$REC" --out "$G"
-  else FUEL=$(wg_rec "$FIRE" fuel_layer); FUEL=${FUEL:-$WRF_ROOT/static/landfire/LF2024/FBFM40}; DEM=$(wg_rec "$FIRE" terrain_layer); DEM=${DEM:-$WRF_ROOT/static/CA_1s}
+  else FUEL=$(wg_rec "$FIRE" fuel_layer); FUEL=${FUEL:-$WRF_ROOT/static/landfire/LF2024/FBFM40}; DEM=$(wg_rec "$FIRE" terrain_layer); DEM=${DEM:-$WRF_ROOT/static/elevation/CA_1s}
     A=(--fuel "$FUEL" --scan "$WRF_ROOT/static/landfire" --record "$REC" --out "$G"); [[ -f $DEM/index ]] && A+=(--dem "$DEM")
     python3 -m wrfgate.gate_b "$V" "${A[@]}"; fi ;;
 C)
