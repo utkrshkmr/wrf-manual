@@ -138,6 +138,23 @@ def table(layers, default_fuel="lf2024", default_terrain="ca_1s"):
     return head + out
 
 
+def _rename(src, dst):
+    """Move a folder by renaming it (instant, same file system) and leave a link at the old path. Never copies: if a rename is not possible, stop.
+    Read-only parent folders (the snapshots were locked) are opened for the rename and locked again after."""
+    import stat
+    par = os.path.dirname(src)
+    mode = os.stat(par).st_mode
+    try:
+        if not os.access(par, os.W_OK):
+            os.chmod(par, mode | stat.S_IWUSR)
+        os.rename(src, dst)
+        os.symlink(dst, src)
+    except OSError as e:
+        raise SystemExit(f"could not move {src} to {dst} by renaming ({e.strerror}); nothing was copied. Ask the lab to check the folder's owner and permissions.")
+    finally:
+        os.chmod(par, mode)
+
+
 def wire(dry=False):
     moves, layers = plan()
     stamp = _dt.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -148,8 +165,7 @@ def wire(dry=False):
         if os.path.exists(dst):
             print(f"   skipped: {dst} already exists"); continue
         os.makedirs(os.path.dirname(dst), exist_ok=True)
-        shutil.move(src, dst)
-        os.symlink(dst, src)
+        _rename(src, dst)
     for key, kind, p in layers:
         print(f"layer {key:<16} {kind:<8} {p}")
     if dry:
