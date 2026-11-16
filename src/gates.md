@@ -163,7 +163,7 @@ The honest limit: anyone can still call `sbatch` by hand. Such a run has no mani
 | --- | --- |
 | `install.sh` | installs a read-only release and points `current` at it |
 | `setup.sh` | `PATH`, `WRF_ROOT`, the shell-history hook |
-| `SKILL.md` | instructions for a coding agent (see [the skill page](skill.html)) |
+| `SKILL.md` | text to paste into an AI chat so it can guide a run (see [the skill page](skill.html)) |
 | `arrange_ccr.sbatch` | one-off job that copies every fire we have into this layout (see the [worked example](example.html)) |
 | `bin/wrf-*` | the commands above |
 | `lib/wrfgate.sh` | shared shell functions: modules, profile, ledger, Slurm mail lines |

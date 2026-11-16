@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Skill file for coding agents · WRF-Fire Manual</title>
-<meta name="description" content="One file, SKILL.md, that teaches a coding agent how to run any fire through the gating system - from building met_em files to reading gate E - and the rules it must keep: never delete, never hand-submit, ask before spending core-hours.">
+<title>Skill file for chat assistants · WRF-Fire Manual</title>
+<meta name="description" content="One block of text you paste at the start of a chat with any AI assistant. It tells the assistant how our setup works, so it can walk you through running any fire, one command at a time, and read what CCR prints back.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -36,145 +36,106 @@
 <h4>Running it safely</h4><ol>
 <li><a href="gates.html"><span class="n">11</span><span>The gating system</span></a></li>
 <li><a href="example.html"><span class="n">12</span><span>Worked example: every fire</span></a></li>
-<li><a href="skill.html" class="on"><span class="n">13</span><span>Skill file for coding agents</span></a></li>
+<li><a href="skill.html" class="on"><span class="n">13</span><span>Skill file for chat assistants</span></a></li>
 </ol>
 <button type="button" class="theme-btn" onclick="toggleTheme()">Light / dark</button>
 </nav>
 <main>
 <article class="page">
 <p class="kicker">Running it safely</p>
-<h1>Skill file for coding agents</h1>
-<p class="lead">One file, SKILL.md, that teaches a coding agent how to run any fire through the gating system - from building met_em files to reading gate E - and the rules it must keep: never delete, never hand-submit, ask before spending core-hours.</p>
-<nav class="toc"><b>On this page</b><ul><li><a href="#what-it-is">What it is</a></li><li><a href="#installing-it-for-your-agent">Installing it for your agent</a></li><li><a href="#what-it-tells-the-agent">What it tells the agent</a></li><li><a href="#the-file">The file</a></li></ul></nav>
-<h2 id="what-it-is">What it is</h2>
-<p><code>SKILL.md</code> is a plain Markdown file with a short header (a name and a one-line description of when to use it) followed by step-by-step instructions. Agents that support skills, such as Claude Code, read the header to know when the skill applies and load the rest when you ask for something it covers: "set up a run for the Bridge fire", "why did gate C fail on Canyon", "rerun Long with a bigger time step".</p>
-<p>It ships with every release, at <code>/projects/academic/negarkhodoe/wrf/pipeline/current/SKILL.md</code>, so it always matches the commands installed. It is also in the repository: <a href="https://github.com/utkrshkmr/wrf-manual/blob/main/tools/wrfgate/SKILL.md"><code>tools/wrfgate/SKILL.md</code></a> (<a href="https://raw.githubusercontent.com/utkrshkmr/wrf-manual/main/tools/wrfgate/SKILL.md">raw</a>).</p>
-<h2 id="installing-it-for-your-agent">Installing it for your agent</h2>
-<p><strong>Claude Code on CCR</strong> (personal skills folder; the link follows the release, so a new release updates the skill):</p>
-<pre><code class="language-bash">mkdir -p ~/.claude/skills/wrf-fire-gated-runs
-ln -sfn /projects/academic/negarkhodoe/wrf/pipeline/current/SKILL.md ~/.claude/skills/wrf-fire-gated-runs/SKILL.md
-</code></pre>
-<p><strong>Claude Code for one project folder only:</strong> the same link under <code>&lt;folder&gt;/.claude/skills/wrf-fire-gated-runs/SKILL.md</code>.</p>
-<p><strong>Agents that read <code>AGENTS.md</code></strong> (Codex and others): put a line in your project's <code>AGENTS.md</code> telling the agent to read the file before any WRF-Fire work:</p>
-<pre><code class="language-bash">echo 'Before any WRF-Fire work, read and follow /projects/academic/negarkhodoe/wrf/pipeline/current/SKILL.md' &gt;&gt; /path/to/project/AGENTS.md
-</code></pre>
-<p><strong>Any other agent or chat assistant:</strong> attach or paste the file at the start of the session.</p>
-<p>The agent still needs <code>setup.sh</code> sourced in the shell it uses and a profile from <code>wrf-me</code>; the skill's step 0 checks both and asks you for your name and email if the profile is missing.</p>
-<h2 id="what-it-tells-the-agent">What it tells the agent</h2>
-<div class="tbl"><table>
-<thead>
-<tr>
-<th>Part</th>
-<th>Covers</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Rules</td>
-<td>never delete (use <code>wrf-setaside</code>), never <code>sbatch</code> WRF by hand, never edit locked files, ask before <code>wrf-submit</code>, <code>--replace</code>, <code>scancel</code> or setting aside, leave other people's jobs alone, never loosen a gate</td>
-</tr>
-<tr>
-<td>Step 0–1</td>
-<td>environment and profile; what already exists for the fire, and where to start</td>
-</tr>
-<tr>
-<td>Step W</td>
-<td>building <code>met_em</code> with WPS on CCR when nothing exists: what to ask the human, domain rules, the one-core job, short paths</td>
-</tr>
-<tr>
-<td>Steps 2–3</td>
-<td>the record and the inputs; a table of gate A and B failures with their fixes</td>
-</tr>
-<tr>
-<td>Steps 4–5</td>
-<td>writing a spec that matches the inputs; gates C and D with their common failures</td>
-</tr>
-<tr>
-<td>Steps 6–7</td>
-<td>sizing (rank cap, node types, walltime rule, the 72-hour limit), submitting, and reading gate E's four endings</td>
-</tr>
-<tr>
-<td>Pitfalls</td>
-<td>the CCR lessons: module set, one-core WPS, path length, <code>&amp;share</code>, <code>srun</code> and stdin, spool copies of batch scripts, LANDFIRE anchors</td>
-</tr>
-</tbody>
-</table></div>
-<h2 id="the-file">The file</h2>
-<pre><code class="language-markdown">---
-name: wrf-fire-gated-runs
-description: Run any WRF-Fire simulation on UB CCR through the lab's gating system (wrfgate) - from a fire's record and met_em inputs through real.exe, a smoke run and the production run, with every step checked and logged. Use whenever the user asks to set up, check, run, rerun, size, debug or clean up a WRF-Fire run, add a new fire, or build met_em files with WPS for one.
----
+<h1>Skill file for chat assistants</h1>
+<p class="lead">One block of text you paste at the start of a chat with any AI assistant. It tells the assistant how our setup works, so it can walk you through running any fire, one command at a time, and read what CCR prints back.</p>
 
-# Running WRF-Fire on CCR with the gating system
+<h2 id="how-to-use-it">How to use it</h2>
+<ol>
+<li><strong>Copy the skill.</strong> Press <strong>Copy the skill</strong> below (or select the whole block and copy it).</li>
+<li><strong>Start a new chat</strong> with your assistant (Claude, ChatGPT, Gemini, or any other) and paste it as your first message.</li>
+<li><strong>Add your request in the same message, underneath.</strong> For example:</li>
+<li>"I want to run the Bridge fire from 2024. Start me from scratch."</li>
+<li>"Gate C failed for CANYON_2025, here is GATES.txt: …"</li>
+<li>"Rerun LONG_2024 with a smaller time step."</li>
+<li><strong>Follow it step by step.</strong> The assistant gives you commands to paste into your CCR terminal. Paste them, then paste what CCR prints back into the chat. It reads the output and tells you the next step.</li>
+</ol>
+<h2 id="good-to-know">Good to know</h2>
+<ul>
+<li><strong>It works one step at a time.</strong> Run only the block it just gave you, and paste back all of the output, including errors.</li>
+<li><strong>It asks before spending.</strong> Before the real run it states nodes, ranks, walltime and core-hours, and waits for your yes.</li>
+<li><strong>It never deletes.</strong> Anything you want out of the way goes through <code>wrf-setaside</code>, which keeps it in <code>wrf/setaside/</code> with a note.</li>
+<li><strong>It asks you for facts.</strong> Ignition time and place, the window and the location of your files come from you; it will not guess them.</li>
+<li><strong>One chat per fire works best.</strong> For a new fire, start a new chat and paste the skill again.</li>
+<li><strong>If it goes off track</strong> ("just delete the folder", a hand-written <code>sbatch</code> for wrf.exe, an edit to <code>fire.yaml</code>), say "follow the skill's rules" or start a new chat.</li>
+<li><strong>The first time</strong> it will ask for your name and email, to set up your profile; Slurm then emails you when your jobs end.</li>
+</ul>
+<h2 id="the-skill">The skill</h2>
+<div class="copybar" markdown="0"><button type="button" onclick="(function(b){var t=document.querySelector('#skill-src code').textContent;function ok(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy the skill'},2000)}if(navigator.clipboard){navigator.clipboard.writeText(t).then(ok,function(){fb()})}else fb();function fb(){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');ok()}catch(e){}document.body.removeChild(a)}})(this)">Copy the skill</button></div>
 
-You are helping a member of the lab run WRF-Fire 4.6 on UB's CCR cluster. Every run goes through the gating system (`wrfgate`): eight commands that each do one step, check it, and log it. Your job is to drive those commands, read their results, fix what they report, and ask the human before anything expensive or irreversible.
+<div id="skill-src">
+<pre><code class="language-markdown"># Skill: running WRF-Fire on UB CCR with the lab's gating system
 
-Full manual: https://utkrshkmr.github.io/wrf-manual/docs/gates.html
-Worked example: https://utkrshkmr.github.io/wrf-manual/docs/example.html
-Every WPS and WRF variable: https://utkrshkmr.github.io/wrf-manual/docs/index.html
+You are helping a member of our lab run a WRF-Fire 4.6 simulation on UB's CCR cluster. You cannot run commands yourself: you give the user commands to paste into their CCR terminal, they paste the output back, and you read it and decide the next step. Every run goes through the lab's gating system: a few `wrf-*` commands that each do one step, check it, and log it.
+
+Manual, if you can open links: https://utkrshkmr.github.io/wrf-manual/docs/gates.html
+
+## How to work with the user
+
+- Give **one step at a time**: the commands for that step in one code block, then say what output to paste back.
+- Use **absolute paths and no `cd`**, so commands work from anywhere.
+- Base every conclusion on the output they pasted, and quote the lines that matter. If something is missing, ask for the exact command output rather than guessing.
+- Ask for facts you do not have (ignition time and place, the window, which folder holds their files). Never invent them.
+- Use their fire's name everywhere: UPPER_CASE with the year, e.g. `CANYON_2025`.
 
 ## Rules (never break these)
 
-1. **Never delete anything** under `/projects/academic/negarkhodoe/`. No `rm`, no overwriting. To get something out of the way use `wrf-setaside PATH &quot;reason&quot;`. Outside the shared `wrf/` folder, move things into a `_setaside/` folder beside them and tell the user.
-2. **Never call `sbatch` for real.exe or wrf.exe yourself.** Use `wrf-gate C`, `wrf-gate D` and `wrf-submit`. Hand-submitted runs have no manifest and are invisible to the system.
-3. **Never edit locked files**: `fire.yaml`, anything in `inputs/&lt;version&gt;/`, `specs/campaign/`, anything in `pipeline/releases/`, the ledger. Make a new one instead (`wrf-new-fire --replace`, a new `wrf-add-inputs`, a new spec folder).
-4. **Ask the human before** `wrf-submit` (it spends core-hours: say nodes, ranks, walltime and the estimate), before `wrf-new-fire --replace`, before `scancel`, and before `wrf-setaside`. Gates C and D are cheap (one node, under 1.5 h); you may submit them once the user has asked for a run.
-5. **Do not touch jobs you did not start.** Check `squeue -u $USER` before acting on a folder.
-6. **Do not change thresholds to make a gate pass.** A `FAIL` means fix the input or the namelist, or report to the human.
-7. **Use absolute paths and no `cd`** in commands you give or run, so they work from anywhere and in batch jobs.
-8. **Report results from files, not memory**: quote the lines from `GATES.txt`, `wrf-status` or the logs you read.
+1. **Never give a command that deletes or overwrites** anything under `/projects/academic/negarkhodoe/` (no `rm`, no `&gt;` onto existing files). To get rid of something: `wrf-setaside PATH &quot;reason&quot;`.
+2. **Never give `sbatch` commands for real.exe or wrf.exe.** Only `wrf-gate C`, `wrf-gate D` and `wrf-submit` submit WRF jobs.
+3. **Never edit locked files**: `fire.yaml`, anything in `inputs/&lt;version&gt;/` or `specs/campaign/`, the ledger. Make a new one instead.
+4. **Before `wrf-submit`, state the cost and wait for a yes**: nodes, ranks, node type, walltime, core-hours (`nodes × cores per node × hours`).
+5. **Never suggest loosening a gate.** A `FAIL` means the input or the namelist must be fixed.
+6. Do not touch jobs the user did not start.
 
 ## Where things are
 
 ```text
 /projects/academic/negarkhodoe/wrf/
-  pipeline/current/          the installed release: bin/, lib/, setup.sh, SKILL.md
-  people/&lt;user&gt;/             profile.conf (name, email, Slurm mail), work/ for drafts
-  static/                    WPS_GEOG, landfire/&lt;LFyyyy&gt;/&lt;FBFM40|FBFM13&gt;/, CA_1s (elevation); read-only
-  tables/fire/               GEOGRID.TBL, METGRID.TBL, Vtable.HRRR.prs
-  inputs/weather/hrrr/       HRRR GRIB2 already downloaded
-  fires/&lt;FIRE&gt;/              fire.yaml, inputs/, specs/, runs/
-  setaside/                  things moved out of the way
-  ledger/                    commands.jsonl (hash-chained), shell/&lt;user&gt;.log
+  static/            LANDFIRE fuel (landfire/&lt;LFyyyy&gt;/FBFM40), elevation (CA_1s), WPS_GEOG
+  tables/fire/       GEOGRID.TBL, METGRID.TBL, Vtable.HRRR.prs
+  inputs/weather/hrrr/   HRRR weather files
+  people/&lt;user&gt;/work/    the user's own drafts
+  fires/&lt;FIRE&gt;/      fire.yaml, inputs/, specs/, runs/
 ```
 
-## Step 0: make sure the environment is ready
+## Step 0: start of every session
+
+Ask the user to run:
 
 ```bash
 source /projects/academic/negarkhodoe/wrf/pipeline/current/setup.sh
 wrf-me
-```
-
-- If `setup.sh` does not exist, the system is not installed: tell the user and point them to the manual's &quot;Setting it up&quot;.
-- If `wrf-me` says there is no profile, ask the user for their full name and email and which Slurm emails they want (default `END,FAIL`), then run `wrf-me --name &quot;...&quot; --email ... --mail END,FAIL`. Do not invent an email.
-
-## Step 1: what does the user already have?
-
-```bash
 wrf-status
-wrf-status FIRE
 ```
 
-Decide from what exists:
+- If `wrf-me` says there is no profile: ask for their full name, their email, and which Slurm emails they want (default `END,FAIL`), then give `wrf-me --name &quot;Full Name&quot; --email them@buffalo.edu --mail END,FAIL`.
+- From `wrf-status` (and `wrf-status FIRE`), decide where to start:
 
-| Situation | Go to |
+| What exists for the fire | Go to |
 | --- | --- |
-| Fire is listed, inputs `current` set, a spec exists | Step 4 |
-| Fire is listed but has no `current` | read the gate results (Step 3) |
-| Fire not listed, but `met_em` files exist somewhere | Step 2 |
-| Nothing exists for this fire | Step W (build `met_em` with WPS), then Step 2 |
+| a record, inputs marked `current`, a spec | Step 4 |
+| a record, but no `current` inputs | Step 3 |
+| nothing, but `met_em` files exist somewhere | Step 2 |
+| nothing at all | Step 1 |
 
-Fire names are UPPER_CASE with digits and underscores, with the year: `CANYON_2025`.
+## Step 1: make met_em files with WPS (only if none exist)
 
-## Step W: build met_em files with WPS (only if none exist)
+Ask for: ignition time (UTC) and point, the simulation window (start and end, UTC), and roughly how far the fire spread. Then help them write `namelist.wps` in `/projects/academic/negarkhodoe/wrf/people/&lt;user&gt;/work/&lt;FIRE&gt;/`:
 
-Work in `/projects/academic/negarkhodoe/wrf/work/&lt;FIRE&gt;/` or the user's `people/&lt;user&gt;/work/&lt;FIRE&gt;/`. Keep every path in a namelist **under about 60 characters** (geogrid crashes with `End of record` on long paths); symlink long folders to short names if needed.
+- Two domains: outer about 900 m, fire domain about 100 m (`parent_grid_ratio = 9`), Lambert conformal. Each nest's `(e_we - 1)` and `(e_sn - 1)` must divide by its ratio.
+- `subgrid_ratio_x = 4` and `subgrid_ratio_y = 4` go in **`&amp;share`**.
+- The ignition must sit several km inside the fire domain's edges; more for a big fire.
+- `geog_data_path = '/projects/academic/negarkhodoe/wrf/static/WPS_GEOG'`; `opt_geogrid_tbl_path` and `opt_metgrid_tbl_path` = `'/projects/academic/negarkhodoe/wrf/tables/fire/'`. For the fire domain, `geog_data_res` must select the LANDFIRE fuel and the 1-arc-second elevation entries defined in that `GEOGRID.TBL` (ask them to `grep -n &quot;name\|rel_path\|abs_path&quot; /projects/academic/negarkhodoe/wrf/tables/fire/GEOGRID.TBL` if you need the names). Use the LANDFIRE year closest to the fire.
+- **Keep every path in the namelist under about 60 characters**; geogrid crashes with `End of record` on long paths.
+- Weather: HRRR `wrfprsf00` hourly files, `interval_seconds = 3600`, `Vtable.HRRR.prs`.
 
-1. Ask the human for: fire name, ignition time (UTC) and point, the window (start and end, UTC), and how big the fire grew. Do not guess an ignition.
-2. Domain design (manual: `domain.html`): Lambert conformal; outer domain about 900 m; fire domain about 100 m with `parent_grid_ratio = 9` (or 3/3); fire mesh ratio `subgrid_ratio_x = subgrid_ratio_y = 4` **in `&amp;share`**; ignition at least several km from every fire-domain edge, more for a big fire; `(e_we-1)` and `(e_sn-1)` of each nest divisible by its parent ratio.
-3. `namelist.wps`: `geog_data_path = '/projects/academic/negarkhodoe/wrf/static/WPS_GEOG'`, `opt_geogrid_tbl_path` and `opt_metgrid_tbl_path` pointing at `/projects/academic/negarkhodoe/wrf/tables/fire`; `geog_data_res` for the fire domain selecting the LANDFIRE fuel and 1-arc-second elevation entries that `GEOGRID.TBL` defines (read the table to get their names). Pick the LANDFIRE release closest to the fire's year.
-4. Weather: HRRR `wrfprsf00` analyses, hourly, `Vtable.HRRR.prs`, `interval_seconds = 3600`. Use files from `inputs/weather/hrrr/` or download the missing hours from NOAA's HRRR archive into a new folder there.
-5. Run all three programs in **one sbatch job on one core**:
+Run WPS as one job **on one core** (more ranks run out of time: each reads the whole weather file). Have them save this as `wps.sbatch` in their work folder and submit it with `sbatch` (this is the one `sbatch` they run by hand):
 
 ```bash
 #!/bin/bash
@@ -186,144 +147,120 @@ Work in `/projects/academic/negarkhodoe/wrf/work/&lt;FIRE&gt;/` or the user's `p
 #SBATCH -t 06:00:00
 module purge
 module load gcc/11.2.0 openmpi/4.1.1 wps/4.6.0-dmpar
+cd /projects/academic/negarkhodoe/wrf/people/USER/work/FIRE
 srun -n 1 geogrid.exe &lt; /dev/null
-/path/to/link_grib.csh /path/to/hrrr/*wrfprsf00*
+csh $(find $EBROOTWPS -name link_grib.csh | head -1) /path/to/hrrr/files/*wrfprsf00*
 ln -sf /projects/academic/negarkhodoe/wrf/tables/fire/Vtable.HRRR.prs Vtable
 srun -n 1 ungrib.exe &lt; /dev/null
 srun -n 1 metgrid.exe &lt; /dev/null
 ```
 
-   Do not run more ranks: every rank reads the whole HRRR intermediate file, and 8 ranks run out of time. Do not run the programs bare (without `srun`) inside the job.
-6. Check: `geogrid.log`, `ungrib.log`, `metgrid.log` each end with `Successful completion`. Then go to Step 2; gate A and B do the real checking.
+Done when `geogrid.log`, `ungrib.log` and `metgrid.log` each end with `Successful completion`.
 
 ## Step 2: record the fire and register its inputs
 
-Record from a namelist that was used for this fire:
+From a namelist that was already used for this fire:
 
 ```bash
-wrf-new-fire FIRE --from-namelist /path/namelist.input --fuel-layer /projects/academic/negarkhodoe/wrf/static/landfire/LF2024/FBFM40
+wrf-new-fire FIRE --from-namelist /path/to/namelist.input
 ```
 
-or from explicit values (all UTC):
+or from values (UTC):
 
 ```bash
-wrf-new-fire FIRE --start &quot;2025-08-07 18:00&quot; --end &quot;2025-08-09 00:00&quot; --ignition &quot;2025-08-07 20:25&quot; --lat 35.0 --lon -118.0 --fuel-layer /projects/academic/negarkhodoe/wrf/static/landfire/LF2024/FBFM40
+wrf-new-fire FIRE --start &quot;YYYY-MM-DD HH:MM&quot; --end &quot;YYYY-MM-DD HH:MM&quot; --ignition &quot;YYYY-MM-DD HH:MM&quot; --lat LAT --lon LON
 ```
 
-Show the printed record to the user and confirm the window and ignition before going on. Then:
+Show them the printed record and confirm window and ignition before going on. Then:
 
 ```bash
-wrf-add-inputs FIRE /path/to/met_em_folder --note &quot;what these are and how they were made&quot;
+wrf-add-inputs FIRE /path/to/met_em_folder --note &quot;how these were made&quot;
 ```
 
-This copies the files into a locked version folder, runs gates A and B, and sets `current` if neither failed. &quot;identical inputs are already registered&quot; means nothing to do.
+It copies and locks the files and runs gates A and B.
 
 ## Step 3: read gates A and B
 
 ```bash
+wrf-status FIRE
 cat /projects/academic/negarkhodoe/wrf/fires/FIRE/inputs/VERSION.gates/GATES.txt
 ```
 
-| Check failed | Meaning | Fix |
-| --- | --- | --- |
-| A05_window | inputs do not cover the record's start or end | more weather hours in WPS, or a record with the right window |
-| A08_finite | NaN or Inf in a field | rerun metgrid; check the GRIB files for those times |
-| A09_nest_rule | a nest's size does not divide by its ratio | change `e_we`/`e_sn` in `namelist.wps`, rerun WPS |
-| A11/A12 | no fire mesh or no fuel | `subgrid_ratio` missing from `&amp;share`, or the fuel entry not selected in `geog_data_res` |
-| A14 | invalid fuel codes | wrong fuel layer, or the layer's missing value leaking in |
-| A16 (warn) | code 204 present | the spec's `namelist.fire` must set `nfuelcats = 54` |
-| A19/A20 | ignition outside or too near the fire domain's edge | move or enlarge the fire domain in WPS |
-| A21 | ignition on an unburnable cell | check the ignition point with the user |
-| B02 FAIL (&lt; 90%) | fuel map does not match LANDFIRE where it should be | see B07: maybe a different release; if every release is low, the layer is misplaced. Report to the human |
-| B02 WARN (90–98%) | mostly matches | report the numbers; do not proceed silently |
-| B09 (warn) | terrain differs from the elevation layer | report; check `geog_data_res` for the terrain entry |
-
-If a gate failed and the user wants to continue anyway, they can pass `--inputs VERSION` explicitly to later steps; ask first.
+| Failed check | Fix |
+| --- | --- |
+| A05 window | weather does not cover the record's start or end: more hours in WPS, or the right record |
+| A08 finite | NaN/Inf: rerun metgrid, check those hours' weather files |
+| A09 nest rule | change `e_we`/`e_sn` in `namelist.wps`, rerun WPS |
+| A11/A12 no fire mesh or fuel | `subgrid_ratio` not in `&amp;share`, or fuel entry not in `geog_data_res` |
+| A14 invalid fuel codes | wrong fuel layer |
+| A16 warning, code 204 | the spec's `namelist.fire` needs `nfuelcats = 54` |
+| A19/A20 ignition outside or near the edge | move or enlarge the fire domain, rerun WPS |
+| A21 ignition unburnable | check the ignition point with the user |
+| B02 below 90% | fuel map does not match LANDFIRE; look at B07's best release; report to the user, do not go on |
+| B02 90–98% (warning) | tell the user the numbers before going on |
 
 ## Step 4: the spec (namelists)
 
-A spec is a folder with `namelist.input` and `namelist.fire` (and `iofields*.txt` if used). Start from an existing spec of a similar fire, copy it into `people/&lt;user&gt;/work/&lt;FIRE&gt;_&lt;variant&gt;/` (or a new `fires/FIRE/specs/&lt;name&gt;/`), and edit. Never edit `specs/campaign/`.
+A spec is a folder holding `namelist.input` and `namelist.fire`. Start from a similar fire's spec, e.g. `/projects/academic/negarkhodoe/wrf/fires/CANYON_2025/specs/campaign/`; have them copy it into `people/&lt;user&gt;/work/&lt;FIRE&gt;_&lt;label&gt;/` and edit the copy. Never edit `specs/campaign/` itself.
 
-Must agree with the inputs (gate C checks): `max_dom`, `e_we`, `e_sn`, `e_vert`, `dx`, `dy`, `parent_grid_ratio`, `i_parent_start`, `j_parent_start`, `num_metgrid_levels`, `num_metgrid_soil_levels`, `sr_x`/`sr_y` (= the fire mesh ratio on the fire domain, 0 elsewhere), start time = record start, end time = record end. Get the numbers from `inputs/VERSION.gates/gate_A.json` (`facts`) and from `ncdump -h` of one `met_em` file.
+Must match the inputs (ask for `cat .../inputs/VERSION.gates/gate_A.json` and `ncdump -h` of one `met_em.d02` file): `max_dom`, `e_we`, `e_sn`, `dx`, `dy`, `parent_grid_ratio`, `i_parent_start`, `j_parent_start`, `num_metgrid_levels`, `num_metgrid_soil_levels`, `sr_x`/`sr_y` (4 on the fire domain, 0 elsewhere), start = record start, end = record end.
 
-On the fire domain: `ifire = 2`, `fire_fuel_read = -1`, `fire_ignition_start_lat1/lon1` = record, `fire_ignition_start_time1` = seconds from the run's start to the record's ignition, a radius (`fire_ignition_radius1`) and end time. Fuel moisture: `fire_fmc_read = 1` with the value in `namelist.fire` is the simple route (manual: `moisture.html`).
+Fire domain: `ifire = 2`, `fire_fuel_read = -1`, `fire_ignition_start_lat1`/`lon1` = the record's, `fire_ignition_start_time1` = seconds from the run's start to the ignition, `fire_ignition_radius1`, `fire_fmc_read = 1` with the moisture value in `namelist.fire`. `time_step` about 6 × the outer `dx` in km.
 
-Time step: `time_step` about 6 × `dx` in km of the outer domain, lower if gate D reports CFL.
-
-## Step 5: gate C (real.exe), then gate D (smoke run)
+## Step 5: gates C and D
 
 ```bash
-wrf-gate C FIRE /path/to/spec
+wrf-gate C FIRE /path/to/spec_folder
 ```
 
-Wait for the job (Slurm emails the user; or `squeue -u $USER`), then read `fires/FIRE/runs/&lt;stamp&gt;_gateC_&lt;spec&gt;/GATES.txt`. If real.exe failed, read that folder's `rsl.error.0000` from the bottom.
+When the job ends (Slurm emails them), ask for `cat` of the run folder's `GATES.txt` (the folder name is printed: `fires/FIRE/runs/&lt;stamp&gt;_gateC_&lt;spec&gt;`). If real.exe failed, ask for `tail -40` of that folder's `rsl.error.0000`. Then:
 
 ```bash
 wrf-gate D FIRE /projects/academic/negarkhodoe/wrf/fires/FIRE/runs/&lt;stamp&gt;_gateC_&lt;spec&gt;
 ```
 
-For a large fire, add `--ranks 64 --constraint SAPPHIRE-RAPIDS-IB` (or the node type the run will use) so the measured rate is meaningful. Read `GATES.txt` in the gate D folder: `D01` must pass; `D02` lists CFL/NaN/segfault lines with their rank log; `D03` is seconds per coarse step before ignition.
-
-Common C/D failures:
+For a large fire add `--ranks 64 --constraint SAPPHIRE-RAPIDS-IB`.
 
 | Message | Fix |
 | --- | --- |
-| C05 geometry mismatch | the spec's domain numbers differ from the inputs; copy them from gate A's facts |
-| C07 boundaries short | `end_*` past the last `met_em` time |
-| C11/C12 ignition | `fire_ignition_start_time1` or lat/lon differ from the record |
-| C13 code 204 | add `nfuelcats = 54` to `namelist.fire` (and the 54th category's parameters) |
-| D02 CFL | lower `time_step`; check `epssm`, `w_damping = 1` |
-| D02 segfault at start | too many ranks for the grid (cap is gate A's `rank_cap`), or memory: fewer ranks per node |
+| C05 geometry mismatch | copy the domain numbers from gate A's facts into the spec |
+| C07 boundaries short | the end time is past the last `met_em` time |
+| C11/C12 ignition | ignition time or place differs from the record |
+| C13 code 204 | `nfuelcats = 54` in `namelist.fire` |
+| D02 CFL | lower `time_step` |
+| D02 segfault at start | too many ranks for the grid (the cap is in gate C) |
 
-Any change to the spec means gates C and D again: `wrf-submit` matches them by the namelists' hash.
+Any change to the spec means gates C and D again.
 
 ## Step 6: size and submit
 
-Sizing (manual: `run.html`):
+- **Ranks:** at most gate C's rank cap. Small fire: the cap on one node. Large fire: up to 24 whole nodes.
+- **Node types:** Cascade Lake 40 cores, Ice Lake 56, Sapphire Rapids 64 (fastest).
+- **Walltime:** gate D's seconds per step × (simulated seconds ÷ `time_step`) × 1.3, plus 1 hour, and more for a big fire (gate D measures before ignition; the fire slows it). At most 72 hours.
 
-- **Ranks**: at most gate C's `rank_cap` (`⌊nx/10⌋ × ⌊ny/10⌋` on the tightest domain). Small fire: the cap on one whole node. Large fire: up to 24 whole nodes. Use whole nodes; ranks a multiple of the cores per node, at most the cap.
-- **Walltime**: `seconds per step × steps × 1.15 + 1 h`, with steps = simulated seconds ÷ `time_step`; × 1.3 for a fire never run before, and more because the rate after ignition is slower than gate D's. Must be ≤ 72 h; if not, more nodes, or tell the user it needs restarts.
-- Node types: Cascade Lake 40 cores, Ice Lake 56, Sapphire Rapids 64 (fastest, about 1.8× Cascade Lake).
-
-Tell the user: nodes, ranks, node type, walltime, and core-hours (`nodes × cores × walltime`). After they agree:
+State nodes, ranks, node type, walltime and core-hours, and wait for a yes. Then:
 
 ```bash
-wrf-submit FIRE /path/to/spec --nodes N --ranks R --time HH:MM:SS --constraint SAPPHIRE-RAPIDS-IB --name short_label
+wrf-submit FIRE /path/to/spec_folder --nodes N --ranks R --time HH:MM:SS --constraint SAPPHIRE-RAPIDS-IB --name label
 ```
 
-## Step 7: when the run ends
+## Step 7: when it ends
 
-Gate E runs inside the job. Read `fires/FIRE/runs/&lt;stamp&gt;_&lt;label&gt;/GATES.txt`:
+Ask for `cat /projects/academic/negarkhodoe/wrf/fires/FIRE/runs/&lt;stamp&gt;_&lt;label&gt;/GATES.txt`. Gate E's ending:
 
-- **finished**: check E05/E06 (ignition time and place match) and E09 (reached the end).
-- **domain edge**: the fire reached the fire domain's boundary. Not a crash. Running further needs a larger fire domain: new WPS run, new input version.
-- **crash**: read the run's `rsl.error.*` files; find the first rank that printed an error (`grep -l -i -E &quot;error|cfl|nan&quot; rsl.error.*`).
-- **killed_or_running**: hit the walltime or was cancelled; `sacct -j JOBID` tells which. If killed, rerun gate E by hand after looking: `wrf-gate E FIRE RUN_DIR`.
+- **finished**: check that the ignition time and place matched (E05, E06) and it reached the end (E09).
+- **domain edge**: the fire reached the fire domain's boundary. Not a crash. Going further needs a bigger fire domain: new WPS run, new inputs.
+- **crash**: ask for `grep -l -i -E &quot;error|cfl|nan&quot; /path/run/rsl.error.*` and the tail of the first file it lists.
+- **killed_or_running**: hit its time limit or was cancelled; `sacct -j JOBID` says which. Then `wrf-gate E FIRE RUN_FOLDER`.
 
 ## Other commands
 
 ```bash
 wrf-status FIRE
-wrf-gate A FIRE VERSION
-wrf-gate B FIRE VERSION
-wrf-gate E FIRE RUN_DIR
 wrf-setaside /projects/academic/negarkhodoe/wrf/fires/FIRE/runs/RUN &quot;reason&quot;
-wrf-ledger-verify
 ```
-
-Every gate also runs standalone: `python3 -m wrfgate.gate_b --help` (after sourcing `setup.sh` and `pipeline/current/lib/wrfgate.sh`).
-
-## Known pitfalls on CCR
-
-- Modules: `module load gcc/11.2.0 openmpi/4.1.1 wps/4.6.0-dmpar` gives WPS and WRF 4.6 together.
-- WPS on 1 core only; WRF on whole nodes with `--exclusive`.
-- Keep namelist paths short (under about 60 characters).
-- `subgrid_ratio_x/_y` in `&amp;share` of `namelist.wps`, not `&amp;geogrid`.
-- In batch loops that call `srun`, redirect stdin (`&lt; /dev/null`), or `srun` eats the loop's input.
-- Slurm runs a copy of the batch script from a spool folder: do not locate helper files relative to `$0` inside sbatch scripts; use absolute paths.
-- The fire moisture model's tables are indexed by raw fuel code; with LANDFIRE codes, moisture routes C and D need care (manual: `moisture.html`).
-- The LANDFIRE layers in `static/landfire/` are anchored at the south-west corner; how geogrid places Albers layers depends on that anchor, which is under study. Do not change any layer's `index` file.
 </code></pre>
+</div>
 <nav class="pager"><a class="prev" href="example.html"><small>Previous</small>Worked example: every fire</a><span></span></nav>
 <footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/skill.md</code>.</footer>
 </article>

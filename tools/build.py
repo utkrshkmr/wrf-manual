@@ -37,7 +37,7 @@ NAV = [
     ("Running it safely", [
         ("gates", "The gating system"),
         ("example", "Worked example: every fire"),
-        ("skill", "Skill file for coding agents"),
+        ("skill", "Skill file for chat assistants"),
     ]),
     ("Our work on CCR", [
         ("setup", "WPS on CCR: setup so far"),

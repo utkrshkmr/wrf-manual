@@ -28,7 +28,7 @@ A WRF-Fire run is six programs in a row. Each one reads a namelist and a few fil
 <div class="cards" markdown="0">
 <a class="card" href="gates.html"><span class="k">Gates</span><h3>The gating system</h3><p>Eight commands, five gates, your profile, the folders and the ledger.</p></a>
 <a class="card" href="example.html"><span class="k">Example</span><h3>Every fire we have run</h3><p>Eaton first, then Canyon, Cranston, Long and the NCAR fires, command by command.</p></a>
-<a class="card" href="skill.html"><span class="k">For agents</span><h3>Skill file</h3><p>SKILL.md: lets a coding agent run any fire through the gates, safely.</p></a>
+<a class="card" href="skill.html"><span class="k">For chat assistants</span><h3>Skill file</h3><p>Paste it into any AI chat and it walks you through running a fire.</p></a>
 </div>
 
 ## How to read this site

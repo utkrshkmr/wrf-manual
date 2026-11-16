@@ -306,3 +306,8 @@ footer.foot { margin-top: 36px; font-size: 13px; color: var(--ink-3); }
 .formula span { margin-left: 34px; color: var(--ink-2); }
 @media (max-width: 960px) { .formula span { display: block; margin: 6px 0 0; } }
 :not(pre) > code { overflow-wrap: anywhere; }
+.copybar { margin: 0 0 10px; }
+.copybar button { font: 600 14px/1 "IBM Plex Sans", system-ui, sans-serif; padding: 10px 16px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; }
+.copybar button:hover { filter: brightness(1.08); }
+#skill-src pre { max-height: 640px; overflow: auto; }
+#skill-src pre, #skill-src code { white-space: pre-wrap; overflow-wrap: anywhere; }
