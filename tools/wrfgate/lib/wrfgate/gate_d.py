@@ -45,6 +45,13 @@ def run(run_dir, out=None):
         g.check("D03_rate", "INFO", f"{sps:.3f} s per d01 step over {len(steady)} steady steps (before ignition: expect slower once the fire grows)")
     else:
         g.check("D03_rate", "WARN", "no 'Timing for main' lines found in rsl.error.0000")
+    import re as _re
+    r0 = os.path.join(run_dir, "rsl.error.0000")
+    grads = _re.findall(r"max gradient\s+([-\d.Ee+]+)", open(r0, errors="replace").read()) if os.path.exists(r0) else []
+    if grads:
+        mg = float(grads[0])
+        g.facts["max_terrain_gradient"] = mg
+        g.ok("D04_fire_terrain", mg > 0, f"the fire model sees terrain: steepest slope {mg:.2f}", "the fire model reports a max gradient of 0: flat terrain")
     return g.write(out or run_dir)
 
 

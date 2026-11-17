@@ -75,9 +75,19 @@ def run(run_dir, input_dir, record, out=None):
     g.ok("C09_fuel_read", col(nl, "fire_fuel_read", i, "-1") == "-1", "fire_fuel_read = -1: fuel map from the inputs",
          f"fire_fuel_read = {col(nl, 'fire_fuel_read', i)}: the input fuel map is ignored", warn_only=True)
     zflag = int(attrs(files[fd][0][1]).get("FLAG_ZSF", 0))
-    topo = col(nl, "fire_topo_from_atm", i, "1")
-    g.ok("C10_fire_terrain", not (zflag == 1 and topo == "1"), f"fire_topo_from_atm = {topo} with ZSF {'present' if zflag else 'absent'}",
-         "ZSF is in the inputs but fire_topo_from_atm = 1 overwrites it with smoothed atmosphere terrain", warn_only=True)
+    g.ok("C10_fire_terrain", zflag == 1, "fire terrain ZSF and its slopes come from the inputs",
+         "the inputs have no ZSF: WRF 4.6 then runs the fire on flat ground (fire_topo_from_atm has no effect in 4.6)")
+    try:
+        from netCDF4 import Dataset
+        wi = Dataset(os.path.join(run_dir, f"wrfinput_d{fd:02d}"))
+        import numpy as _np
+        z = _np.asarray(wi["ZSF"][0]); gx = _np.asarray(wi["DZDXF"][0]); gy = _np.asarray(wi["DZDYF"][0])
+        slope = float(_np.nanmax(_np.hypot(gx, gy)))
+        g.facts.update(zsf_min_m=round(float(z.min()), 1), zsf_max_m=round(float(z.max()), 1), max_slope=round(slope, 3))
+        g.ok("C16_fire_slope", z.max() > z.min() and slope > 0, f"wrfinput_d{fd:02d}: ZSF {z.min():.0f} to {z.max():.0f} m, steepest slope {slope:.2f}",
+             f"wrfinput_d{fd:02d} fire terrain is flat (ZSF {z.min():.0f} to {z.max():.0f} m, slope {slope:.2f})")
+    except Exception as e:
+        g.check("C16_fire_slope", "WARN", f"could not read ZSF/DZDXF from wrfinput_d{fd:02d}: {e}")
     # ignition
     ign = parse_time(rec["ignition_time"])
     want = (ign - start).total_seconds()

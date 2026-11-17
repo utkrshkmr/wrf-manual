@@ -147,7 +147,7 @@ grep -iE 'SUCCESS|error|cfl|boundary' rsl.error.0000 | tail
 <tr>
 <td><code>fire_topo_from_atm</code></td>
 <td>1</td>
-<td>1 = interpolate fire terrain from the atmosphere grid; 0 = use <code>ZSF</code> from WPS. <strong>Set 0 when you supply fine terrain, or it is overwritten</strong></td>
+<td>Read but <strong>not used in WRF 4.6</strong>: the code that filled fire terrain from the atmosphere is commented out in <code>phys/module_fr_fire_driver.F</code>. The fire always uses <code>ZSF</code>, <code>DZDXF</code> and <code>DZDYF</code> from the inputs, so supply <code>ZSF</code> from WPS or the fire sees flat ground</td>
 </tr>
 <tr>
 <td><code>fire_fmc_read</code></td>

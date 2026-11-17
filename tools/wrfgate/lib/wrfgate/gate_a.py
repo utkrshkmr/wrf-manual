@@ -88,7 +88,7 @@ def run(input_dir, record=None, out=None):
     g.ok("A12_fuel_flag", int(a0.get("FLAG_NFUEL_CAT", 0)) == 1, "NFUEL_CAT filled (FLAG_NFUEL_CAT = 1)",
          "FLAG_NFUEL_CAT is not 1: no fuel map")
     g.ok("A13_terrain_flag", int(a0.get("FLAG_ZSF", 0)) == 1, "fine fire terrain ZSF filled (FLAG_ZSF = 1)",
-         "no ZSF: fire terrain will be smoothed atmosphere terrain (set fire_topo_from_atm = 1 knowingly)", warn_only=True)
+         "no ZSF: the fire would see flat ground (WRF 4.6 does not fill fire terrain from the atmosphere); add the terrain layer in geogrid")
     lat, lon, shape = fire_mesh_latlon(p0, sr)
     fuel = fire_field(p0, "NFUEL_CAT", shape)
     codes, counts = np.unique(fuel.astype(int), return_counts=True)

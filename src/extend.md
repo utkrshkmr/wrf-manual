@@ -13,7 +13,7 @@ lead: Most research questions come down to one of a few kinds of change: the fue
 | [Fuel moisture](moisture.html) | `FMC_G`, `FMC_GC`, `fuelmc_*`, the moisture model | [Fuel moisture](moisture.html) | Map, table or model |
 | [Where and when the fire starts](ignitions.html) | `fire_ignition_*` (up to 5 lines) | `&fire` | Namelist |
 | [Start from an observed perimeter](ignitions.html#start-from-an-observed-perimeter) | `LFN_HIST`, `fire_is_real_perim` | `wrfinput_d02` + `&fire` | Map |
-| [Fine terrain under the fire](terrain.html) | `ZSF` and `fire_topo_from_atm = 0` | geogrid layer + `&fire` | Map |
+| [Fine terrain under the fire](terrain.html) | `ZSF` (fire terrain layer) | geogrid layer + `&fire` | Map |
 | [Strength of the slope effect](terrain.html#the-slope-effect) | `fire_slope_factor` | `&fire` | Namelist |
 | [Which wind drives the spread](coupling.html#which-wind-drives-the-spread) | `fire_wind_height`, `fire_lsm_zcoupling` | `&fire` | Namelist |
 | [Fire–atmosphere feedback](coupling.html) | `fire_atm_feedback`, `fire_ext_grnd`, `fire_sfc_flx` | `&fire` | Namelist |

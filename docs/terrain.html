@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Terrain and slope · WRF-Fire Manual</title>
-<meta name="description" content="Slope can change the spread rate several-fold, and a 100 m atmosphere grid flattens ridges and canyons. Give the fire model its own fine terrain, and test how much the result depends on slope.">
+<meta name="description" content="Slope can change the spread rate several-fold. How this setup defines terrain for the atmosphere and for the fire, how to check it, and how to test the slope effect.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -60,19 +60,54 @@
 <article class="page">
 <p class="kicker">Advanced · research inputs</p>
 <h1>Terrain and slope</h1>
-<p class="lead">Slope can change the spread rate several-fold, and a 100 m atmosphere grid flattens ridges and canyons. Give the fire model its own fine terrain, and test how much the result depends on slope.</p>
+<p class="lead">Slope can change the spread rate several-fold. How this setup defines terrain for the atmosphere and for the fire, how to check it, and how to test the slope effect.</p>
 
-<h2 id="fine-terrain">Fine terrain</h2>
-<p>Fire spread depends strongly on slope, and a 100 m atmosphere grid smooths ridges. Supply <code>ZSF</code> from a 30 m elevation layer (<a href="geogrid.html#the-fire-fields">Phase 2</a>) and set <code>fire_topo_from_atm = 0</code>, or WRF overwrites it with smoothed atmosphere terrain. <code>fire_slope_factor</code> scales the slope effect, for sensitivity tests.</p>
-<p>In the shared folder, the 1-arc-second (about 30 m) California elevation layer is <code>/projects/academic/negarkhodoe/wrf/static/CA_1s/</code>. <a href="geogrid.html#the-fire-fields">Phase 2</a> shows the <code>ZSF</code> entry of <code>GEOGRID.TBL</code> that reads it.</p>
+<h2 id="how-the-terrain-is-defined">How the terrain is defined</h2>
+<p>The model uses two terrains, both made by geogrid:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th></th>
+<th>Atmosphere terrain</th>
+<th>Fire terrain</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Field</td>
+<td><code>HGT_M</code> on each domain (100 m on the fire domain, 900 m outside)</td>
+<td><code>ZSF</code> on the fire mesh (25 m), plus its slopes <code>DZDXF</code>, <code>DZDYF</code></td>
+</tr>
+<tr>
+<td>Source</td>
+<td>WPS's standard terrain in <code>static/WPS_GEOG</code>, through the table's <code>default</code> entry</td>
+<td><code>static/elevation/CA_1s</code>: 1 arc-second (about 30 m) California elevation, name <code>ca_1s</code></td>
+</tr>
+<tr>
+<td>How geogrid samples it</td>
+<td>the standard averaging of the <code>HGT_M</code> entry</td>
+<td><code>average_gcell(4.0)+four_pt+average_4pt</code>, then one smoothing pass (<code>smth-desmth_special</code>); slopes from the smoothed heights</td>
+</tr>
+<tr>
+<td>Used for</td>
+<td>winds, pressure, everything in the atmosphere</td>
+<td>the slope term in the fire's spread rate (<code>DZDXF</code>, <code>DZDYF</code>); <code>ZSF</code> for fuel by altitude</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>namelist.wps</code> selects the fire terrain for the fire domain with <code>geog_data_res = '…', 'ca_1s+lf2024+default'</code>; a fire card sets this from its <code>terrain_layer</code> line. real.exe copies <code>ZSF</code>, <code>DZDXF</code> and <code>DZDYF</code> into <code>wrfinput_d02</code> unchanged.</p>
+<p><strong>WRF 4.6 does not fill fire terrain from the atmosphere.</strong> The <code>fire_topo_from_atm</code> option is still read, but the code that used it is commented out (<code>phys/module_fr_fire_driver.F</code>). So the fire always uses <code>ZSF</code> and its slopes from the inputs, and inputs without <code>ZSF</code> give a fire on flat ground. At start-up wrf.exe prints <code>max gradient … max error against zsf …</code> in <code>rsl.error.0000</code>: the steepest slope it sees.</p>
+<p>The layer <code>CA_1s</code> is the 1 arc-second elevation used for the NCAR and campaign inputs (<code>topo_CA_1s_nisha</code> in their table): integer tiles in millimetres (<code>scale_factor = 0.001</code>, <code>wordsize = 4</code>) on a regular latitude–longitude grid.</p>
 <h2 id="checking-it">Checking it</h2>
 <ul>
-<li>Gate A: <strong>A13</strong> (<code>ZSF</code> filled), <strong>A17</strong> (heights plausible), <strong>A18</strong> (fine terrain agrees, on average, with the atmosphere's).</li>
+<li>Gate A: <strong>A13</strong> (<code>ZSF</code> filled; fails without it), <strong>A17</strong> (heights plausible), <strong>A18</strong> (fine terrain agrees, on average, with the atmosphere's).</li>
 <li>Gate B: <strong>B09</strong> compares <code>ZSF</code> with the elevation layer itself: a large RMSE means a misplaced or wrong layer.</li>
-<li>Gate C: <strong>C10</strong> checks <code>fire_topo_from_atm = 0</code> when <code>ZSF</code> is present, so the fine terrain is not silently replaced.</li>
+<li>Gate C: <strong>C10</strong> (the inputs have <code>ZSF</code>) and <strong>C16</strong> (<code>wrfinput_d02</code> has real heights and non-zero slopes).</li>
+<li>Gate D: <strong>D04</strong> reads the <code>max gradient</code> line wrf.exe printed: zero means flat.</li>
+<li><code>wrf-static --check</code> runs geogrid with each terrain name and compares <code>ZSF</code> with the atmosphere terrain over the same area.</li>
 </ul>
 <h2 id="the-slope-effect">The slope effect</h2>
-<p><code>fire_slope_factor</code> multiplies the slope term in the spread rate (default 1). A sensitivity test is three variant specs with 0.5, 1 and 1.5, identical otherwise, each through gates C and D. With <code>fire_topo_from_atm = 1</code> instead, the fire runs on the smoothed atmosphere terrain: a quick way to see how much the fine terrain itself matters.</p>
+<p><code>fire_slope_factor</code> multiplies the slope term in the spread rate (default 1). A sensitivity test is three variant specs with 0.5, 1 and 1.5, identical otherwise, each through gates C and D. To see how much the fine terrain itself matters, <code>fire_slope_factor = 0</code> removes the slope effect entirely (in WRF 4.6, <code>fire_topo_from_atm</code> no longer switches the terrain source).</p>
 <nav class="pager"><a class="prev" href="ignitions.html"><small>Previous</small>Ignitions and perimeters</a><a class="next" href="coupling.html"><small>Next</small>Fire and atmosphere</a></nav>
 <footer class="foot">Checked against the WRF 4.6.0 and WPS 4.6 source. Built from <code>src/terrain.md</code>.</footer>
 </article>

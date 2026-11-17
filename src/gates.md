@@ -141,7 +141,7 @@ The record's `fuel_layer` picks the reference (default `static/landfire/LF2024/F
 
 ### Gate C: real.exe and the namelists
 
-real.exe must print `SUCCESS`; `max_dom`, grid sizes, `dx`, the fire ratio and the vertical levels must match the inputs; the initial time must be the record's start and the boundaries must reach its end; the fire domain must have `ifire = 2`, `fire_fuel_read = -1` and a terrain source; the ignition time and place must be the record's; code 204 needs `nfuelcats ≥ 54`; `fire_fmc_read = 0` needs a non-zero `FMC_G`.
+real.exe must print `SUCCESS`; `max_dom`, grid sizes, `dx`, the fire ratio and the vertical levels must match the inputs; the initial time must be the record's start and the boundaries must reach its end; the fire domain must have `ifire = 2`, `fire_fuel_read = -1` and fire terrain (`ZSF` with non-zero slopes in `wrfinput`); the ignition time and place must be the record's; code 204 needs `nfuelcats ≥ 54`; `fire_fmc_read = 0` needs a non-zero `FMC_G`.
 
 ### Gate D: wrf.exe starts cleanly
 

@@ -22,7 +22,7 @@ Every `&fire` variable takes one value per domain unless noted. Set it on the fi
 | `ifire` | 0 | 2 = run the fire model on this domain |
 | `fire_fuel_read` | −1 | −1 = fuel map from WPS (`NFUEL_CAT` in `wrfinput`); 0 = one category everywhere; 1 = by altitude (idealized cases) |
 | `fire_fuel_cat` | 1 | The category used when `fire_fuel_read = 0` |
-| `fire_topo_from_atm` | 1 | 1 = interpolate fire terrain from the atmosphere grid; 0 = use `ZSF` from WPS. **Set 0 when you supply fine terrain, or it is overwritten** |
+| `fire_topo_from_atm` | 1 | Read but **not used in WRF 4.6**: the code that filled fire terrain from the atmosphere is commented out in `phys/module_fr_fire_driver.F`. The fire always uses `ZSF`, `DZDXF` and `DZDYF` from the inputs, so supply `ZSF` from WPS or the fire sees flat ground |
 | `fire_fmc_read` | 1 | Where dead fuel moisture comes from: see [Fuel moisture](moisture.html) |
 | `fire_boundary_guard` | 8 | Stop when the fire comes this many cells from the domain edge |
 | `fire_print_msg`, `fire_print_file` | 0, 0 | Fire diagnostics in the `rsl` logs; debug files |

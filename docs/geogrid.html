@@ -135,7 +135,7 @@ name=ZSF
 <ul>
 <li><strong><code>NFUEL_CAT</code></strong> is the fuel code in each fire cell: the dominant LANDFIRE code there, picked by nearest neighbour.</li>
 <li><strong><code>ZSF</code></strong> is fire-mesh terrain height. <code>df_dx</code> and <code>df_dy</code> make geogrid also write its slopes, <code>DZDXF</code> and <code>DZDYF</code>, which drive the slope term in the spread rate.</li>
-<li><strong>Without <code>ZSF</code></strong>, WRF interpolates fire terrain from the atmosphere terrain (<code>fire_topo_from_atm = 1</code>, the default), which flattens ridges and canyons. CCR's own <code>GEOGRID.TBL.FIRE</code> has no <code>ZSF</code> entry, so add one.</li>
+<li><strong>Without <code>ZSF</code></strong> the fire sees flat ground: WRF 4.6 no longer fills fire terrain from the atmosphere grid (the <code>fire_topo_from_atm</code> code is commented out), and the slopes <code>DZDXF</code>/<code>DZDYF</code> come only from geogrid. CCR's own <code>GEOGRID.TBL.FIRE</code> has no <code>ZSF</code> entry, so add one; the lab's <code>tables/fire/GEOGRID.TBL</code> has it.</li>
 </ul>
 <div class="warn">
 <p><span class="callout-title">A silent failure</span></p>
